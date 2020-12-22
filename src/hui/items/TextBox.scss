@@ -1,0 +1,14 @@
+.ui-textbox {
+  display: inline-flex;
+  position: relative;
+  border: solid 1px WindowFrame;
+  background-color: white;
+
+  input{
+    border: none;
+    background-color: white;
+    &:focus{
+      outline: none;
+    }
+  }
+}

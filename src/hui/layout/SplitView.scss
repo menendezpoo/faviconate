@@ -1,0 +1,7 @@
+.ui-split-view{
+
+  &.side-left > .dock-side{   border-right-style: solid; border-right-width: 1px; }
+  &.side-top > .dock-side{    border-bottom-style: solid; border-bottom-width: 1px; }
+  &.side-right > .dock-side{  border-left-style: solid; border-left-width: 1px; }
+  &.side-bottom > .dock-side{ border-top-style: solid; border-top-width: 1px; }
+}

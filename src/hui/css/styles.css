@@ -1,0 +1,17 @@
+body{
+    font: caption;
+}
+
+.ui-panel > div {
+    margin: 50px;
+    /*box-shadow: 0 0 0 3px blue;*/
+}
+
+.ui-icon.icon-cross { background-image: url("icons/0822-cross2.svg"); }
+.ui-icon.icon-floppy { background-image: url("icons/0175-floppy-disk.svg"); }
+.ui-icon.icon-file { background-image: url("icons/0180-file-empty.svg"); }
+.ui-icon.icon-folder { background-image: url("icons/0187-folder.svg"); }
+.ui-icon.icon-chevron-up { background-image: url("icons/0826-chevron-up.svg"); }
+.ui-icon.icon-chevron-down { background-image: url("icons/0827-chevron-down.svg"); }
+.ui-icon.icon-chevron-left { background-image: url("icons/0828-chevron-left.svg"); }
+.ui-icon.icon-chevron-right { background-image: url("icons/0829-chevron-right.svg"); }

@@ -1,0 +1,10 @@
+.ui-clickable{
+
+  &:not(.disabled){
+    cursor: pointer;
+  }
+
+  &.is-open,&:hover{
+
+  }
+}

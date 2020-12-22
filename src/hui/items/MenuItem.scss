@@ -1,0 +1,21 @@
+.ui-menuitem{
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.6em;
+  cursor: pointer;
+
+
+  &.is-open,&:hover{
+    /* Colors */
+  }
+
+  .ui-icon.icon-chevron-right{
+    position: absolute;
+    right: 0.6em;
+  }
+
+  .ui-label{
+    padding-right: 25px; // Based on a 16px icon to be positioned as chevron to the right
+  }
+}

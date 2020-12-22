@@ -1,0 +1,15 @@
+.ui-label{
+
+  &.with-icon{
+    display: flex;
+    align-items: center;
+
+    .ui-icon{
+      margin-right: 0.5em;
+    }
+  }
+
+  .desc{
+    opacity: 50%;
+  }
+}

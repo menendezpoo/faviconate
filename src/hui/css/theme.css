@@ -1,0 +1,59 @@
+.ui-clickable.is-open{
+    background-color: Highlight;
+    color: HighlightText;
+}
+
+.ui-button-wrap.split:hover > .ui-button-split-part,
+.ui-button-wrap.split:hover > .ui-button,
+.ui-button:hover:not(.face-never):not(.disabled),
+.ui-clickable.selected:not(.disabled),
+.ui-button.is-open{
+    background-color: Highlight;
+    color: HighlightText;
+}
+
+.ui-menuitem.is-open,
+.ui-menuitem.is-selected{
+    background-color: Highlight;
+    color: HighlightText;
+}
+
+.ui-menu-overlay,
+.ui-suggestions-overlay{
+    background-color: Window;
+    color: WindowText;
+    border: solid 1px #ddd;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+.ui-separator:after{
+    background-color: rgba(0, 0, 0, 0.13);
+}
+.ui-item-group{
+    border: solid 1px #ddd;
+    border-radius: 0.5em;
+}
+
+.ui-item-group > .ui-clickable.selected:not(.disabled){
+    background-color: #ddd;
+}
+
+.ui-split-view > .dock-side{ border-color: #ddd;  }
+
+.ui-tab-view > .tabs { background-color: #ddd;}
+.ui-tab-view > .tabs  > .items > .tab {margin-top: 0.6em;}
+.ui-tab-view > .tabs  > .items > .selected{ background-color: white; }
+
+.ui-tree-view:focus .ui-tree-item.selected{
+    background-color: Highlight;
+    color: HighlightText;
+}
+
+.ui-tree-item.selected{
+    background-color: #f0f0f0;
+    color: HighlightText;
+}
+
+.ui-tree-item:not(.selected):hover{
+    background-color: #E3EFFE;
+}

@@ -1,0 +1,9 @@
+.ui-icon {
+  background: center center no-repeat;
+  background-size: 100% 100%;
+
+  &.size-8 { width: 8px;  height: 8px;  }
+  &.size-16{ width: 16px; height: 16px; }
+  &.size-32{ width: 32px; height: 32px; }
+
+}

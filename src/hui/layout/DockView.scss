@@ -1,0 +1,19 @@
+.ui-dock-view{
+
+  &, > .dock-side, > .main-side{
+    position: absolute;
+    top:0;
+    left:0;
+    right: 0;
+    bottom:0;
+  }
+
+  .dock-side, > .main-side {
+    overflow: auto;
+  }
+
+  &.side-left   > .dock-side{ right:  auto; }
+  &.side-top    > .dock-side{ bottom: auto; }
+  &.side-right  > .dock-side{ left:   auto; }
+  &.side-bottom > .dock-side{ top:    auto; }
+}

@@ -1,0 +1,13 @@
+.ui-tree-item{
+  display: flex;
+  padding: 0.6em;
+  align-items: center;
+  cursor: pointer;
+
+  > .collapse-glyph {
+    margin-right: 0.6em;
+  }
+}
+
+.tree-item-children{
+}

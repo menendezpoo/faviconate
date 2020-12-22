@@ -1,0 +1,15 @@
+.ui-separator{
+  position: relative;
+  height: 1em;
+
+  &::after{
+    display: block;
+    position: absolute;
+    content: '.';
+    color: transparent;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+  }
+}
