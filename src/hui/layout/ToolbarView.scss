@@ -18,6 +18,10 @@
   &.side-left, &.side-right{
     > .toolbar{
       flex-direction: column;
+
+      > .items{
+        flex-direction: column;
+      }
     }
   }
 
