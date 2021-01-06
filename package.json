@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register -r ignore-styles test/**/*.spec.tsx",
+    "test": "mocha -r ts-node/register -r ignore-styles test/**/*.spec.ts",
     "coverage": "nyc npm run test",
     "build": "npx webpack"
   },

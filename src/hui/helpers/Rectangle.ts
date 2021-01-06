@@ -82,6 +82,13 @@ export class Rectangle{
 
     constructor(readonly left: number, readonly top:number, readonly width: number, readonly height: number){}
 
+    centerAt(point: Point): Rectangle{
+        return this.withLocation(makePt(
+            point.x - this.width / 2,
+            point.y - this.height / 2
+        ));
+    }
+
     clone(): Rectangle{
         return new Rectangle(this.left, this.top, this.width, this.height);
     }
@@ -201,6 +208,10 @@ export class Rectangle{
 
     get location(): Point{
         return makePt(this.left, this.top);
+    }
+
+    get tuple(): [number, number, number, number]{
+        return [this.left, this.top, this.width, this.height];
     }
 
     get northEast(): Point{

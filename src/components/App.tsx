@@ -3,7 +3,8 @@ import {ToolbarView} from "../hui/layout/ToolbarView";
 import {Button} from "../hui/items/Button";
 import {Separator} from "../hui/items/Separator";
 import {DockView} from "../hui/layout/DockView";
-import {PixelView} from "./PixelView";
+import {CanvasView} from "./CanvasView";
+import {IconCanvasController} from "../model/IconCanvasController";
 
 export class App extends React.Component{
 
@@ -12,7 +13,8 @@ export class App extends React.Component{
         const mainToolbarItems = <>
             <Button text={`Faviconate`}/>
             <Separator/>
-            <Button text={`Cut`}/>
+            <Button text={`Undo`}/>
+            <Button text={`Redo`}/>
             <Button text={`Copy`}/>
             <Button text={`Paste`}/>
         </>;
@@ -33,7 +35,7 @@ export class App extends React.Component{
             <ToolbarView items={mainToolbarItems}>
                 <DockView side={`right`} sideView={sideBar}>
                     <ToolbarView side={`left`} items={toolToolbarItems}>
-                        <PixelView />
+                        <CanvasView controller={new IconCanvasController()}  />
                     </ToolbarView>
                 </DockView>
             </ToolbarView>
