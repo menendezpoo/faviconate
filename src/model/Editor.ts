@@ -17,6 +17,9 @@ export class Editor<T>{
     private readonly undoStack: EditorTransaction<T>[] = [];
     private readonly redoStack: EditorTransaction<T>[] = [];
 
+    public documentChanged: (() => void) | null = null;
+    public documentSubmitted: (() => void) | null = null;
+
     redo(): boolean{
 
         if (this.redoStack.length == 0){
@@ -66,6 +69,11 @@ export class Editor<T>{
     setDocument(document: T){
         if (this._currentTransaction){
             this._document = document;
+
+            if (this.documentChanged){
+                this.documentChanged();
+            }
+
         }else{
             throw new NoTransactionError();
         }
@@ -89,6 +97,10 @@ export class Editor<T>{
 
         // We have changes
         this._hasChanges = true;
+
+        if (this.documentSubmitted){
+            this.documentSubmitted();
+        }
     }
 
     rollback(){

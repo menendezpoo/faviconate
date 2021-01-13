@@ -1,22 +1,34 @@
-import {IconEditorTool} from "./IconEditor";
-import {PointingEvent, PointingEventResult} from "../components/CanvasView";
-import {IconCanvasController} from "./IconCanvasController";
-import {NoDocumentError} from "./Editor";
+import {IconEditorTool} from "../IconEditor";
+import {PointingEvent, PointingEventResult} from "../../components/CanvasView";
+import {IconCanvasController} from "../IconCanvasController";
+import {NoDocumentError} from "../Editor";
+import {Point} from "../../hui/helpers/Rectangle";
+import {Color} from "../../hui/helpers/Color";
 
 export class PencilTool implements IconEditorTool{
 
     private drawing = false;
+    color: Color = Color.transparent;
 
     constructor(readonly controller: IconCanvasController) {}
 
-    private drawAt(index: number){
+    private drawAt(p: Point){
+
+        const index = this.controller.pointToData(p);
+
+        if (index < 0){
+            return;
+        }
+
         if (this.controller.editor.document){
 
             const newState = this.controller.editor.cloneDocument();
             const data = newState.icon.data;
 
-            data[index] = 255;
-            data[index + 3] = 255;
+            data[index    ] = this.color.r;
+            data[index + 1] = this.color.g;
+            data[index + 2] = this.color.b;
+            data[index + 3] = Math.round(this.color.a * 255);
 
             this.controller.editor.setDocument(newState);
 
@@ -29,12 +41,10 @@ export class PencilTool implements IconEditorTool{
 
         this.drawing = true;
 
-        if (this.controller.editor.document){
+        if (this.controller.editor.document && !this.controller.editor.currentTransaction){
             this.controller.editor.begin();
-
+            this.drawAt(e.point);
         }
-
-        this.drawAt(this.controller.pointToData(e.point));
 
         return {};
 
@@ -46,7 +56,7 @@ export class PencilTool implements IconEditorTool{
             return {};
         }
 
-        this.drawAt(this.controller.pointToData(e.point));
+        this.drawAt(e.point);
 
         return {};
     }

@@ -11,7 +11,7 @@ describe('model/IconEditor', function () {
             width: 1,
             height: 1,
             model: 'rgba',
-            data: new Uint8Array(4)
+            data: new Uint8ClampedArray(4)
         }
 
         const editor = new IconEditor();

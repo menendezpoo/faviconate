@@ -6,7 +6,7 @@ import {
     PointingEventResult
 } from "../components/CanvasView";
 import {IconEditor, IconEditorTool} from "./IconEditor";
-import {PencilTool} from "./PencilTool";
+import {PencilTool} from "./tools/PencilTool";
 import {Editor, NoDocumentError} from "./Editor";
 import {IconService} from "./IconService";
 import {IconDocumentRenderer} from "./IconDocumentRenderer";
@@ -52,7 +52,9 @@ export class IconCanvasController implements CanvasViewController{
     }
 
     pointToData(p: Point): number{
-        if (!this.previewBounds.contains(p)){
+
+        // Deflation prevents round-errors
+        if (!this.previewBounds.deflate(1, 1).contains(p)){
             return - 1;
         }
 
@@ -132,4 +134,7 @@ export class IconCanvasController implements CanvasViewController{
         return this._tool;
     }
 
+    set tool(value: IconEditorTool | null){
+        this._tool = value;
+    }
 }

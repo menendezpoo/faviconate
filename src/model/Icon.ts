@@ -5,5 +5,5 @@ export interface Icon{
     width: number;
     height: number;
     model: IconColorModel;
-    data: Uint8Array;
+    data: Uint8ClampedArray;
 }

@@ -41,10 +41,10 @@ export class CanvasView extends React.Component<CanvasViewProps>{
     readonly canvasRef: RefObject<HTMLCanvasElement> = React.createRef();
     readonly controller: CanvasViewController;
 
-    private draw = true;
     private canvasSize: Size = makeSz(0,0);
     private _cursor: string | null = null;
     private resizer = () => this.updateCanvasSize();
+    private catcher = (e: MouseEvent) => this.mouseUp(e);
 
     constructor(props: CanvasViewProps) {
         super(props);
@@ -95,14 +95,18 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             this.controller.pointingGestureStart({point, touch: false});
         }
 
+        document.body.addEventListener('mouseup', this.catcher);
+
     }
 
-    private mouseUp(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>){
+    private mouseUp(e: MouseEvent){
 
         if(this.canvasRef.current && this.controller.pointingGestureEnd) {
             const point = this.canvasPoint(e.clientX, e.clientY);
             this.controller.pointingGestureEnd({point, touch: false});
         }
+
+        document.body.removeEventListener(`mouseup`, this.catcher);
     }
 
     private mouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>){
@@ -204,7 +208,7 @@ export class CanvasView extends React.Component<CanvasViewProps>{
                     ref={this.canvasRef}
                     onMouseDown={e => this.mouseDown(e)}
                     onMouseMove={e => this.mouseMove(e)}
-                    onMouseUp={e => this.mouseUp(e)}
+                    // onMouseUp={e => this.mouseUp(e)}
                     onTouchStart={e => this.touchStart(e)}
                     onTouchMove={e => this.touchMove(e)}
                     onTouchEnd={e => this.touchEnd(e)}

@@ -3,17 +3,19 @@ export class InvalidColorFormatError extends Error{}
 
 export class Color{
 
+    static hexParsable(hexColor: string): boolean{
+        return hexColor.match(/#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?/) !== null;
+    }
+
     static fromHex(hexColor: string): Color{
 
-        // Remove #
-        if(hexColor.charAt(0) == '#') hexColor = hexColor.substr(1);
-
-        // Check length
-        if(!(hexColor.length == 3 || hexColor.length == 6 || hexColor.length == 8)){
+        if (!Color.hexParsable(hexColor)){
             throw new InvalidColorFormatError(hexColor);
         }
 
-        let toDecimal = function(hex: any){ return parseInt(hex, 16); };
+        hexColor = hexColor.replace('#', '');
+
+        let toDecimal = function(hex: any){ return parseInt(hex, 16) };
 
         let r = 0;
         let g = 0;
@@ -22,20 +24,25 @@ export class Color{
 
         // If three digits
         if(hexColor.length == 3){
-            r = (toDecimal(hexColor.charAt(0) + hexColor.charAt(0)));
-            g = (toDecimal(hexColor.charAt(1) + hexColor.charAt(1)));
-            b = (toDecimal(hexColor.charAt(2) + hexColor.charAt(2)));
+            r = toDecimal(hexColor[0] + hexColor[0]);
+            g = toDecimal(hexColor[1] + hexColor[1]);
+            b = toDecimal(hexColor[2] + hexColor[2]);
         }else{
-            r = (toDecimal(hexColor.charAt(0) + hexColor.charAt(1)));
-            g = (toDecimal(hexColor.charAt(2) + hexColor.charAt(3)));
-            b = (toDecimal(hexColor.charAt(4) + hexColor.charAt(5)));
+            r = toDecimal(hexColor[0] + hexColor[1]);
+            g = toDecimal(hexColor[2] + hexColor[3]);
+            b = toDecimal(hexColor[4] + hexColor[5]);
 
-            if(hexColor.length == 8)
-                a = (toDecimal(hexColor.charAt(6) + hexColor.charAt(7)));
+            if(hexColor.length == 8) {
+                a = toDecimal(hexColor[6] + hexColor[7]);
+            }
         }
 
         return new Color(r, g, b, a);
 
+    }
+
+    static get transparent(): Color{
+        return new Color(0, 0, 0, 0);
     }
 
     constructor(
