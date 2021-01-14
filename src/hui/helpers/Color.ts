@@ -80,4 +80,11 @@ export class Color{
         return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex(Math.round(this.a * 255))}`
     }
 
+    get isTransparent(): boolean{
+        return (this.r === 0 &&
+            this.g ===  0 &&
+            this.b ===  0 &&
+            this.a === 0);
+    }
+
 }

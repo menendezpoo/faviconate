@@ -1,16 +1,57 @@
 import {IconDocument} from "./IconEditor";
 import {makeSz, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
+import {Icon} from "../hui/items/Icon";
 
 const GRID_OUT = Color.fromHex(`#d0d0d0`);
-const GRID_INT = Color.fromHex(`#f0f0f0`);
+const GRID_INT = Color.fromHex(`#e0e0e0`);
+const CHECKER_EVEN = Color.transparent;
+const CHECKER_ODD = Color.fromHex(`#f0f0f0`);
+const CHECKER_SIZE = 20;
+
 
 export class IconDocumentRenderer {
+
+    private static checkerCanvas: HTMLCanvasElement | null = null
+
+    static getPattern(context: CanvasRenderingContext2D): CanvasPattern | null{
+
+        if(!IconDocumentRenderer.checkerCanvas){
+            const canvas: HTMLCanvasElement = IconDocumentRenderer.checkerCanvas = document.createElement('canvas');
+            canvas.width = canvas.height = CHECKER_SIZE;
+
+            const localCx = canvas.getContext('2d');
+            const size = CHECKER_SIZE / 2;
+
+            if(!localCx){
+                return null;
+            }
+
+            if (!CHECKER_EVEN.isTransparent){
+                localCx.fillStyle = CHECKER_EVEN.cssRgba;
+                localCx.fillRect(0,0, size, size);
+                localCx.fillRect(size, size, size, size);
+            }
+
+            if (!CHECKER_ODD.isTransparent){
+                localCx.fillStyle = CHECKER_ODD.cssRgba;
+                localCx.fillRect(size, 0, size, size);
+                localCx.fillRect(0, size, size, size);
+            }
+        }
+
+        const canvas = IconDocumentRenderer.checkerCanvas;
+
+        return context.createPattern(canvas, 'repeat');
+
+    }
 
     constructor(
         readonly document: IconDocument,
         readonly context: CanvasRenderingContext2D,
         readonly bounds: Rectangle,
+        readonly drawBackground: boolean,
+        readonly drawGrid: boolean,
     ) {}
 
     private rectStroke(r: Rectangle, color: Color){
@@ -78,6 +119,18 @@ export class IconDocumentRenderer {
 
     }
 
+    private renderChecker(){
+        const pattern = IconDocumentRenderer.getPattern(this.context);
+
+        if(!pattern){
+            return;
+        }
+
+        this.context.fillStyle = pattern;
+        this.context.fillRect(...this.bounds.tuple);
+
+    }
+
     render(){
         const pixelSize = makeSz(
             this.bounds.width / this.document.icon.width,
@@ -85,8 +138,16 @@ export class IconDocumentRenderer {
 
         this.context.clearRect(...this.bounds.tuple);
 
+        if (this.drawBackground){
+            this.renderChecker();
+        }
+
         this.renderPixels(pixelSize);
-        this.renderGrid(pixelSize);
+
+        if (this.drawGrid){
+            this.renderGrid(pixelSize);
+        }
+
 
     }
 

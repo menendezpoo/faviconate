@@ -33,7 +33,7 @@ export class IconEditor extends Editor<IconDocument>{
 
     }
 
-    getImage(): string{
+    getImageCanvas(): HTMLCanvasElement{
 
         if (!this.document){
             throw new NoDocumentError();
@@ -50,7 +50,7 @@ export class IconEditor extends Editor<IconDocument>{
             ctx.putImageData(new ImageData(icon.data, icon.width, icon.height), 0, 0);
         }
 
-        return canvas.toDataURL();
+        return canvas;
 
     }
 

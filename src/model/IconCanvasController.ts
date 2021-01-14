@@ -14,6 +14,9 @@ import {makePt, makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 
 export class IconCanvasController implements CanvasViewController{
 
+    showBackground = false;
+    showGrid = false;
+
     readonly editor: IconEditor = new IconEditor();
     private _tool: IconEditorTool | null = new PencilTool(this);
     private previewBounds: Rectangle = Rectangle.empty;
@@ -21,6 +24,7 @@ export class IconCanvasController implements CanvasViewController{
 
     constructor() {
         this.editor.open({
+            // icon: IconService.newIcon(16, 16)
             icon: IconService.newIcon(16, 16)
         });
 
@@ -124,7 +128,12 @@ export class IconCanvasController implements CanvasViewController{
                 icon.height *  pixelLength)
                 .centerAt(cvBounds.center);
 
-            const renderer = new IconDocumentRenderer(this.editor.document, context, this.previewBounds);
+            const renderer = new IconDocumentRenderer(
+                this.editor.document,
+                context,
+                this.previewBounds,
+                this.showBackground,
+                this.showGrid);
 
             renderer.render();
         }

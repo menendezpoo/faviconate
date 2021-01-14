@@ -31,6 +31,10 @@ export class Editor<T>{
         if (top){
             this.undoStack.push({documentState: this.document!});
             this._document = top.documentState;
+
+            if (this.documentSubmitted){
+                this.documentSubmitted();
+            }
         }
 
         return true;
@@ -48,6 +52,10 @@ export class Editor<T>{
         if (top){
             this.redoStack.push({documentState: this.document!});
             this._document = top.documentState;
+
+            if (this.documentSubmitted){
+                this.documentSubmitted();
+            }
         }
 
         return true;
@@ -108,6 +116,11 @@ export class Editor<T>{
         if (this._currentTransaction){
             this._document = this._currentTransaction.documentState;
             this._currentTransaction = null;
+
+            if (this.documentSubmitted){
+                this.documentSubmitted();
+            }
+
         }else{
             throw new NoTransactionError();
         }
