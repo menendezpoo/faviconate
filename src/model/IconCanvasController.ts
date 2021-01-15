@@ -16,6 +16,7 @@ export class IconCanvasController implements CanvasViewController{
 
     showBackground = false;
     showGrid = false;
+    selection = Rectangle.empty;
 
     readonly editor: IconEditor = new IconEditor();
     private _tool: IconEditorTool | null = new PencilTool(this);
@@ -133,7 +134,8 @@ export class IconCanvasController implements CanvasViewController{
                 context,
                 this.previewBounds,
                 this.showBackground,
-                this.showGrid);
+                this.showGrid,
+                this.selection);
 
             renderer.render();
         }

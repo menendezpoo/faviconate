@@ -11,6 +11,7 @@ import {Color} from "../hui/helpers/Color";
 import {ColorPicker} from "../hui/items/ColorPicker";
 import {PreviewPanel} from "./PreviewPanel";
 import {IconEditorTool} from "../model/IconEditor";
+import {SelectionTool} from "../model/tools/SelectionTool";
 
 function changeFavicon(src: string) {
     const link = document.createElement('link'),
@@ -60,17 +61,18 @@ export class App extends React.Component<AppProps, AppState>{
 
     private usePen(){
         const pen = new PencilTool(this.controller);
-        pen.color = Color.fromHex(`#ff0000`);
         this.setState({selectedTool: pen});
 
+    }
+
+    private useSelection(){
+        this.setState({selectedTool: new SelectionTool(this.controller)});
     }
 
     private colorPick(color: Color){
         if (this.controller.tool instanceof PencilTool){
             const p: PencilTool = this.controller.tool as PencilTool;
             p.color = color;
-            console.log(color);
-            console.log(color.hexRgb);
         }
     }
 
@@ -107,9 +109,15 @@ export class App extends React.Component<AppProps, AppState>{
 
         const toolToolbarItems = <>
             <Button
+                text={`Sel`}
+                onClick={() => this.useSelection()}
+                selected={this.state.selectedTool instanceof SelectionTool}
+            />
+            <Button
                 text={`Pen`}
                 onClick={() => this.usePen()}
-                selected={this.state.selectedTool instanceof PencilTool && !(this.state.selectedTool instanceof EraserTool)}/>
+                selected={this.state.selectedTool instanceof PencilTool && !(this.state.selectedTool instanceof EraserTool)}
+            />
             <Button
                 text={`Ers`}
                 onClick={() => this.useEraser()}

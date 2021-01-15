@@ -8,7 +8,7 @@ import {Color} from "../../hui/helpers/Color";
 export class PencilTool implements IconEditorTool{
 
     private drawing = false;
-    color: Color = Color.transparent;
+    color: Color = new Color(0,0,0,);
 
     constructor(readonly controller: IconCanvasController) {}
 
@@ -53,12 +53,12 @@ export class PencilTool implements IconEditorTool{
     pointingGestureMove(e: PointingEvent): PointingEventResult {
 
         if (!this.drawing){
-            return {};
+            return {cursor: 'default'};
         }
 
         this.drawAt(e.point);
 
-        return {};
+        return { cursor: 'default' };
     }
 
     pointingGestureEnd(e: PointingEvent): PointingEventResult {

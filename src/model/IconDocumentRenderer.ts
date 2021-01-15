@@ -9,9 +9,12 @@ const CHECKER_EVEN = Color.transparent;
 const CHECKER_ODD = Color.fromHex(`#f0f0f0`);
 const CHECKER_SIZE = 20;
 
+const CLOCK_MOD = 8;
 
 export class IconDocumentRenderer {
 
+    private static clock = 0;
+    private static clockReminder = 0;
     private static checkerCanvas: HTMLCanvasElement | null = null
 
     static getPattern(context: CanvasRenderingContext2D): CanvasPattern | null{
@@ -52,6 +55,7 @@ export class IconDocumentRenderer {
         readonly bounds: Rectangle,
         readonly drawBackground: boolean,
         readonly drawGrid: boolean,
+        readonly selection: Rectangle,
     ) {}
 
     private rectStroke(r: Rectangle, color: Color){
@@ -131,6 +135,58 @@ export class IconDocumentRenderer {
 
     }
 
+    private renderSelection(pixelSize: Size){
+
+        const selBounds = new Rectangle(
+            this.bounds.left + this.selection.left * pixelSize.width,
+            this.bounds.top + this.selection.top * pixelSize.height,
+            this.selection.width * pixelSize.width,
+            this.selection.height * pixelSize.height
+        ).round();
+
+        IconDocumentRenderer.clock++;
+
+        if(IconDocumentRenderer.clock % CLOCK_MOD === 0){
+            IconDocumentRenderer.clockReminder++;
+
+            if (IconDocumentRenderer.clockReminder === 9){
+                IconDocumentRenderer.clockReminder = 0;
+            }
+        }
+
+        this.context.strokeStyle = '#000';
+        this.context.strokeRect(...selBounds.tuple);
+
+        this.context.strokeStyle = '#fff';
+
+        const fives = new Array(Math.round(selBounds.width / 5)).fill(5);
+
+
+        // =00000====
+        // ==00000===
+        // ===00000==
+        // ====00000=
+        // =====00000
+        // 0=====0000
+
+        switch(IconDocumentRenderer.clockReminder){
+            case 0: this.context.setLineDash([1, ...fives]); break;
+            case 1: this.context.setLineDash([2, ...fives]); break;
+            case 2: this.context.setLineDash([3, ...fives]); break;
+            case 3: this.context.setLineDash([4, ...fives]); break;
+            case 4: this.context.setLineDash([5, 5]); break;
+            case 5: this.context.setLineDash([0, 1,...fives]); break;
+            case 6: this.context.setLineDash([0,2,...fives]); break;
+            case 7: this.context.setLineDash([0,3,...fives]); break;
+            case 8: this.context.setLineDash([0,4,...fives]); break;
+        }
+
+        this.context.strokeRect(...selBounds.tuple);
+
+        this.context.setLineDash([]);
+
+    }
+
     render(){
         const pixelSize = makeSz(
             this.bounds.width / this.document.icon.width,
@@ -148,6 +204,9 @@ export class IconDocumentRenderer {
             this.renderGrid(pixelSize);
         }
 
+        if (!this.selection.isEmpty){
+            this.renderSelection(pixelSize);
+        }
 
     }
 

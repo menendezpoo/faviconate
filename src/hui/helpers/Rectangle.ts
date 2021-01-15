@@ -198,6 +198,10 @@ export class Rectangle{
         };
     }
 
+    get isEmpty(): boolean{
+        return this.width == 0 && this.height == 0 && this.left == 0 && this.top == 0;
+    }
+
     get right(): number{
         return this.left + this.width;
     }
