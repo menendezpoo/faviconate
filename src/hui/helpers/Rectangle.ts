@@ -94,7 +94,7 @@ export class Rectangle{
     }
 
     contains(p: Point): boolean{
-        return p.x >= this.left && p.x <= this.right && p.y >= this.top && p.y <= this.bottom;
+        return p.x >= this.left && p.x < this.right && p.y >= this.top && p.y < this.bottom;
     }
 
     deflate(horizontal: number, vertical: number): Rectangle{

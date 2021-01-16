@@ -9,7 +9,8 @@ const CHECKER_EVEN = Color.transparent;
 const CHECKER_ODD = Color.fromHex(`#f0f0f0`);
 const CHECKER_SIZE = 20;
 
-const CLOCK_MOD = 8;
+const CLOCK_MOD = 4;
+const SAFE_CLEAR = 10;
 
 export class IconDocumentRenderer {
 
@@ -154,20 +155,39 @@ export class IconDocumentRenderer {
             }
         }
 
-        this.context.strokeStyle = '#000';
-        this.context.strokeRect(...selBounds.tuple);
+        // this.context.strokeStyle = '#000';
+        // this.context.strokeRect(...selBounds.tuple);
 
-        this.context.strokeStyle = '#fff';
+
 
         const fives = new Array(Math.round(selBounds.width / 5)).fill(5);
 
+        const segmentedRect = (r: Rectangle) => {
+            // Drawing the rect like this prevents weird behavior
+            // of the segmented pattern
+            this.context.beginPath();
+            this.context.moveTo(r.left, r.top);
+            this.context.lineTo(r.right, r.top);
+            this.context.moveTo(r.right, r.bottom);
+            this.context.lineTo(r.left, r.bottom);
+            this.context.stroke();
+
+            this.context.beginPath();
+            this.context.moveTo(r.right, r.top);
+            this.context.lineTo(r.right, r.bottom);
+            this.context.moveTo(r.left, r.bottom);
+            this.context.lineTo(r.left, r.top);
+            this.context.stroke();
+        }
 
         // =00000====
         // ==00000===
         // ===00000==
         // ====00000=
         // =====00000
-        // 0=====0000
+
+        const lineWidthBuffer = this.context.lineWidth;
+        this.context.lineWidth = 1.5;
 
         switch(IconDocumentRenderer.clockReminder){
             case 0: this.context.setLineDash([1, ...fives]); break;
@@ -180,10 +200,28 @@ export class IconDocumentRenderer {
             case 7: this.context.setLineDash([0,3,...fives]); break;
             case 8: this.context.setLineDash([0,4,...fives]); break;
         }
+        this.context.strokeStyle = '#fff';
 
-        this.context.strokeRect(...selBounds.tuple);
+        segmentedRect(selBounds);
+
+
+        switch(IconDocumentRenderer.clockReminder){
+            case 0: this.context.setLineDash([0, 1, ...fives]); break;
+            case 1: this.context.setLineDash([0, 2, ...fives]); break;
+            case 2: this.context.setLineDash([0, 3, ...fives]); break;
+            case 3: this.context.setLineDash([0, 4, ...fives]); break;
+            case 4: this.context.setLineDash([0, 5, ...fives]); break;
+            case 5: this.context.setLineDash([1,...fives]); break;
+            case 6: this.context.setLineDash([2,...fives]); break;
+            case 7: this.context.setLineDash([3,...fives]); break;
+            case 8: this.context.setLineDash([4,...fives]); break;
+        }
+        this.context.strokeStyle = '#000';
+        segmentedRect(selBounds);
+
 
         this.context.setLineDash([]);
+        this.context.lineWidth = lineWidthBuffer;
 
     }
 
@@ -192,7 +230,7 @@ export class IconDocumentRenderer {
             this.bounds.width / this.document.icon.width,
             this.bounds.height / this.document.icon.height);
 
-        this.context.clearRect(...this.bounds.tuple);
+        this.context.clearRect(...this.bounds.inflate(SAFE_CLEAR, SAFE_CLEAR).tuple);
 
         if (this.drawBackground){
             this.renderChecker();
