@@ -1,4 +1,4 @@
-import {IconEditorTool} from "../IconEditor";
+import {IconDocument, IconEditor, IconEditorTool, NoSelectionError} from "../IconEditor";
 import {PointingEvent, PointingEventResult} from "../../components/CanvasView";
 import {makePt, Point, Rectangle} from "../../hui/helpers/Rectangle";
 import {IconCanvasController} from "../IconCanvasController";
@@ -9,37 +9,110 @@ import {NoDocumentError} from "../Editor";
 export class SelectionTool implements IconEditorTool{
 
     private selecting = false;
-    private selStartPixel = makePt(0,0);
-    private selection: Icon | null = null;
+    private dragging = false;
+    private dragOffset: Point = makePt(0, 0);
+    private startPixel = makePt(0,0);
 
-    constructor(readonly controller: IconCanvasController) {}
+    readonly editor: IconEditor;
 
-    private clipOutSelection(): Icon{
+    constructor(readonly controller: IconCanvasController) {
+        this.editor = controller.editor;
+    }
+
+    private clipOutSelection(): {buffer: Icon, sprite: Icon}{
 
         if (!this.controller.editor.document){
             throw new NoDocumentError();
         }
 
-        const icon = this.controller.editor.document.icon;
-        const clip = IconService.fromIcon(icon, this.controller.selection);
+        if (!this.document.selectionRegion){
+            throw new Error();
+        }
 
-        IconService.region32(icon, this.controller.selection,
+        const buffer = IconService.clone(this.document.icon);
+        const sprite = IconService.fromIcon(buffer, this.document.selectionRegion);
+
+        IconService.region32(buffer, this.document.selectionRegion,
             (index, current) => {
-                icon.data[index] = 0
-                icon.data[index + 1] = 0
-                icon.data[index + 2] = 0
-                icon.data[index + 3] = 0
+                buffer.data[index] = 0
+                buffer.data[index + 1] = 0
+                buffer.data[index + 2] = 0
+                buffer.data[index + 3] = 0
         });
 
-        return clip;
+        return {buffer, sprite};
     }
 
     private updateSel(a: Point, b: Point){
-        this.controller.selection = Rectangle.fromLTRB(
+        const newDoc = this.editor.cloneDocument();
+
+        newDoc.selectionRegion = Rectangle.fromLTRB(
             Math.round(Math.min(a.x, b.x)),
             Math.round(Math.min(a.y, b.y)),
             Math.round(Math.max(a.x, b.x)) + 1,
             Math.round(Math.max(a.y, b.y)) + 1
+        );
+
+        this.editor.setDocument(newDoc);
+    }
+
+    private selectionEnded(){
+        const newDoc = this.editor.cloneDocument();
+        const {buffer, sprite} = this.clipOutSelection();
+        newDoc.selectionBuffer = buffer;
+        newDoc.selectionSprite = sprite;
+        this.editor.setDocument(newDoc);
+        this.selecting = false;
+    }
+
+    private pixelIsInsideSelection(p: Point | null){
+        return p && this.document.selectionRegion && this.document.selectionRegion.contains(p);
+    }
+
+    private dragEnded(){
+        this.dragging = false;
+        this.dragOffset = makePt(0,0);
+    }
+
+    private updateDrag(p: Point){
+
+        if(
+            !this.document.selectionRegion ||
+            !this.document.selectionSprite ||
+            !this.document.selectionBuffer
+        ){
+            throw new NoSelectionError();
+        }
+
+        const region = new Rectangle(
+            p.x - this.dragOffset.x, p.y - this.dragOffset.y,
+            this.document.selectionSprite.width, this.document.selectionSprite.height);
+
+        const base = this.document.icon;
+        const newDoc = this.editor.cloneDocument();
+
+        newDoc.selectionRegion = Rectangle.fromLTRB(
+            region.left < 0 ? 0 : region.left,
+            region.top < 0 ? 0 : region.top,
+            region.right > base.width ? base.width : region.right,
+            region.bottom > base.height ? base.height : region.bottom
+        );
+
+        newDoc.icon = IconService.blend(newDoc.selectionBuffer!, newDoc.selectionSprite!, newDoc.selectionRegion);
+
+        this.editor.setDocument(newDoc);
+
+    }
+
+    private saveDragOffset(p: Point){
+
+        if (!this.document.selectionRegion){
+            throw new NoSelectionError();
+        }
+
+        this.dragOffset = makePt(
+            p.x - this.document.selectionRegion.left,
+            p.y - this.document.selectionRegion.top
         );
     }
 
@@ -47,13 +120,17 @@ export class SelectionTool implements IconEditorTool{
 
         const p = this.controller.pointToPixel(e.point);
 
-        if (p && this.controller.selection.contains(p)){
-            // start moving
+        if (p){
+            this.startPixel = p;
+            this.editor.begin();
 
-        }else if (p) {
-            this.selStartPixel = p;
-            this.controller.selection = Rectangle.empty;
-            this.selecting = true;
+            if (this.pixelIsInsideSelection(p)){
+                this.dragging = true;
+                this.saveDragOffset(p);
+
+            }else{
+                this.selecting = true;
+            }
         }
 
         return {}
@@ -64,12 +141,16 @@ export class SelectionTool implements IconEditorTool{
         const p = this.controller.pointToPixel(e.point);
 
         if (this.selecting){
-            this.selection = this.clipOutSelection(); // TODO HERE I LEFT!
-            this.selecting = false;
+            this.selectionEnded();
         }
 
+        if (this.dragging){
+            this.dragEnded();
+        }
 
-        if (p && this.controller.selection.contains(p)){
+        this.editor.commit();
+
+        if (this.pixelIsInsideSelection(p)){
             return {cursor: 'move'};
         }
 
@@ -80,15 +161,28 @@ export class SelectionTool implements IconEditorTool{
 
         const p = this.controller.pointToPixel(e.point);
 
-        if (p && this.selecting){
-            this.updateSel(this.selStartPixel, p);
+        if (p){
 
-        }else if (p && this.controller.selection.contains(p)){
-            return {cursor: 'move'};
+            if (this.selecting) {
+                this.updateSel(this.startPixel, p);
+
+            }else if(this.dragging){
+                this.updateDrag(p);
+
+            }else if(this.pixelIsInsideSelection(p)){
+                return {cursor: 'move'};
+            }
 
         }
 
         return {cursor: 'crosshair'};
+    }
+
+    get document(): IconDocument{
+        if (!this.editor.document){
+            throw new NoDocumentError();
+        }
+        return this.editor.document;
     }
 
 }

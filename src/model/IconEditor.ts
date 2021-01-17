@@ -1,14 +1,21 @@
 import {Icon} from "./Icon";
 import {Editor, NoDocumentError} from "./Editor";
 import {CanvasSensor} from "../components/CanvasView";
+import {Rectangle} from "../hui/helpers/Rectangle";
+import {IconService} from "./IconService";
 
 export interface IconDocument{
     icon: Icon;
+    selectionRegion?: Rectangle;
+    selectionBuffer?: Icon;
+    selectionSprite?: Icon;
 }
 
 export interface IconEditorTool extends CanvasSensor{
 
 }
+
+export class NoSelectionError extends Error{}
 
 export class IconEditor extends Editor<IconDocument>{
 
@@ -18,16 +25,12 @@ export class IconEditor extends Editor<IconDocument>{
             throw new NoDocumentError();
         }
 
-        const newDocument = {...this.document};
+        const doc = this.document;
 
-        // Create Uint8Array
-        const newData = new Uint8ClampedArray(this.document.icon.data.length);
-
-        // Copy data
-        this.document.icon.data.forEach((value, i) => newData[i] = value);
-
-        // Assign new data
-        newDocument.icon = {...newDocument.icon, data: newData};
+        const newDocument = {
+            ...doc,
+            icon: IconService.clone(this.document.icon),
+        };
 
         return newDocument;
 

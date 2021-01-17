@@ -56,7 +56,6 @@ export class IconDocumentRenderer {
         readonly bounds: Rectangle,
         readonly drawBackground: boolean,
         readonly drawGrid: boolean,
-        readonly selection: Rectangle,
     ) {}
 
     private rectStroke(r: Rectangle, color: Color){
@@ -138,11 +137,17 @@ export class IconDocumentRenderer {
 
     private renderSelection(pixelSize: Size){
 
+        if (!this.document.selectionRegion){
+            return;
+        }
+
+        const selection = this.document.selectionRegion;
+
         const selBounds = new Rectangle(
-            this.bounds.left + this.selection.left * pixelSize.width,
-            this.bounds.top + this.selection.top * pixelSize.height,
-            this.selection.width * pixelSize.width,
-            this.selection.height * pixelSize.height
+            this.bounds.left + selection.left * pixelSize.width,
+            this.bounds.top + selection.top * pixelSize.height,
+            selection.width * pixelSize.width,
+            selection.height * pixelSize.height
         ).round();
 
         IconDocumentRenderer.clock++;
@@ -242,7 +247,7 @@ export class IconDocumentRenderer {
             this.renderGrid(pixelSize);
         }
 
-        if (!this.selection.isEmpty){
+        if (this.document.selectionRegion){
             this.renderSelection(pixelSize);
         }
 
