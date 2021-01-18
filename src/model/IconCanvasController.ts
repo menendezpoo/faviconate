@@ -5,39 +5,38 @@ import {
     PointingEvent,
     PointingEventResult
 } from "../components/CanvasView";
-import {IconEditor, IconEditorTool} from "./IconEditor";
+import {IconDocument, IconEditor, IconEditorTool} from "./IconEditor";
 import {PencilTool} from "./tools/PencilTool";
-import {Editor, NoDocumentError} from "./Editor";
 import {IconService} from "./IconService";
 import {IconDocumentRenderer} from "./IconDocumentRenderer";
-import {makePt, makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
+import {makePt, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 
 export class IconCanvasController implements CanvasViewController{
 
     showBackground = false;
     showGrid = false;
 
-    readonly editor: IconEditor = new IconEditor();
+    readonly editor: IconEditor;
     private _tool: IconEditorTool | null = new PencilTool(this);
     private previewBounds: Rectangle = Rectangle.empty;
     private previewPixelSize: number = 0;
 
-    constructor() {
-        this.editor.open({
-            icon: IconService.newIcon(16, 16)
-        });
+    constructor(document?: IconDocument) {
+
+        if (document){
+            this.editor = new IconEditor(document);
+        }else{
+            this.editor = new IconEditor({
+                icon: IconService.newIcon(16, 16)
+            });
+        }
 
         (window as any)._editor = this.editor;
     }
 
     pixelToData(pixel: Point): number{
-        if (this.editor.document){
-            const icon = this.editor.document.icon;
-            return icon.width * 4 * pixel.y + pixel.x * 4;
-
-        }else{
-            throw new NoDocumentError();
-        }
+        const icon = this.editor.document.icon;
+        return icon.width * 4 * pixel.y + pixel.x * 4;
     }
 
     pointToPixel(p: Point): Point | null{
@@ -71,43 +70,33 @@ export class IconCanvasController implements CanvasViewController{
 
     }
 
-    pointingGestureStart(e: PointingEvent): PointingEventResult {
+    pointingGestureStart(e: PointingEvent): PointingEventResult | void {
         if (this.tool?.pointingGestureStart){
             return this.tool.pointingGestureStart(e);
-        }else{
-            return {};
         }
     }
 
-    pointingGestureMove(e: PointingEvent): PointingEventResult {
+    pointingGestureMove(e: PointingEvent): PointingEventResult | void {
         if (this.tool?.pointingGestureMove){
             return this.tool.pointingGestureMove(e);
-        }else{
-            return {};
         }
     }
 
-    pointingGestureEnd(e: PointingEvent): PointingEventResult {
+    pointingGestureEnd(e: PointingEvent): PointingEventResult | void {
         if (this.tool?.pointingGestureEnd){
             return this.tool.pointingGestureEnd(e);
-        }else{
-            return {};
         }
     }
 
-    keyDown(e: KeyEvent): KeyEventResult {
+    keyDown(e: KeyEvent): KeyEventResult | void{
         if (this.tool?.keyDown){
             return this.tool.keyDown(e);
-        }else{
-            return {};
         }
     }
 
-    keyUp(e: KeyEvent): KeyEventResult {
+    keyUp(e: KeyEvent): KeyEventResult | void{
         if (this.tool?.keyUp){
             return this.tool.keyUp(e);
-        }else{
-            return {};
         }
     }
 
@@ -144,6 +133,19 @@ export class IconCanvasController implements CanvasViewController{
     }
 
     set tool(value: IconEditorTool | null){
+
+        if(value === this._tool){
+            return;
+        }
+
+        if (this._tool?.deactivate){
+            this._tool.deactivate();
+        }
+
         this._tool = value;
+
+        if (this._tool?.activate){
+            this._tool.activate();
+        }
     }
 }

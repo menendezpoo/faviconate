@@ -39,6 +39,17 @@ export function distance(a: Point, b: Point): number{
     return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
 }
 
+export function scaleToContain(container: Size, scalable: Size): Size{
+    const wOriented = makeSz(container.width, container.width * scalable.height / scalable.width);
+    const hOriented = makeSz(container.height * scalable.width / scalable.height, container.height);
+
+    if (wOriented.width <= container.width && wOriented.height <= container.height){
+        return wOriented;
+    }
+
+    return hOriented;
+}
+
 export class Rectangle{
 
     static get empty(): Rectangle{

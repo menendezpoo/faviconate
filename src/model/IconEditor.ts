@@ -1,5 +1,5 @@
 import {Icon} from "./Icon";
-import {Editor, NoDocumentError} from "./Editor";
+import {Editor} from "./Editor";
 import {CanvasSensor} from "../components/CanvasView";
 import {Rectangle} from "../hui/helpers/Rectangle";
 import {IconService} from "./IconService";
@@ -12,18 +12,13 @@ export interface IconDocument{
 }
 
 export interface IconEditorTool extends CanvasSensor{
-
+    activate?: () => void;
+    deactivate?: () => void;
 }
-
-export class NoSelectionError extends Error{}
 
 export class IconEditor extends Editor<IconDocument>{
 
     cloneDocument(): IconDocument{
-
-        if (!this.document){
-            throw new NoDocumentError();
-        }
 
         const doc = this.document;
 
@@ -37,10 +32,6 @@ export class IconEditor extends Editor<IconDocument>{
     }
 
     getImageCanvas(): HTMLCanvasElement{
-
-        if (!this.document){
-            throw new NoDocumentError();
-        }
 
         const canvas: HTMLCanvasElement = document.createElement('canvas');
         const icon = this.document.icon;

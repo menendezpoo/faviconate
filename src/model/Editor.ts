@@ -3,7 +3,6 @@ interface EditorTransaction<T>{
     documentState: T;
 }
 
-export class NoDocumentError extends Error{}
 export class NoTransactionError extends Error{}
 export class TransactionInProgressError extends Error{}
 export class UnsavedChangesError extends Error{}
@@ -11,7 +10,7 @@ export class UnsavedChangesError extends Error{}
 export class Editor<T>{
 
     private _currentTransaction: EditorTransaction<T> | null = null;
-    private _document: T | null = null;
+    private _document: T;
     private _hasChanges: boolean = false;
 
     private readonly undoStack: EditorTransaction<T>[] = [];
@@ -19,6 +18,10 @@ export class Editor<T>{
 
     public documentChanged: (() => void) | null = null;
     public documentSubmitted: (() => void) | null = null;
+
+    constructor(document: T) {
+        this._document = document;
+    }
 
     redo(): boolean{
 
@@ -62,10 +65,6 @@ export class Editor<T>{
     }
 
     begin(){
-
-        if (!this._document){
-            throw new NoDocumentError();
-        }
 
         if (this._currentTransaction){
             throw new TransactionInProgressError();
@@ -127,37 +126,6 @@ export class Editor<T>{
 
     }
 
-    open(document: T){
-
-        if (this._currentTransaction){
-            throw new TransactionInProgressError();
-        }
-
-        if (this._hasChanges){
-            throw new UnsavedChangesError();
-        }
-
-        this._document = document;
-    }
-
-    close(){
-        if (this._currentTransaction){
-            throw new TransactionInProgressError();
-        }
-
-        if (this.hasChanges){
-            throw new UnsavedChangesError();
-        }
-
-        this._document = null;
-        this._hasChanges = false;
-
-        // Empty stacks
-        while(this.redoStack.length > 0){this.redoStack.pop()}
-        while(this.undoStack.length > 0){this.redoStack.pop()}
-
-    }
-
     clearChanges(){
         this._hasChanges = false;
     }
@@ -166,7 +134,7 @@ export class Editor<T>{
         return this._currentTransaction;
     }
 
-    get document(): T | null {
+    get document(): T{
         return this._document;
     }
 

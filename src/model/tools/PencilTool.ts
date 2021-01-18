@@ -1,7 +1,6 @@
 import {IconEditorTool} from "../IconEditor";
 import {PointingEvent, PointingEventResult} from "../../components/CanvasView";
 import {IconCanvasController} from "../IconCanvasController";
-import {NoDocumentError} from "../Editor";
 import {Point} from "../../hui/helpers/Rectangle";
 import {Color} from "../../hui/helpers/Color";
 
@@ -20,24 +19,20 @@ export class PencilTool implements IconEditorTool{
             return;
         }
 
-        if (this.controller.editor.document){
 
-            const newState = this.controller.editor.cloneDocument();
-            const data = newState.icon.data;
+        const newState = this.controller.editor.cloneDocument();
+        const data = newState.icon.data;
 
-            data[index    ] = this.color.r;
-            data[index + 1] = this.color.g;
-            data[index + 2] = this.color.b;
-            data[index + 3] = Math.round(this.color.a * 255);
+        data[index    ] = this.color.r;
+        data[index + 1] = this.color.g;
+        data[index + 2] = this.color.b;
+        data[index + 3] = Math.round(this.color.a * 255);
 
-            this.controller.editor.setDocument(newState);
+        this.controller.editor.setDocument(newState);
 
-        }else{
-            throw new NoDocumentError();
-        }
     }
 
-    pointingGestureStart(e: PointingEvent): PointingEventResult {
+    pointingGestureStart(e: PointingEvent): PointingEventResult | void {
 
         this.drawing = true;
 
@@ -46,11 +41,9 @@ export class PencilTool implements IconEditorTool{
             this.drawAt(e.point);
         }
 
-        return {};
-
     }
 
-    pointingGestureMove(e: PointingEvent): PointingEventResult {
+    pointingGestureMove(e: PointingEvent): PointingEventResult | void {
 
         if (!this.drawing){
             return {cursor: 'default'};
@@ -61,7 +54,7 @@ export class PencilTool implements IconEditorTool{
         return { cursor: 'default' };
     }
 
-    pointingGestureEnd(e: PointingEvent): PointingEventResult {
+    pointingGestureEnd(e: PointingEvent): PointingEventResult | void {
 
         this.drawing = false;
 
@@ -69,7 +62,6 @@ export class PencilTool implements IconEditorTool{
             this.controller.editor.commit();
         }
 
-        return {};
     }
 
 }

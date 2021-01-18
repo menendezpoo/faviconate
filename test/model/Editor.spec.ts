@@ -1,52 +1,19 @@
 import {assert} from 'chai';
 import {
     Editor,
-    NoDocumentError,
     NoTransactionError,
     TransactionInProgressError,
-    UnsavedChangesError
 } from "../../src/model/Editor";
 import {randomInt} from "../TestUtils";
 
 describe(`model/Editor`, function (){
 
-    it('should have a null document after init', function () {
-
-        const editor = new Editor<number>();
-        assert.isNull(editor.document);
-
-    });
-
-    it('should open a document', function () {
-
-        const data = randomInt(1, 10);
-        const editor = new Editor<number>();
-
-        editor.open(data);
-
-        assert.deepStrictEqual(editor.document, data);
-
-    });
-
-    it('should close a document', function () {
-
-        const data = randomInt(0, 4);
-        const editor = new Editor<number>();
-
-        editor.open(data);
-        editor.close();
-
-        assert.isNull(editor.document);
-
-    });
-
     it('should flag changes after changing a document', function () {
 
         const a = randomInt(1, 5);
         const b = randomInt(6, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.commit();
@@ -59,9 +26,8 @@ describe(`model/Editor`, function (){
 
         const a = randomInt(1, 5);
         const b = randomInt(6, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.commit();
@@ -71,56 +37,12 @@ describe(`model/Editor`, function (){
 
     });
 
-    it('should not open a document if transaction in progress', function () {
-
-        const a = randomInt(1, 5);
-        const b = randomInt(6, 9);
-        const editor = new Editor<number>();
-
-        editor.open(a);
-        editor.begin();
-        editor.setDocument(b);
-
-        assert.throws(() => editor.open(a), TransactionInProgressError);
-    });
-
-    it('should not open a document if unsaved changes', function () {
-
-        const a = randomInt(1, 5);
-        const b = randomInt(6, 9);
-        const editor = new Editor<number>();
-
-        editor.open(a);
-        editor.begin();
-        editor.setDocument(b);
-        editor.commit();
-
-        assert.throws(() => editor.open(a), UnsavedChangesError);
-
-    });
-
-    it('should not close a document if unsaved changes', function () {
-
-        const a = randomInt(1, 5);
-        const b = randomInt(6, 9);
-        const editor = new Editor<number>();
-
-        editor.open(a);
-        editor.begin();
-        editor.setDocument(b);
-        editor.commit();
-
-        assert.throws(() => editor.close(), UnsavedChangesError);
-
-    });
-
     it('should change the document state', function () {
 
         const a = randomInt(1, 5);
         const b = randomInt(6, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
 
@@ -133,9 +55,8 @@ describe(`model/Editor`, function (){
 
         const a = randomInt(1, 5);
         const b = randomInt(6, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.rollback();
@@ -144,21 +65,11 @@ describe(`model/Editor`, function (){
 
     });
 
-    it('should reject transaction begin if no document', function () {
-
-        const editor = new Editor<number>();
-
-        assert.throws(() => editor.begin(), NoDocumentError);
-
-    });
-
     it('should reject state change without transaction', function () {
 
         const a = randomInt(0, 4);
         const b = randomInt(5, 9);
-        const editor = new Editor<number>();
-
-        editor.open(a);
+        const editor = new Editor<number>(a);
 
         assert.throws(() => editor.setDocument(b), NoTransactionError);
 
@@ -166,9 +77,8 @@ describe(`model/Editor`, function (){
 
     it('should reject beginTransaction if transaction in progress', function () {
 
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(randomInt(1, 9));
 
-        editor.open(randomInt(1, 9));
         editor.begin();
 
         assert.throws(() => editor.begin(), TransactionInProgressError);
@@ -177,7 +87,7 @@ describe(`model/Editor`, function (){
 
     it('should reject transactionCommit if no transaction in progress', function () {
 
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(0);
 
         assert.throws(() => editor.commit(), NoTransactionError);
 
@@ -185,7 +95,7 @@ describe(`model/Editor`, function (){
 
     it('should reject transactionRollback if no transaction in progress', function () {
 
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(0);
 
         assert.throws(() => editor.rollback(), NoTransactionError);
 
@@ -193,14 +103,12 @@ describe(`model/Editor`, function (){
 
     it('should accumulate undo counts as transactions are committed', function () {
 
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(randomInt(1, 10));
         const transact = () => {
             editor.begin();
             editor.setDocument(randomInt(0, 10000));
             editor.commit();
         };
-
-        editor.open(randomInt(1, 10));
 
         assert.strictEqual(editor.undoCount, 0);
 
@@ -218,9 +126,8 @@ describe(`model/Editor`, function (){
 
         const a = randomInt(0, 4);
         const b = randomInt(5, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.commit();
@@ -237,9 +144,8 @@ describe(`model/Editor`, function (){
     it('should redo a document action', function () {
         const a = randomInt(0, 4);
         const b = randomInt(5, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.commit();
@@ -255,9 +161,8 @@ describe(`model/Editor`, function (){
     it('should undo after a redo a document action', function () {
         const a = randomInt(0, 4);
         const b = randomInt(5, 9);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.commit();
@@ -277,9 +182,8 @@ describe(`model/Editor`, function (){
         const a = randomInt(0, 4);
         const b = randomInt(5, 9);
         const c = randomInt(10, 15);
-        const editor = new Editor<number>();
+        const editor = new Editor<number>(a);
 
-        editor.open(a);
         editor.begin();
         editor.setDocument(b);
         editor.commit();

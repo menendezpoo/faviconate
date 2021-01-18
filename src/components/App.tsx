@@ -12,6 +12,9 @@ import {ColorPicker} from "../hui/items/ColorPicker";
 import {PreviewPanel} from "./PreviewPanel";
 import {IconEditorTool} from "../model/IconEditor";
 import {SelectionTool} from "../model/tools/SelectionTool";
+import {IconService} from "../model/IconService";
+import {makeSz} from "../hui/helpers/Rectangle";
+import {MenuItem} from "../hui/items/MenuItem";
 
 function changeFavicon(src: string) {
     const link = document.createElement('link'),
@@ -28,6 +31,7 @@ function changeFavicon(src: string) {
 export interface AppProps{}
 
 export interface AppState{
+    controller: IconCanvasController;
     selectedTool: IconEditorTool | null;
     previewCanvas: HTMLCanvasElement | null;
     undos: number;
@@ -38,12 +42,11 @@ export interface AppState{
 
 export class App extends React.Component<AppProps, AppState>{
 
-    readonly controller = new IconCanvasController();
-
     constructor(props: AppProps) {
         super(props);
 
         this.state = {
+            controller: new IconCanvasController(),
             previewCanvas: null,
             selectedTool: null,
             undos: 0,
@@ -55,51 +58,113 @@ export class App extends React.Component<AppProps, AppState>{
         this.usePen();
     }
 
+    private appDragOver(e: React.DragEvent<HTMLDivElement>){
+        e.preventDefault();
+    }
+
+    private appDrop(e: React.DragEvent<HTMLDivElement>){
+        e.preventDefault();
+
+        if (e.dataTransfer.items){
+            for (let i = 0; i < e.dataTransfer.items.length; i++){
+                const item = e.dataTransfer.items[i];
+                const file = item.getAsFile();
+
+                if (file){
+                    console.log(`${file.name} -> ${file.size}`);
+                    this.importFile(file);
+                }else{
+                    console.log(`Can't get as file`)
+                }
+
+                break;
+            }
+        }else{
+            console.log(`No transfer items`)
+        }
+
+    }
+
+    private importFile(file: File){
+
+        const controller = this.state.controller;
+        const icon = controller.editor.document.icon;
+        const size = makeSz(icon.width, icon.height);
+
+        IconService.fromFile(file, size).then(sprite => {
+            this.setState({selectedTool: null});
+
+            setTimeout(() => {
+
+                this.setState({selectedTool: new SelectionTool(controller, sprite)});
+
+                const nodes = document.getElementsByTagName('canvas');
+                if (nodes.length > 0){
+                    nodes[0].focus();
+                }else{
+                    console.log(`no canvas found`)
+                }
+            });
+        });
+
+    }
+
     private useEraser(){
-        this.setState({selectedTool: new EraserTool(this.controller)});
+        this.setState({selectedTool: new EraserTool(this.state.controller)});
     }
 
     private usePen(){
-        const pen = new PencilTool(this.controller);
+        const pen = new PencilTool(this.state.controller);
         this.setState({selectedTool: pen});
 
     }
 
     private useSelection(){
-        this.setState({selectedTool: new SelectionTool(this.controller)});
+        this.setState({selectedTool: new SelectionTool(this.state.controller)});
     }
 
     private colorPick(color: Color){
-        if (this.controller.tool instanceof PencilTool){
-            const p: PencilTool = this.controller.tool as PencilTool;
+        if (this.state.controller.tool instanceof PencilTool){
+            const p: PencilTool = this.state.controller.tool as PencilTool;
             p.color = color;
         }
     }
 
     private undo(){
-        this.controller.editor.undo();
+        this.state.controller.editor.undo();
         const undos = this.state.undos + 1;
         this.setState({undos});
     }
 
     private redo(){
-        this.controller.editor.redo();
+        this.state.controller.editor.redo();
         const redos = this.state.redos + 1;
         this.setState({redos});
     }
 
-    componentDidMount() {
-        this.controller.editor.documentSubmitted = () => {
-            this.setState({previewCanvas: this.controller.editor.getImageCanvas()});
-        };
+    private newDocument(size: number){
+
+        console.log(`New Doc: ${size}`)
+
+        const icon = IconService.newIcon(size, size)
+        const doc = {icon};
+        const controller = new IconCanvasController(doc);
+
+        this.setState({controller, previewCanvas: controller.editor.getImageCanvas()});
     }
 
     render() {
 
-        const controller = this.controller;
+        const controller = this.state.controller;
 
         const mainToolbarItems = <>
-            <Button text={`Faviconate`}/>
+            <Button text={`Faviconate`}>
+                <MenuItem text={`New 16x16 Icon`} onActivate={() => this.newDocument(16)}/>
+                <MenuItem text={`New 32x32 Icon`} onActivate={() => this.newDocument(32)}/>
+                <MenuItem text={`New 64x64 Icon`} onActivate={() => this.newDocument(64)}/>
+                <MenuItem text={`New 128x128 Icon`} onActivate={() => this.newDocument(128)}/>
+                <MenuItem text={`New 256x256 Icon`} onActivate={() => this.newDocument(256)}/>
+            </Button>
             <Separator/>
             <Button text={`Undo`} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
             <Button text={`Redo`} onClick={() => this.redo()} disabled={controller.editor.redoCount == 0}/>
@@ -139,15 +204,23 @@ export class App extends React.Component<AppProps, AppState>{
             <ColorPicker colorPicked={color => this.colorPick(color) } />
         </>;
 
+        this.state.controller.editor.documentSubmitted = () => {
+            this.setState({previewCanvas: this.state.controller.editor.getImageCanvas()});
+        };
+
         if (this.state.previewCanvas){
             changeFavicon(this.state.previewCanvas.toDataURL());
         }
 
-        this.controller.tool = this.state.selectedTool;
-        this.controller.showBackground = this.state.showBackground;
-        this.controller.showGrid = this.state.showGrid;
+        controller.tool = this.state.selectedTool;
+        controller.showBackground = this.state.showBackground;
+        controller.showGrid = this.state.showGrid;
 
         return (
+            <div id={`app`}
+                 onDragOver={e => this.appDragOver(e)}
+                 onDrop={e => this.appDrop(e)}
+            >
             <ToolbarView items={mainToolbarItems}>
                 <DockView side={`right`} sideView={sideBar}>
                     <ToolbarView side={`left`} items={toolToolbarItems}>
@@ -155,6 +228,7 @@ export class App extends React.Component<AppProps, AppState>{
                     </ToolbarView>
                 </DockView>
             </ToolbarView>
+            </div>
         );
     }
 

@@ -14,8 +14,7 @@ describe('model/IconEditor', function () {
             data: new Uint8ClampedArray(4)
         }
 
-        const editor = new IconEditor();
-        editor.open({icon});
+        const editor = new IconEditor({icon});
 
         icon.data[0] = 1;
 

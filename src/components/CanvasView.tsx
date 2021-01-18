@@ -16,15 +16,15 @@ export interface KeyEvent{
 }
 
 export interface KeyEventResult{
-
+    preventDefault?: boolean;
 }
 
 export interface CanvasSensor{
-    pointingGestureMove?     (e: PointingEvent):    PointingEventResult;
-    pointingGestureStart?    (e: PointingEvent):    PointingEventResult;
-    pointingGestureEnd?      (e: PointingEvent):    PointingEventResult;
-    keyDown?                 (e: KeyEvent):         KeyEventResult;
-    keyUp?                   (e: KeyEvent):         KeyEventResult;
+    pointingGestureMove?     (e: PointingEvent):    PointingEventResult | void;
+    pointingGestureStart?    (e: PointingEvent):    PointingEventResult | void;
+    pointingGestureEnd?      (e: PointingEvent):    PointingEventResult | void;
+    keyDown?                 (e: KeyEvent):         KeyEventResult | void;
+    keyUp?                   (e: KeyEvent):         KeyEventResult | void;
 }
 
 export interface CanvasViewController extends CanvasSensor{
@@ -39,17 +39,17 @@ export class CanvasView extends React.Component<CanvasViewProps>{
 
     readonly containerRef: RefObject<HTMLDivElement> = React.createRef();
     readonly canvasRef: RefObject<HTMLCanvasElement> = React.createRef();
-    readonly controller: CanvasViewController;
 
     private canvasSize: Size = makeSz(0,0);
     private _cursor: string | null = null;
     private resizer = () => this.updateCanvasSize();
-    private catcher = (e: MouseEvent) => this.mouseUp(e);
+    private mouseUpCatcher = (e: MouseEvent) => this.mouseUp(e);
+    private keyDownCatcher = (e: KeyboardEvent) => this.keyDown(e);
+    private keyUpCatcher = (e: KeyboardEvent) => this.keyUp(e);
 
     constructor(props: CanvasViewProps) {
         super(props);
 
-        this.controller = props.controller;
     }
 
     private canvasPoint(clientX: number, clientY: number): Point{
@@ -95,7 +95,7 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             this.controller.pointingGestureStart({point, touch: false});
         }
 
-        document.body.addEventListener('mouseup', this.catcher);
+        document.body.addEventListener('mouseup', this.mouseUpCatcher);
 
     }
 
@@ -106,7 +106,7 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             this.controller.pointingGestureEnd({point, touch: false});
         }
 
-        document.body.removeEventListener(`mouseup`, this.catcher);
+        document.body.removeEventListener(`mouseup`, this.mouseUpCatcher);
     }
 
     private mouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>){
@@ -115,7 +115,7 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             const point = this.canvasPoint(e.clientX, e.clientY);
             const result = this.controller.pointingGestureMove({point, touch: false});
 
-            if (result.cursor){
+            if (result && result.cursor){
                 this.cursor = result.cursor;
             }
         }
@@ -156,15 +156,23 @@ export class CanvasView extends React.Component<CanvasViewProps>{
 
     }
 
-    private keyDown(e: React.KeyboardEvent){
+    private keyDown(e: KeyboardEvent){
         if (this.controller.keyDown){
-            this.controller.keyDown({key: e.key});
+            const result = this.controller.keyDown({key: e.key});
+
+            if (result && result.preventDefault === true){
+                e.preventDefault();
+            }
         }
     }
 
-    private keyUp(e: React.KeyboardEvent){
+    private keyUp(e: KeyboardEvent){
         if (this.controller.keyUp){
-            this.controller.keyUp({key: e.key});
+            const result = this.controller.keyUp({key: e.key});
+
+            if (result && result.preventDefault === true){
+                e.preventDefault();
+            }
         }
     }
 
@@ -181,8 +189,6 @@ export class CanvasView extends React.Component<CanvasViewProps>{
                     requestAnimationFrame(draw);
                 };
 
-                console.log(`Start draw...`, this.canvasSize);
-
                 requestAnimationFrame(() => draw());
 
             }else{
@@ -191,14 +197,25 @@ export class CanvasView extends React.Component<CanvasViewProps>{
         }else{
             console.log(`No canvasRef`);
         }
+
     }
 
     componentWillMount(): void {
         this.registerResizeHook();
+
+        document.addEventListener('keyup', this.keyUpCatcher);
+        document.addEventListener('keydown', this.keyDownCatcher);
     }
 
     componentWillUnmount(): void {
         this.unRegisterResizeHook();
+
+        document.removeEventListener('keyup', this.keyUpCatcher);
+        document.removeEventListener('keydown', this.keyDownCatcher);
+    }
+
+    componentDidUpdate(prevProps: Readonly<CanvasViewProps>, prevState: Readonly<{}>, snapshot?: any) {
+
     }
 
     render() {
@@ -206,17 +223,19 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             <div ref={this.containerRef} className={`canvas-view`}>
                 <canvas
                     ref={this.canvasRef}
+                    tabIndex={0}
                     onMouseDown={e => this.mouseDown(e)}
                     onMouseMove={e => this.mouseMove(e)}
-                    // onMouseUp={e => this.mouseUp(e)}
                     onTouchStart={e => this.touchStart(e)}
                     onTouchMove={e => this.touchMove(e)}
                     onTouchEnd={e => this.touchEnd(e)}
-                    onKeyDown={e => this.keyDown(e)}
-                    onKeyUp={e => this.keyUp(e)}
                 ></canvas>
             </div>
         );
+    }
+
+    get controller(): CanvasViewController{
+        return this.props.controller;
     }
 
     get cursor(): string | null{
