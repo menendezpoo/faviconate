@@ -151,8 +151,8 @@ export class SelectionTool implements IconEditorTool{
 
         const newDoc = this.editor.cloneDocument();
 
-        newDoc.selectionSprite = newDoc.selectionBuffer = undefined;
-        newDoc.icon = this.clipOutSelection().buffer;
+        newDoc.icon = newDoc.selectionBuffer!;
+        newDoc.selectionSprite = newDoc.selectionBuffer = newDoc.selectionRegion = undefined;
 
         this.editor.begin();
         this.editor.setDocument(newDoc);
