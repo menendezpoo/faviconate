@@ -8,20 +8,16 @@ import {NoSelectionError} from "../errors";
 
 export class SelectionTool implements IconEditorTool{
 
-    static id = 0;
 
     private selecting = false;
     private dragging = false;
     private dragOffset: Point = makePt(0, 0);
     private startPixel = makePt(0,0);
-    private _id: number;
 
     readonly editor: IconEditor;
 
     constructor(readonly controller: IconCanvasController, sprite?: Icon) {
         this.editor = controller.editor;
-        this._id = ++SelectionTool.id;
-        console.log(`Created ${this._id}`);
 
         if (sprite){
             this.pasteSprite(sprite);
@@ -62,6 +58,11 @@ export class SelectionTool implements IconEditorTool{
     }
 
     private selectionEnded(){
+
+        if (!this.document.selectionRegion || this.document.selectionRegion.isEmpty){
+            return;
+        }
+
         const newDoc = this.editor.cloneDocument();
         const {buffer, sprite} = this.clipOutSelection();
         newDoc.selectionBuffer = buffer;
@@ -124,10 +125,6 @@ export class SelectionTool implements IconEditorTool{
             p.x - this.document.selectionRegion.left,
             p.y - this.document.selectionRegion.top
         );
-    }
-
-    activate(){
-        SelectionTool.id++;
     }
 
     clearSelection(){

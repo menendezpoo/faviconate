@@ -119,8 +119,10 @@ export class IconDocumentRenderer {
         ctx.strokeStyle = GRID_INT.cssRgba;
         ctx.stroke();
 
-        this.rectStroke(this.bounds, GRID_OUT);
+    }
 
+    private renderFrame(){
+        this.rectStroke(this.bounds, GRID_OUT);
     }
 
     private renderChecker(){
@@ -246,6 +248,8 @@ export class IconDocumentRenderer {
         if (this.drawGrid){
             this.renderGrid(pixelSize);
         }
+
+        this.renderFrame();
 
         if (this.document.selectionRegion){
             this.renderSelection(pixelSize);

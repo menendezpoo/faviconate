@@ -36,7 +36,7 @@ export class PencilTool implements IconEditorTool{
 
         this.drawing = true;
 
-        if (this.controller.editor.document && !this.controller.editor.currentTransaction){
+        if (!this.controller.editor.currentTransaction){
             this.controller.editor.begin();
             this.drawAt(e.point);
         }
@@ -45,22 +45,16 @@ export class PencilTool implements IconEditorTool{
 
     pointingGestureMove(e: PointingEvent): PointingEventResult | void {
 
-        if (!this.drawing){
-            return {cursor: 'default'};
+        if (this.drawing){
+            this.drawAt(e.point);
         }
 
-        this.drawAt(e.point);
-
-        return { cursor: 'default' };
     }
 
     pointingGestureEnd(e: PointingEvent): PointingEventResult | void {
 
         this.drawing = false;
-
-        if (this.controller.editor.document){
-            this.controller.editor.commit();
-        }
+        this.controller.editor.commit();
 
     }
 

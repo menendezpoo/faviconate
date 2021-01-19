@@ -117,6 +117,8 @@ export class CanvasView extends React.Component<CanvasViewProps>{
 
             if (result && result.cursor){
                 this.cursor = result.cursor;
+            }else{
+                this.cursor = 'default';
             }
         }
     }
@@ -156,8 +158,15 @@ export class CanvasView extends React.Component<CanvasViewProps>{
 
     }
 
+    private ignoreKey(): boolean{
+        const focused = document.querySelector("*:focus");
+
+        return !!focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA');
+    }
+
     private keyDown(e: KeyboardEvent){
-        if (this.controller.keyDown){
+
+        if (!this.ignoreKey() && this.controller.keyDown){
             const result = this.controller.keyDown({key: e.key});
 
             if (result && result.preventDefault === true){
@@ -167,7 +176,7 @@ export class CanvasView extends React.Component<CanvasViewProps>{
     }
 
     private keyUp(e: KeyboardEvent){
-        if (this.controller.keyUp){
+        if (!this.ignoreKey() && this.controller.keyUp){
             const result = this.controller.keyUp({key: e.key});
 
             if (result && result.preventDefault === true){

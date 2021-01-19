@@ -45,10 +45,13 @@ export class App extends React.Component<AppProps, AppState>{
     constructor(props: AppProps) {
         super(props);
 
+        const controller = new IconCanvasController();
+        const selectedTool = new SelectionTool(controller);
+
         this.state = {
-            controller: new IconCanvasController(),
+            controller,
             previewCanvas: null,
-            selectedTool: null,
+            selectedTool,
             undos: 0,
             redos: 0,
             showBackground: true,
@@ -133,13 +136,24 @@ export class App extends React.Component<AppProps, AppState>{
     private undo(){
         this.state.controller.editor.undo();
         const undos = this.state.undos + 1;
-        this.setState({undos});
+
+        if (this.state.controller.editor.undoPeek?.selectionRegion && !(this.state.selectedTool instanceof SelectionTool)){
+            this.setState({undos, selectedTool: new SelectionTool(this.state.controller)});
+        }else{
+            this.setState({undos});
+        }
+
     }
 
     private redo(){
         this.state.controller.editor.redo();
         const redos = this.state.redos + 1;
-        this.setState({redos});
+
+        if (this.state.controller.editor.redoPeek?.selectionRegion && !(this.state.selectedTool instanceof SelectionTool)){
+            this.setState({redos, selectedTool: new SelectionTool(this.state.controller)});
+        }else{
+            this.setState({redos});
+        }
     }
 
     private newDocument(size: number){
@@ -151,6 +165,48 @@ export class App extends React.Component<AppProps, AppState>{
         const controller = new IconCanvasController(doc);
 
         this.setState({controller, previewCanvas: controller.editor.getImageCanvas()});
+    }
+
+    componentDidMount() {
+        document.addEventListener('keydown', e => {
+
+            const focused = document.querySelector("*:focus");
+
+            if (focused && (focused.tagName == 'INPUT' || focused.tagName == 'TEXTAREA')){
+                return;
+            }
+
+            if (e.key == 'z' && e.ctrlKey && e.shiftKey){
+                this.redo();
+                e.preventDefault();
+
+            }else if(e.key == 'z' && e.ctrlKey){
+                this.undo();
+                e.preventDefault();
+
+            }else if(e.key === 'v' && !e.ctrlKey){
+                this.useSelection();
+                e.preventDefault();
+
+            }else if((e.key === 'p' || e.key == 'd') && !e.ctrlKey){
+                this.usePen();
+                e.preventDefault();
+
+            }else if(e.key === 'e' && !e.ctrlKey){
+                this.useEraser();
+                e.preventDefault();
+
+            }else if(e.key === 'b' && !e.ctrlKey){
+                this.setState({showBackground: !this.state.showBackground});
+                e.preventDefault();
+
+            }else if(e.key === 'g' && !e.ctrlKey){
+                this.setState({showGrid: !this.state.showGrid});
+                e.preventDefault();
+
+            }
+
+        });
     }
 
     render() {

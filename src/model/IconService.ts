@@ -50,21 +50,10 @@ export class IconService{
 
     static fromImage(image: HTMLImageElement, newSize: Size): Icon{
 
-        const canvas: HTMLCanvasElement = document.createElement('canvas');
         const model: IconColorModel = 'rgba';
         const width = newSize.width;
         const height = newSize.height;
-        const cx = canvas.getContext('2d');
-
-        if (!cx){
-            throw new MemoryError();
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        cx.drawImage(image, 0, 0, width, height);
-
-        const data = cx.getImageData(0,0, width, height).data;
+        const data = ImageService.resize(image, newSize);
 
         return {width, height, model, data};
 

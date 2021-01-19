@@ -146,8 +146,22 @@ export class Editor<T>{
         return this.redoStack.length;
     }
 
+    get redoPeek(): T | null{
+        if (this.redoStack.length > 0){
+            return this.redoStack[this.redoStack.length - 1].documentState;
+        }
+        return null;
+    }
+
     get undoCount(): number{
         return this.undoStack.length;
+    }
+
+    get undoPeek(): T | null{
+        if (this.undoStack.length > 0){
+            return this.undoStack[this.undoStack.length - 1].documentState;
+        }
+        return null;
     }
 
 }
