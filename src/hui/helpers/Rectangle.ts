@@ -40,6 +40,7 @@ export function distance(a: Point, b: Point): number{
 }
 
 export function scaleToContain(container: Size, scalable: Size): Size{
+
     const wOriented = makeSz(container.width, container.width * scalable.height / scalable.width);
     const hOriented = makeSz(container.height * scalable.width / scalable.height, container.height);
 

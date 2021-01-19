@@ -16,12 +16,8 @@ export class SelectionTool implements IconEditorTool{
 
     readonly editor: IconEditor;
 
-    constructor(readonly controller: IconCanvasController, sprite?: Icon) {
+    constructor(readonly controller: IconCanvasController) {
         this.editor = controller.editor;
-
-        if (sprite){
-            this.pasteSprite(sprite);
-        }
     }
 
     private clipOutSelection(): {buffer: Icon, sprite: Icon}{
@@ -154,23 +150,6 @@ export class SelectionTool implements IconEditorTool{
         this.editor.begin();
         this.editor.setDocument(newDoc);
         this.editor.commit();
-    }
-
-    pasteSprite(sprite: Icon){
-
-        const newDoc = this.editor.cloneDocument();
-        const containerRec = new Rectangle(0 ,0, newDoc.icon.width, newDoc.icon.height);
-        const spriteRect = new Rectangle(0, 0, sprite.width, sprite.height)
-                                    .centerAt(containerRec.center).round();
-
-        newDoc.selectionRegion = spriteRect;
-        newDoc.selectionSprite = sprite;
-        newDoc.selectionBuffer = newDoc.icon;
-        newDoc.icon = IconService.blend(newDoc.selectionBuffer, newDoc.selectionSprite, newDoc.selectionRegion);
-
-        this.controller.editor.begin();
-        this.controller.editor.setDocument(newDoc);
-        this.controller.editor.commit();
     }
 
     pointingGestureStart(e: PointingEvent): PointingEventResult | void{

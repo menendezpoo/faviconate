@@ -4,6 +4,12 @@ import {CanvasSensor} from "../components/CanvasView";
 import {Rectangle} from "../hui/helpers/Rectangle";
 import {IconService} from "./IconService";
 
+
+
+declare interface ClipboardItem{
+    ClipboardItem: (data: any) => ClipboardItem;
+}
+
 export interface IconDocument{
     icon: Icon;
     selectionRegion?: Rectangle;
@@ -28,7 +34,6 @@ export class IconEditor extends Editor<IconDocument>{
         };
 
         return newDocument;
-
     }
 
     getImageCanvas(): HTMLCanvasElement{

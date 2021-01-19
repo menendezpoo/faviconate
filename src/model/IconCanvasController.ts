@@ -9,7 +9,20 @@ import {IconDocument, IconEditor, IconEditorTool} from "./IconEditor";
 import {PencilTool} from "./tools/PencilTool";
 import {IconService} from "./IconService";
 import {IconDocumentRenderer} from "./IconDocumentRenderer";
-import {makePt, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
+import {makePt, makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
+import {SelectionTool} from "./tools/SelectionTool";
+import {Icon} from "./Icon";
+import {ClipboardService} from "./ClipboardService";
+
+const MIME_PNG = "image/png";
+const MIME_JPG = "image/jpeg";
+const MIME_GIF = "image/gif";
+
+export interface PasteResult{
+    tool?: IconEditorTool;
+    success: boolean;
+    warnings: string[];
+}
 
 export class IconCanvasController implements CanvasViewController{
 
@@ -32,6 +45,70 @@ export class IconCanvasController implements CanvasViewController{
         }
 
         (window as any)._editor = this.editor;
+    }
+
+    async copy(): Promise<void>{
+
+        if (!this.editor.document.selectionSprite){
+            return Promise.resolve();
+        }
+
+        const blob = await IconService.asBlob(this.editor.document.selectionSprite, MIME_PNG);
+
+        return ClipboardService.copyBlob(blob, MIME_PNG);
+
+    }
+
+    async paste(): Promise<PasteResult>{
+
+        let success = false;
+        let tool: IconEditorTool | undefined;
+        let warnings: string[] = [];
+
+        try{
+            const blob = await ClipboardService.pasteBlob();
+            tool = await this.importFile(blob);
+            success = true;
+
+        }catch(e){
+            warnings = [...e];
+        }
+
+
+        return {success, tool, warnings};
+    }
+
+    async importFile(file: Blob): Promise<SelectionTool>{
+        const icon = this.editor.document.icon;
+        const size = makeSz(icon.width, icon.height);
+        const sprite = await IconService.fromFile(file, size);
+
+        this.pasteSprite(sprite);
+
+        if (this.tool instanceof SelectionTool){
+            return this.tool;
+        }
+
+        const tool = new SelectionTool(this);
+        this.tool = tool;
+        return tool;
+    }
+
+    pasteSprite(sprite: Icon){
+
+        const newDoc = this.editor.cloneDocument();
+        const containerRec = new Rectangle(0 ,0, newDoc.icon.width, newDoc.icon.height);
+        const spriteRect = new Rectangle(0, 0, sprite.width, sprite.height)
+            .centerAt(containerRec.center).round();
+
+        newDoc.selectionRegion = spriteRect;
+        newDoc.selectionSprite = sprite;
+        newDoc.selectionBuffer = newDoc.icon;
+        newDoc.icon = IconService.blend(newDoc.selectionBuffer, newDoc.selectionSprite, newDoc.selectionRegion);
+
+        this.editor.begin();
+        this.editor.setDocument(newDoc);
+        this.editor.commit();
     }
 
     pixelToData(pixel: Point): number{

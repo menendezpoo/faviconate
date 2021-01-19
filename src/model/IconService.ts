@@ -1,13 +1,51 @@
 import {Icon, IconColorModel} from "./Icon";
 import {makePt, makeSz, Point, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
-import {InvalidImageError, InvalidRegionError, MemoryError} from "./errors";
+import {InvalidRegionError, MemoryError} from "./errors";
 import {ImageService} from "./ImageService";
 
 export class IconService{
 
     static clone(icon: Icon): Icon{
         return {...icon, data: new Uint8ClampedArray(icon.data)};
+    }
+
+    static asCanvas(icon: Icon): HTMLCanvasElement{
+
+        const canvas: HTMLCanvasElement = document.createElement('canvas');
+        canvas.width = icon.width;
+        canvas.height = icon.height;
+
+        const cx = canvas.getContext('2d');
+
+        if (!cx){
+            throw new MemoryError();
+        }
+
+        cx.putImageData(this.asImageData(icon), 0, 0);
+
+        return canvas;
+
+    }
+
+    static asBlob(icon: Icon, mime: string): Promise<Blob>{
+        return new Promise<Blob>((resolve, reject) => {
+
+            const canvas = this.asCanvas(icon);
+
+            canvas.toBlob(blob => {
+                if (blob){
+                    resolve(blob);
+                }else{
+                    reject(new MemoryError());
+                }
+            }, mime);
+
+        });
+    }
+
+    static asImageData(icon: Icon): ImageData{
+        return new ImageData(icon.data, icon.width);
     }
 
     static fromCanvas(canvas: HTMLCanvasElement, cx: CanvasRenderingContext2D | null = null): Icon{
@@ -59,14 +97,15 @@ export class IconService{
 
     }
 
-    static async fromFile(file: File, contain?: Size): Promise<Icon>{
+    static async fromFile(file: Blob, contain?: Size): Promise<Icon>{
 
         const image = await ImageService.fromFile(file);
         let width = image.width;
         let height = image.height;
 
         if (contain){
-            const contained = scaleToContain(contain, makeSz(width, height));
+            const actual = makeSz(width, height);
+            const contained = actual.width > contain.width && actual.height > contain.height ?  scaleToContain(contain, actual) : actual;
             width = Math.round(contained.width);
             height = Math.round(contained.height);
         }
@@ -145,6 +184,9 @@ export class IconService{
                 buffer.data[baseIndex + 1] = blend(baseG, spG, spA);
                 buffer.data[baseIndex + 2] = blend(baseB, spB, spA);
                 buffer.data[baseIndex + 3] = Math.max(baseA, spA);
+
+                // Hack note: this is not good alpha compositing
+                // In the future this should be better.
             }
         }
 

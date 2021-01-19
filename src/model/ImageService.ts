@@ -1,11 +1,12 @@
 import {FileError, InvalidImageError, MemoryError} from "./errors";
 import {makeSz, scaleToContain, Size} from "../hui/helpers/Rectangle";
+import {Icon} from "./Icon";
 
 const REDUCE_MARGIN = 256;
 
 export class ImageService{
 
-    static fromFile(file: File): Promise<HTMLImageElement>{
+    static fromFile(file: Blob): Promise<HTMLImageElement>{
         return new Promise<HTMLImageElement>((resolve, reject) => {
 
             const reader = new FileReader();

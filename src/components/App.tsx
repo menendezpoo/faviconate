@@ -88,28 +88,35 @@ export class App extends React.Component<AppProps, AppState>{
 
     }
 
-    private importFile(file: File){
+    private copy(){
+        this.state.controller.copy()
+            .then(() => console.log("Copied"))
+            .catch(e => console.log(`Not copied: ${e}`));
+    }
 
-        const controller = this.state.controller;
-        const icon = controller.editor.document.icon;
-        const size = makeSz(icon.width, icon.height);
+    private paste(){
+        this.state.controller.paste()
+            .then(r => {
 
-        IconService.fromFile(file, size).then(sprite => {
-            this.setState({selectedTool: null});
+                console.log(`Pasted`);
+                console.log(` - Success: ${r.success}`);
 
-            setTimeout(() => {
-
-                this.setState({selectedTool: new SelectionTool(controller, sprite)});
-
-                const nodes = document.getElementsByTagName('canvas');
-                if (nodes.length > 0){
-                    nodes[0].focus();
-                }else{
-                    console.log(`no canvas found`)
+                if (r.warnings.length > 0){
+                    console.log(` - Warnings: ${r.warnings.length}`);
+                    r.warnings.forEach(w => console.log(`   - ${w}`))
                 }
-            });
-        });
 
+                if (r.success && r.tool){
+                    this.setState({selectedTool: r.tool});
+                }
+
+            })
+            .catch(e => console.log(`Not pasted: ${e}`));
+    }
+
+    private importFile(file: File){
+        this.state.controller.importFile(file)
+            .then(selectedTool => this.setState({selectedTool}));
     }
 
     private useEraser(){
@@ -176,32 +183,42 @@ export class App extends React.Component<AppProps, AppState>{
                 return;
             }
 
-            if (e.key == 'z' && e.ctrlKey && e.shiftKey){
+            const ctrlMeta = e.ctrlKey || e.metaKey;
+
+            if (e.key == 'z' && ctrlMeta && e.shiftKey){
                 this.redo();
                 e.preventDefault();
 
-            }else if(e.key == 'z' && e.ctrlKey){
+            }else if(e.key == 'z' && ctrlMeta){
                 this.undo();
                 e.preventDefault();
 
-            }else if(e.key === 'v' && !e.ctrlKey){
+            }else if(e.key === 'v' && !ctrlMeta){
                 this.useSelection();
                 e.preventDefault();
 
-            }else if((e.key === 'p' || e.key == 'd') && !e.ctrlKey){
+            }else if((e.key === 'p' || e.key == 'd') && !ctrlMeta){
                 this.usePen();
                 e.preventDefault();
 
-            }else if(e.key === 'e' && !e.ctrlKey){
+            }else if(e.key === 'e' && !ctrlMeta){
                 this.useEraser();
                 e.preventDefault();
 
-            }else if(e.key === 'b' && !e.ctrlKey){
+            }else if(e.key === 'b' && !ctrlMeta){
                 this.setState({showBackground: !this.state.showBackground});
                 e.preventDefault();
 
-            }else if(e.key === 'g' && !e.ctrlKey){
+            }else if(e.key === 'g' && !ctrlMeta){
                 this.setState({showGrid: !this.state.showGrid});
+                e.preventDefault();
+
+            }else if(e.key === 'c' && ctrlMeta){
+                this.copy();
+                e.preventDefault();
+
+            }else if(e.key === 'v' && ctrlMeta){
+                this.paste();
                 e.preventDefault();
 
             }
