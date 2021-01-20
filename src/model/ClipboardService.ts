@@ -1,9 +1,35 @@
 
 const MIME_PNG = "image/png";
 
+export class ClipboardEmptyError extends Error{}
+
 export class ClipboardService {
 
+    private static buffer: Blob | null;
+
     static async copyBlob(blob: Blob, mime: string): Promise<void> {
+
+        try{
+            await this.systemCopyBlob(blob, mime);
+        }catch(e){
+            this.buffer = blob;
+        }
+
+    }
+
+    static async pasteBlob(): Promise<Blob> {
+        try{
+            return await this.systemPasteBlob();
+        }catch(e){
+            if (this.buffer){
+                return this.buffer;
+            }else{
+                return Promise.reject(new ClipboardEmptyError());
+            }
+        }
+    }
+
+    static async systemCopyBlob(blob: Blob, mime: string): Promise<void> {
 
         const ctorName = 'ClipboardItem';
 
@@ -24,7 +50,7 @@ export class ClipboardService {
 
     }
 
-    static async pasteBlob(): Promise<Blob> {
+    static async systemPasteBlob(): Promise<Blob> {
         const data: any | undefined = await (navigator.clipboard as any).read();
         let warnings: string[] = [];
 
@@ -50,9 +76,11 @@ export class ClipboardService {
                 }
             }
         }else{
-            warnings.push(`No data items to paste`);
+            return Promise.reject(new ClipboardEmptyError());
         }
 
         return Promise.reject(warnings);
     }
+
+
 }

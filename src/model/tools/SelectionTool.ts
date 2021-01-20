@@ -40,7 +40,7 @@ export class SelectionTool implements IconEditorTool{
         return {buffer, sprite};
     }
 
-    private updateSel(a: Point, b: Point){
+    private updateSelRegion(a: Point, b: Point){
         const newDoc = this.editor.cloneDocument();
 
         newDoc.selectionRegion = Rectangle.fromLTRB(
@@ -78,6 +78,12 @@ export class SelectionTool implements IconEditorTool{
 
     private updateDrag(p: Point){
 
+        this.moveSelection(p.x - this.dragOffset.x, p.y - this.dragOffset.y);
+
+    }
+
+    private moveSelection(x: number, y: number){
+
         if(
             !this.document.selectionRegion ||
             !this.document.selectionSprite ||
@@ -86,28 +92,59 @@ export class SelectionTool implements IconEditorTool{
             throw new NoSelectionError();
         }
 
-        const region = new Rectangle(
-            p.x - this.dragOffset.x, p.y - this.dragOffset.y,
-            this.document.selectionSprite.width, this.document.selectionSprite.height);
-
         const base = this.document.icon;
-        const newDoc = this.editor.cloneDocument();
-        const spriteOffset = makePt(
-           region.left < 0 ? Math.abs(region.left) : 0,
-           region.top < 0 ? Math.abs(region.top) : 0
-        );
+        const buffer: Icon = this.document.selectionBuffer;
+        const sprite: Icon = this.document.selectionSprite;
 
-        newDoc.selectionRegion = Rectangle.fromLTRB(
+        x = Math.max(-sprite.width, x);
+        x = Math.min(base.width, x);
+        y = Math.max(-sprite.height, y);
+        y = Math.min(base.height, y);
+
+        const region = new Rectangle(x, y, sprite.width, sprite.height);
+        const offset = makePt(
+            region.left < 0 ? Math.abs(region.left) : 0,
+            region.top < 0 ? Math.abs(region.top) : 0
+        );
+        const selectionRegion = Rectangle.fromLTRB(
             region.left < 0 ? 0 : region.left,
             region.top < 0 ? 0 : region.top,
             region.right > base.width ? base.width : region.right,
             region.bottom > base.height ? base.height : region.bottom
         );
+        const icon = IconService.blend(buffer, sprite, selectionRegion, offset);
+        const newDoc: IconDocument = {
+            ...this.editor.cloneDocument(),
+            selectionRegion,
+            icon
+        };
 
-        newDoc.icon = IconService.blend(
-            newDoc.selectionBuffer!, newDoc.selectionSprite!, newDoc.selectionRegion, spriteOffset);
+        if (this.editor.currentTransaction){
+            this.editor.setDocument(newDoc);
+        }else{
+            this.editor.transact(newDoc);
+        }
 
-        this.editor.setDocument(newDoc);
+    }
+
+    private offsetSelection(x: number, y: number){
+        if(
+            !this.document.selectionRegion ||
+            !this.document.selectionSprite
+        ){
+            throw new NoSelectionError();
+        }
+
+        const sprite: Icon = this.document.selectionSprite;
+        const current: Rectangle = this.document.selectionRegion;
+
+        let implicitX = current.right - sprite.width;
+        let implicitY = current.bottom - sprite.height;
+
+        implicitX = implicitX < 0 ? implicitX : 0;
+        implicitY = implicitY < 0 ? implicitY : 0;
+
+        this.moveSelection(current.left + x + implicitX, current.top + y + implicitY);
 
     }
 
@@ -184,7 +221,9 @@ export class SelectionTool implements IconEditorTool{
             this.dragEnded();
         }
 
-        this.editor.commit();
+        if (this.editor.currentTransaction){
+            this.editor.commit();
+        }
 
         if (this.pixelIsInsideSelection(p)){
             return {cursor: 'move'};
@@ -199,7 +238,7 @@ export class SelectionTool implements IconEditorTool{
         if (p){
 
             if (this.selecting) {
-                this.updateSel(this.startPixel, p);
+                this.updateSelRegion(this.startPixel, p);
 
             }else if(this.dragging){
                 this.updateDrag(p);
@@ -215,11 +254,25 @@ export class SelectionTool implements IconEditorTool{
 
     keyDown(e: KeyEvent): KeyEventResult | void {
 
+
         if (e.key == 'Escape'){
             this.clearSelection();
 
         }else if (e.key == 'Delete' || e.key == 'Backspace'){
             this.deleteSelection();
+
+        }else if (e.key == 'ArrowLeft'){
+            this.offsetSelection(-1, 0);
+
+        }else if (e.key == 'ArrowRight'){
+            this.offsetSelection(1, 0);
+
+        }else if (e.key == 'ArrowUp'){
+            this.offsetSelection(0, -1);
+
+        }else if (e.key == 'ArrowDown'){
+            this.offsetSelection(0, 1);
+
         }
 
     }

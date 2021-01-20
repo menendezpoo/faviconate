@@ -92,7 +92,9 @@ export class CanvasView extends React.Component<CanvasViewProps>{
 
         if (this.controller.pointingGestureStart){
             const point = this.canvasPoint(e.clientX, e.clientY);
-            this.controller.pointingGestureStart({point, touch: false});
+            const result = this.controller.pointingGestureStart({point, touch: false});
+
+            this.adoptCursor(result);
         }
 
         document.body.addEventListener('mouseup', this.mouseUpCatcher);
@@ -103,7 +105,9 @@ export class CanvasView extends React.Component<CanvasViewProps>{
 
         if(this.canvasRef.current && this.controller.pointingGestureEnd) {
             const point = this.canvasPoint(e.clientX, e.clientY);
-            this.controller.pointingGestureEnd({point, touch: false});
+            const result = this.controller.pointingGestureEnd({point, touch: false});
+
+            this.adoptCursor(result);
         }
 
         document.body.removeEventListener(`mouseup`, this.mouseUpCatcher);
@@ -115,11 +119,15 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             const point = this.canvasPoint(e.clientX, e.clientY);
             const result = this.controller.pointingGestureMove({point, touch: false});
 
-            if (result && result.cursor){
-                this.cursor = result.cursor;
-            }else{
-                this.cursor = 'default';
-            }
+            this.adoptCursor(result);
+        }
+    }
+
+    private adoptCursor(result: PointingEventResult | void){
+        if (result && result.cursor){
+            this.cursor = result.cursor;
+        }else{
+            this.cursor = 'default';
         }
     }
 

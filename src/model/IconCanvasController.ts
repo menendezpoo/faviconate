@@ -12,11 +12,10 @@ import {IconDocumentRenderer} from "./IconDocumentRenderer";
 import {makePt, makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {SelectionTool} from "./tools/SelectionTool";
 import {Icon} from "./Icon";
-import {ClipboardService} from "./ClipboardService";
+import {ClipboardEmptyError, ClipboardService} from "./ClipboardService";
+import {NoSelectionError} from "./errors";
 
 const MIME_PNG = "image/png";
-const MIME_JPG = "image/jpeg";
-const MIME_GIF = "image/gif";
 
 export interface PasteResult{
     tool?: IconEditorTool;
@@ -59,6 +58,29 @@ export class IconCanvasController implements CanvasViewController{
 
     }
 
+    async cut(): Promise<void>{
+
+        if (!this.editor.document.selectionBuffer){
+            throw new NoSelectionError();
+        }
+
+        try{
+            await this.copy();
+
+            this.editor.transact({
+                ...this.editor.cloneDocument(),
+                icon: this.editor.document.selectionBuffer,
+                selectionRegion: undefined,
+                selectionSprite: undefined,
+                selectionBuffer: undefined,
+            });
+
+        }catch(e){
+            return Promise.reject(e);
+        }
+
+    }
+
     async paste(): Promise<PasteResult>{
 
         let success = false;
@@ -71,7 +93,12 @@ export class IconCanvasController implements CanvasViewController{
             success = true;
 
         }catch(e){
-            warnings = [...e];
+            if (e instanceof ClipboardEmptyError){
+              return Promise.reject(e);
+
+            }else if(e instanceof Array){
+                warnings = [...e];
+            }
         }
 
 

@@ -94,12 +94,17 @@ export class App extends React.Component<AppProps, AppState>{
             .catch(e => console.log(`Not copied: ${e}`));
     }
 
+    private cut(){
+        this.state.controller.cut()
+            .then(() => console.log("Did cut"))
+            .catch(e => console.log(`Didn't cut: ${e}`));
+    }
+
     private paste(){
         this.state.controller.paste()
             .then(r => {
 
                 console.log(`Pasted`);
-                console.log(` - Success: ${r.success}`);
 
                 if (r.warnings.length > 0){
                     console.log(` - Warnings: ${r.warnings.length}`);
@@ -165,8 +170,6 @@ export class App extends React.Component<AppProps, AppState>{
 
     private newDocument(size: number){
 
-        console.log(`New Doc: ${size}`)
-
         const icon = IconService.newIcon(size, size)
         const doc = {icon};
         const controller = new IconCanvasController(doc);
@@ -221,6 +224,10 @@ export class App extends React.Component<AppProps, AppState>{
                 this.paste();
                 e.preventDefault();
 
+            }else if(e.key === 'x' && ctrlMeta){
+                this.cut();
+                e.preventDefault();
+
             }
 
         });
@@ -241,8 +248,9 @@ export class App extends React.Component<AppProps, AppState>{
             <Separator/>
             <Button text={`Undo`} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
             <Button text={`Redo`} onClick={() => this.redo()} disabled={controller.editor.redoCount == 0}/>
-            <Button text={`Copy`}/>
-            <Button text={`Paste`}/>
+            <Button text={`Cut`} onClick={() => this.cut()}/>
+            <Button text={`Copy`} onClick={() => this.copy()}/>
+            <Button text={`Paste`} onClick={() => this.paste()}/>
         </>;
 
         const toolToolbarItems = <>

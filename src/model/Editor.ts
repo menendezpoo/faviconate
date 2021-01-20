@@ -87,10 +87,14 @@ export class Editor<T>{
 
     }
 
-    commit(){
+    commit(document?: T){
 
         if (!this._currentTransaction){
             throw new NoTransactionError();
+        }
+
+        if (document){
+            this.setDocument(document);
         }
 
         // Push to undo stack
@@ -128,6 +132,11 @@ export class Editor<T>{
 
     clearChanges(){
         this._hasChanges = false;
+    }
+
+    transact(document: T){
+        this.begin();
+        this.commit(document);
     }
 
     get currentTransaction(): EditorTransaction<T> | null{
