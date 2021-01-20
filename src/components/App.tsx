@@ -4,7 +4,7 @@ import {Button} from "../hui/items/Button";
 import {Separator} from "../hui/items/Separator";
 import {DockView} from "../hui/layout/DockView";
 import {CanvasView} from "./CanvasView";
-import {IconCanvasController} from "../model/IconCanvasController";
+import {DownloadFormat, IconCanvasController} from "../model/IconCanvasController";
 import {EraserTool} from "../model/tools/EraserTool";
 import {PencilTool} from "../model/tools/PencilTool";
 import {Color} from "../hui/helpers/Color";
@@ -177,6 +177,11 @@ export class App extends React.Component<AppProps, AppState>{
         this.setState({controller, previewCanvas: controller.editor.getImageCanvas()});
     }
 
+    private download(format: DownloadFormat){
+        this.state.controller.downloadAs(format)
+            .then(() => console.log(`Download triggered`));
+    }
+
     componentDidMount() {
         document.addEventListener('keydown', e => {
 
@@ -283,6 +288,7 @@ export class App extends React.Component<AppProps, AppState>{
         const sideBar = <>
             <PreviewPanel canvas={this.state.previewCanvas}/>
             <ColorPicker colorPicked={color => this.colorPick(color) } />
+            <Button text={`PNG`} onClick={() => this.download('png')}/>
         </>;
 
         this.state.controller.editor.documentSubmitted = () => {

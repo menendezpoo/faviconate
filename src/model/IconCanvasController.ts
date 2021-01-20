@@ -23,6 +23,8 @@ export interface PasteResult{
     warnings: string[];
 }
 
+export type DownloadFormat = 'png' | 'ico';
+
 export class IconCanvasController implements CanvasViewController{
 
     showBackground = false;
@@ -52,7 +54,7 @@ export class IconCanvasController implements CanvasViewController{
             return Promise.resolve();
         }
 
-        const blob = await IconService.asBlob(this.editor.document.selectionSprite, MIME_PNG);
+        const blob = await IconService.asBlobWithMime(this.editor.document.selectionSprite, MIME_PNG);
 
         return ClipboardService.copyBlob(blob, MIME_PNG);
 
@@ -103,6 +105,17 @@ export class IconCanvasController implements CanvasViewController{
 
 
         return {success, tool, warnings};
+    }
+
+    async downloadAs(format: DownloadFormat): Promise<void>{
+
+        const blob = await IconService.asBlobWithMime(this.editor.document.icon, MIME_PNG);
+        const a = document.createElement('a');
+
+        a.href = URL.createObjectURL(blob);
+        a.download = "favicon.png";
+        a.click();
+
     }
 
     async importFile(file: Blob): Promise<SelectionTool>{

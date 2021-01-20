@@ -28,7 +28,7 @@ export class IconService{
 
     }
 
-    static asBlob(icon: Icon, mime: string): Promise<Blob>{
+    static asBlobWithMime(icon: Icon, mime: string): Promise<Blob>{
         return new Promise<Blob>((resolve, reject) => {
 
             const canvas = this.asCanvas(icon);
