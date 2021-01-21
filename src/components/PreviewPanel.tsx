@@ -19,7 +19,6 @@ export class PreviewPanel extends React.Component<PreviewPanelProps>{
     }
 
     render() {
-
         return (
             <div
                 ref={this.ref}

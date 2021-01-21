@@ -1,7 +1,7 @@
 import {IconDocument} from "./IconEditor";
 import {makeSz, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
-import {Icon} from "../hui/items/Icon";
+import {MemoryError} from "./errors";
 
 const GRID_OUT = Color.fromHex(`#d0d0d0`);
 const GRID_INT = Color.fromHex(`#e0e0e0`);
@@ -16,7 +16,31 @@ export class IconDocumentRenderer {
 
     private static clock = 0;
     private static clockReminder = 0;
-    private static checkerCanvas: HTMLCanvasElement | null = null
+    private static checkerCanvas: HTMLCanvasElement | null = null;
+    private static pixelsBuffer: HTMLCanvasElement | null = null;
+    private static pixelsContext: CanvasRenderingContext2D | null = null;
+
+    static getPixelsBuffer(canvasSize: Size): {canvas: HTMLCanvasElement; cx: CanvasRenderingContext2D}{
+        if(
+            !this.pixelsBuffer ||
+            this.pixelsBuffer.width !== canvasSize.width ||
+            this.pixelsBuffer.height !== canvasSize.height
+        ) {
+            this.pixelsBuffer = document.createElement('canvas');
+            this.pixelsBuffer.width = canvasSize.width;
+            this.pixelsBuffer.height = canvasSize.height;
+            this.pixelsContext = this.pixelsBuffer.getContext('2d');
+        }
+
+        if(!this.pixelsContext) {
+            throw new MemoryError();
+        }
+
+        return {
+            canvas: this.pixelsBuffer,
+            cx: this.pixelsContext,
+        }
+    }
 
     static getPattern(context: CanvasRenderingContext2D): CanvasPattern | null{
 
@@ -68,7 +92,7 @@ export class IconDocumentRenderer {
         this.context.fillRect(...r.tuple);
     }
 
-    private renderPixels(pixelSize: Size){
+    private renderPixels_Deprecated(pixelSize: Size){
 
         const data = this.document.icon.data;
         let x = this.bounds.left;
@@ -91,6 +115,16 @@ export class IconDocumentRenderer {
 
         }
 
+    }
+
+    private renderPixels(pixelSize: Size){
+        const {canvas, cx} = IconDocumentRenderer.getPixelsBuffer(makeSz(this.document.icon.width, this.document.icon.height));
+
+        cx.putImageData(new ImageData(this.document.icon.data, this.document.icon.width), 0, 0);
+
+        this.context.imageSmoothingEnabled = false;
+        this.context.drawImage(canvas, ...this.bounds.tuple);
+        this.context.imageSmoothingEnabled = true;
     }
 
     private renderGrid(pixelSize: Size){
