@@ -1,5 +1,9 @@
 .preview-panel{
 
+  border-left: 4px solid transparent;
 
+  &.selected{
+    border-left-color: Highlight;
+  }
 
 }

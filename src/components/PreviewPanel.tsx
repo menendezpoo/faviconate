@@ -1,27 +1,31 @@
 import * as React from "react";
 import {RefObject} from "react";
+import {Callable} from "../hui/helpers/hui";
 
 export interface PreviewPanelProps{
-    canvas: HTMLCanvasElement | null;
+    data: string;
+    onActivate?: Callable;
+    selected?: boolean;
 }
 
 export class PreviewPanel extends React.Component<PreviewPanelProps>{
 
     ref: RefObject<HTMLDivElement> = React.createRef();
 
-    private updateCanvas(){
-        if (this.ref.current && this.props.canvas){
-            this.ref.current.innerHTML = '';
-            this.ref.current.appendChild(this.props.canvas);
+    private onActivate(){
+        if (this.props.onActivate){
+            this.props.onActivate();
         }
     }
 
     render() {
 
-        this.updateCanvas();
-
         return (
-            <div ref={this.ref} className={`preview-panel`}>
+            <div
+                ref={this.ref}
+                onClick={() => this.onActivate()}
+                className={`preview-panel ${this.props.selected ? 'selected' : ''}`}>
+                <img src={this.props.data} alt=""/>
             </div>
         );
     }

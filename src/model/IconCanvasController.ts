@@ -109,11 +109,21 @@ export class IconCanvasController implements CanvasViewController{
 
     async downloadAs(format: DownloadFormat): Promise<void>{
 
-        const blob = await IconService.asBlobWithMime(this.editor.document.icon, MIME_PNG);
+        let blob: Blob;
+        let name: string;
+
+        if (format == 'png'){
+            blob = await IconService.asBlobWithMime(this.editor.document.icon, MIME_PNG);
+            name = `favicon.png`;
+        }else{
+            blob = await IconService.asIcoBlob(this.editor.document.icon);
+            name = 'favicon.ico'
+        }
+
         const a = document.createElement('a');
 
         a.href = URL.createObjectURL(blob);
-        a.download = "favicon.png";
+        a.download = name;
         a.click();
 
     }

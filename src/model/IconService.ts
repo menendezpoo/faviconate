@@ -3,6 +3,11 @@ import {makePt, makeSz, Point, Rectangle, scaleToContain, Size} from "../hui/hel
 import {Color} from "../hui/helpers/Color";
 import {InvalidRegionError, MemoryError} from "./errors";
 import {ImageService} from "./ImageService";
+import {BlobComposer} from "./BlobComposer";
+
+export interface IconDirectory{
+    icons: Icon[];
+}
 
 export class IconService{
 
@@ -28,7 +33,7 @@ export class IconService{
 
     }
 
-    static asBlobWithMime(icon: Icon, mime: string): Promise<Blob>{
+    static asBlobWithMime(icon: Icon, mime: string = 'image/png'): Promise<Blob>{
         return new Promise<Blob>((resolve, reject) => {
 
             const canvas = this.asCanvas(icon);
@@ -42,6 +47,43 @@ export class IconService{
             }, mime);
 
         });
+    }
+
+    static async asBlobUrl(icon: Icon, mime: string = 'image/png'): Promise<string>{
+        const blob = await this.asBlobWithMime(icon, mime);
+        return URL.createObjectURL(blob);
+    }
+
+    static async asIcoBlob(icon: Icon): Promise<Blob>{
+
+        const composer = new BlobComposer();
+        const pngBlob = await this.asBlobWithMime(icon, 'image/png');
+
+
+        // ICONDIR structure
+        composer.writeUint8Clamped(new Uint8ClampedArray([
+            0, 0, // 2B	Reserved. Must always be 0.
+            1, 0, // 2B Specifies image type: 1 for icon (.ICO) image, 2 for cursor (.CUR) image. Other values are invalid.
+            1, 0, // 2b Specifies number of images in the file.
+        ]));
+
+        // ICONDIRENTRY
+        composer.writeUint8Clamped(new Uint8ClampedArray([
+            icon.width === 256 ? 0 : icon.width,    // 1B Specifies image width in pixels. Can be any number between 0 and 255. Value 0 means image width is 256 pixels.
+            icon.height === 256 ? 0 : icon.height,  // 1B Specifies image height in pixels. Can be any number between 0 and 255. Value 0 means image height is 256 pixels.
+            0,                                      // 1B Specifies number of colors in the color palette. Should be 0 if the image does not use a color palette.
+            0,                                      // 1B Reserved. Should be 0
+            1, 0,                                   // 2B Specifies color planes. Should be 0 or 1
+            8, 0,                                   // 2B Specifies bits per pixel
+        ]));
+
+        composer.writeInt32LE(pngBlob.size);
+        composer.writeInt32LE(22);
+
+        await composer.writeBlob(pngBlob);
+
+        return composer.getBlob();
+
     }
 
     static asImageData(icon: Icon): ImageData{
@@ -97,7 +139,7 @@ export class IconService{
 
     }
 
-    static async fromFile(file: Blob, contain?: Size): Promise<Icon>{
+    static async fromFile(file: Blob, contain?: Size, allowScaleUp = false): Promise<Icon>{
 
         const image = await ImageService.fromFile(file);
         let width = image.width;
@@ -105,7 +147,7 @@ export class IconService{
 
         if (contain){
             const actual = makeSz(width, height);
-            const contained = actual.width > contain.width && actual.height > contain.height ?  scaleToContain(contain, actual) : actual;
+            const contained = (actual.width > contain.width && actual.height > contain.height) || allowScaleUp ?  scaleToContain(contain, actual) : actual;
             width = Math.round(contained.width);
             height = Math.round(contained.height);
         }

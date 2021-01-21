@@ -36,21 +36,4 @@ export class IconEditor extends Editor<IconDocument>{
         return newDocument;
     }
 
-    getImageCanvas(): HTMLCanvasElement{
-
-        const canvas: HTMLCanvasElement = document.createElement('canvas');
-        const icon = this.document.icon;
-        canvas.width = this.document.icon.width;
-        canvas.height = this.document.icon.height;
-
-        const ctx = canvas.getContext('2d');
-
-        if (ctx){
-            ctx.putImageData(new ImageData(icon.data, icon.width, icon.height), 0, 0);
-        }
-
-        return canvas;
-
-    }
-
 }

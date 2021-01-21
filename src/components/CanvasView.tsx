@@ -60,14 +60,6 @@ export class CanvasView extends React.Component<CanvasViewProps>{
         return makePt(clientX, clientY);
     }
 
-    private registerResizeHook(){
-        window.addEventListener('resize', this.resizer);
-    }
-
-    private unRegisterResizeHook(){
-        window.removeEventListener('resize', this.resizer);
-    }
-
     private updateCanvasSize(){
         if(this.containerRef.current) {
 
@@ -218,15 +210,15 @@ export class CanvasView extends React.Component<CanvasViewProps>{
     }
 
     componentWillMount(): void {
-        this.registerResizeHook();
+        window.addEventListener('resize', this.resizer);
 
         document.addEventListener('keyup', this.keyUpCatcher);
         document.addEventListener('keydown', this.keyDownCatcher);
     }
 
-    componentWillUnmount(): void {
-        this.unRegisterResizeHook();
+    componentWillUnmount(): void {0
 
+        window.removeEventListener('resize', this.resizer);
         document.removeEventListener('keyup', this.keyUpCatcher);
         document.removeEventListener('keydown', this.keyDownCatcher);
     }

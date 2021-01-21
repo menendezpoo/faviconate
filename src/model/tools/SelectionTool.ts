@@ -1,13 +1,12 @@
 import {IconDocument, IconEditor, IconEditorTool} from "../IconEditor";
 import {KeyEvent, KeyEventResult, PointingEvent, PointingEventResult} from "../../components/CanvasView";
-import {makePt, Point, Rectangle} from "../../hui/helpers/Rectangle";
+import {makePt, makeSz, Point, Rectangle} from "../../hui/helpers/Rectangle";
 import {IconCanvasController} from "../IconCanvasController";
 import {Icon} from "../Icon";
 import {IconService} from "../IconService";
 import {NoSelectionError} from "../errors";
 
 export class SelectionTool implements IconEditorTool{
-
 
     private selecting = false;
     private dragging = false;
@@ -20,16 +19,20 @@ export class SelectionTool implements IconEditorTool{
         this.editor = controller.editor;
     }
 
-    private clipOutSelection(): {buffer: Icon, sprite: Icon}{
+    private clipOutSelection(document?: IconDocument): {buffer: Icon, sprite: Icon}{
 
-        if (!this.document.selectionRegion){
+        if(!document){
+            document = this.document;
+        }
+
+        if (!document.selectionRegion){
             throw new Error();
         }
 
-        const buffer = IconService.clone(this.document.icon);
-        const sprite = IconService.fromIcon(buffer, this.document.selectionRegion);
+        const buffer = IconService.clone(document.icon);
+        const sprite = IconService.fromIcon(buffer, document.selectionRegion);
 
-        IconService.region32(buffer, this.document.selectionRegion,
+        IconService.region32(buffer, document.selectionRegion,
             (index, current) => {
                 buffer.data[index] = 0
                 buffer.data[index + 1] = 0
@@ -59,11 +62,14 @@ export class SelectionTool implements IconEditorTool{
             return;
         }
 
-        const newDoc = this.editor.cloneDocument();
         const {buffer, sprite} = this.clipOutSelection();
-        newDoc.selectionBuffer = buffer;
-        newDoc.selectionSprite = sprite;
-        this.editor.setDocument(newDoc);
+
+        this.editor.setDocument({
+            ...this.editor.cloneDocument(),
+            selectionBuffer: buffer,
+            selectionSprite: sprite,
+        });
+
         this.selecting = false;
     }
 
@@ -160,6 +166,27 @@ export class SelectionTool implements IconEditorTool{
         );
     }
 
+    selectRegion(selectionRegion: Rectangle){
+        const icon = this.document.icon;
+        const doc: IconDocument = {
+            ...this.editor.cloneDocument(),
+            selectionRegion: Rectangle.fromSize(makeSz(icon.width, icon.height))
+        };
+
+        const {buffer, sprite} = this.clipOutSelection(doc);
+
+        this.editor.transact({
+            ...doc,
+            selectionBuffer: buffer,
+            selectionSprite: sprite,
+        });
+    }
+
+    selectAll(){
+        const icon = this.document.icon;
+        this.selectRegion(Rectangle.fromSize(makeSz(icon.width, icon.height)));
+    }
+
     clearSelection(){
         const newDoc = this.editor.cloneDocument();
 
@@ -253,7 +280,6 @@ export class SelectionTool implements IconEditorTool{
     }
 
     keyDown(e: KeyEvent): KeyEventResult | void {
-
 
         if (e.key == 'Escape'){
             this.clearSelection();

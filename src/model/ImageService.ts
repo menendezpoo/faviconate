@@ -1,6 +1,5 @@
 import {FileError, InvalidImageError, MemoryError} from "./errors";
 import {makeSz, scaleToContain, Size} from "../hui/helpers/Rectangle";
-import {Icon} from "./Icon";
 
 const REDUCE_MARGIN = 256;
 
@@ -51,7 +50,7 @@ export class ImageService{
 
         const imageData = cx.getImageData(0,0, reducedSize.width, reducedSize.height);
 
-        if (size.width < REDUCE_MARGIN || size.height < REDUCE_MARGIN){
+        if (size.width <= REDUCE_MARGIN || size.height <= REDUCE_MARGIN){
             return this.resample(imageData, size);
         }else{
             return imageData.data;

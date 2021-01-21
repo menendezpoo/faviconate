@@ -10,11 +10,13 @@ import {PencilTool} from "../model/tools/PencilTool";
 import {Color} from "../hui/helpers/Color";
 import {ColorPicker} from "../hui/items/ColorPicker";
 import {PreviewPanel} from "./PreviewPanel";
-import {IconEditorTool} from "../model/IconEditor";
+import {IconDocument, IconEditorTool} from "../model/IconEditor";
 import {SelectionTool} from "../model/tools/SelectionTool";
 import {IconService} from "../model/IconService";
-import {makeSz} from "../hui/helpers/Rectangle";
 import {MenuItem} from "../hui/items/MenuItem";
+import {makeSz, Size} from "../hui/helpers/Rectangle";
+
+const DEFAULT_ICON = makeSz(32, 32);
 
 function changeFavicon(src: string) {
     const link = document.createElement('link'),
@@ -32,8 +34,10 @@ export interface AppProps{}
 
 export interface AppState{
     controller: IconCanvasController;
+    controllers: IconCanvasController[];
+    previews: string[];
     selectedTool: IconEditorTool | null;
-    previewCanvas: HTMLCanvasElement | null;
+    currentIcon: number;
     undos: number;
     redos: number;
     showBackground: boolean;
@@ -45,20 +49,101 @@ export class App extends React.Component<AppProps, AppState>{
     constructor(props: AppProps) {
         super(props);
 
-        const controller = new IconCanvasController();
+        this.state = this.newDocumentState(DEFAULT_ICON);
+
+        const icon = this.state.controller.editor.document.icon;
+
+        IconService.asBlobUrl(icon).then(data => this.setState({previews: [data]}));
+
+    }
+
+    private newDocumentState(size: Size): AppState{
+        const icon = IconService.newIcon(size.width, size.height);
+        const controller = this.createController({icon});
         const selectedTool = new SelectionTool(controller);
 
-        this.state = {
+        return {
             controller,
-            previewCanvas: null,
             selectedTool,
+            controllers: [controller],
+            currentIcon: 0,
+            previews: [],
             undos: 0,
             redos: 0,
             showBackground: true,
             showGrid: true,
         }
+    }
 
-        this.usePen();
+    private newDocument(size: number){
+
+        const icon = IconService.newIcon(size, size)
+        const doc = {icon};
+        const controller = this.createController(doc);
+
+        this.setState({
+            controller,
+            controllers: [controller],
+            previews: [],
+            selectedTool: new SelectionTool(controller)
+        });
+    }
+
+    private async newIconEntry(size: number){
+
+        const blob = await IconService.asBlobWithMime(this.state.controller.editor.document.icon );
+        const icon = await IconService.fromFile(blob, makeSz(size, size), true);
+        const doc = {icon};
+        const controller = this.createController(doc);
+        const selectedTool = new SelectionTool(controller);
+        const controllers = [...this.state.controllers, controller];
+        const currentIcon = controllers.length - 1;
+
+        (selectedTool as SelectionTool).selectAll();
+
+        IconService.asBlobUrl(icon).then(data => {
+
+            const previews = [...this.state.previews, data];
+            this.setState({
+                controller,
+                controllers,
+                selectedTool,
+                currentIcon,
+                previews
+            });
+        })
+    }
+
+    private removeIconEntry(){
+
+        let current = this.state.currentIcon;
+        let controllers = this.state.controllers.filter((item, i) => i !== current);
+        let previews = this.state.previews.filter((item, i) => i !== current);
+        let controller: IconCanvasController;
+        let currentIcon = 0;
+
+        if (controllers.length == 0){
+            controller =this.createController({icon: IconService.newIcon(DEFAULT_ICON.width, DEFAULT_ICON.height)});
+            controllers = [controller];
+            const selectedTool = new SelectionTool(controller)
+
+            IconService.asBlobUrl(controller.editor.document.icon)
+                .then(data => {
+                    this.setState({
+                        controllers, controller, currentIcon, selectedTool, previews: [data]
+                    })
+                });
+
+        }else{
+
+            controller = controllers[currentIcon];
+
+            this.setState({
+                controllers, controller, currentIcon, previews, selectedTool: controller.tool
+            });
+        }
+
+
     }
 
     private appDragOver(e: React.DragEvent<HTMLDivElement>){
@@ -74,7 +159,6 @@ export class App extends React.Component<AppProps, AppState>{
                 const file = item.getAsFile();
 
                 if (file){
-                    console.log(`${file.name} -> ${file.size}`);
                     this.importFile(file);
                 }else{
                     console.log(`Can't get as file`)
@@ -168,13 +252,30 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
-    private newDocument(size: number){
+    private createController(doc: IconDocument): IconCanvasController{
 
-        const icon = IconService.newIcon(size, size)
-        const doc = {icon};
         const controller = new IconCanvasController(doc);
 
-        this.setState({controller, previewCanvas: controller.editor.getImageCanvas()});
+        controller.editor.documentSubmitted = () => {
+
+            const previews = [...this.state.previews];
+            const icon = this.state.controller.editor.document.icon;
+
+            IconService.asBlobUrl(icon).then(data => {
+                previews[this.state.currentIcon] = data;
+                this.setState({previews});
+            });
+        };
+
+        return controller;
+    }
+
+    private goToIcon(currentIcon: number){
+
+        const controller = this.state.controllers[currentIcon];
+        const selectedTool = controller.tool;
+
+        this.setState({controller, currentIcon, selectedTool});
     }
 
     private download(format: DownloadFormat){
@@ -233,6 +334,13 @@ export class App extends React.Component<AppProps, AppState>{
                 this.cut();
                 e.preventDefault();
 
+            }else if(e.key === 'a' && ctrlMeta){
+                if (!(this.state.selectedTool instanceof SelectionTool)){
+                    this.useSelection();
+                }
+                setTimeout(() => (this.state.selectedTool as SelectionTool).selectAll());
+                e.preventDefault();
+
             }
 
         });
@@ -286,17 +394,30 @@ export class App extends React.Component<AppProps, AppState>{
         </>;
 
         const sideBar = <>
-            <PreviewPanel canvas={this.state.previewCanvas}/>
+            <Button text={`+`} onClick={() => this.newIconEntry(16)}>
+                <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
+                <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
+                <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
+                <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
+                <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
+            </Button>
+            <Button text={`-`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
+            <div>
+                {this.state.previews.map((item, index) => (
+                    <PreviewPanel
+                        key={item}
+                        data={item}
+                        selected={index === this.state.currentIcon}
+                        onActivate={() => this.goToIcon(index)}/>
+                ))}
+            </div>
             <ColorPicker colorPicked={color => this.colorPick(color) } />
             <Button text={`PNG`} onClick={() => this.download('png')}/>
+            <Button text={`ICO`} onClick={() => this.download('ico')}/>
         </>;
 
-        this.state.controller.editor.documentSubmitted = () => {
-            this.setState({previewCanvas: this.state.controller.editor.getImageCanvas()});
-        };
-
-        if (this.state.previewCanvas){
-            changeFavicon(this.state.previewCanvas.toDataURL());
+        if (this.state.previews[this.state.currentIcon]){
+            changeFavicon(this.state.previews[this.state.currentIcon]);
         }
 
         controller.tool = this.state.selectedTool;
