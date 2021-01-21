@@ -54,36 +54,51 @@ export class IconService{
         return URL.createObjectURL(blob);
     }
 
-    static async asIcoBlob(icon: Icon): Promise<Blob>{
+    static async asIcoBlob(icons: Icon[]): Promise<Blob>{
 
         const composer = new BlobComposer();
-        const pngBlob = await this.asBlobWithMime(icon, 'image/png');
-
+        const pngBlobs: Blob[] = [];
+        const sizeICONDIR = 6;
+        const sizeICONDIRENTRY = 16;
+        let pngBlobSum = 0;
 
         // ICONDIR structure
         composer.writeUint8Clamped(new Uint8ClampedArray([
             0, 0, // 2B	Reserved. Must always be 0.
             1, 0, // 2B Specifies image type: 1 for icon (.ICO) image, 2 for cursor (.CUR) image. Other values are invalid.
-            1, 0, // 2b Specifies number of images in the file.
         ]));
 
-        // ICONDIRENTRY
-        composer.writeUint8Clamped(new Uint8ClampedArray([
-            icon.width === 256 ? 0 : icon.width,    // 1B Specifies image width in pixels. Can be any number between 0 and 255. Value 0 means image width is 256 pixels.
-            icon.height === 256 ? 0 : icon.height,  // 1B Specifies image height in pixels. Can be any number between 0 and 255. Value 0 means image height is 256 pixels.
-            0,                                      // 1B Specifies number of colors in the color palette. Should be 0 if the image does not use a color palette.
-            0,                                      // 1B Reserved. Should be 0
-            1, 0,                                   // 2B Specifies color planes. Should be 0 or 1
-            8, 0,                                   // 2B Specifies bits per pixel
-        ]));
+        composer.writeInt16LE(icons.length); // 2b Specifies number of images in the file.
 
-        composer.writeInt32LE(pngBlob.size);
-        composer.writeInt32LE(22);
+        for (const icon of icons){
+            const pngBlob = await this.asBlobWithMime(icon, 'image/png');
+            pngBlobs.push(pngBlob);
 
-        await composer.writeBlob(pngBlob);
+            console.log(`PNG Blob: ${pngBlob.size}`);
+
+            // ICONDIRENTRY
+            composer.writeUint8Clamped(new Uint8ClampedArray([
+                icon.width === 256 ? 0 : icon.width,    // 1B Specifies image width in pixels. Can be any number between 0 and 255. Value 0 means image width is 256 pixels.
+                icon.height === 256 ? 0 : icon.height,  // 1B Specifies image height in pixels. Can be any number between 0 and 255. Value 0 means image height is 256 pixels.
+                0,                                      // 1B Specifies number of colors in the color palette. Should be 0 if the image does not use a color palette.
+                0,                                      // 1B Reserved. Should be 0
+                1, 0,                                   // 2B Specifies color planes. Should be 0 or 1
+                8, 0,                                   // 2B Specifies bits per pixel
+            ]));
+
+            const dataOffset = sizeICONDIR + sizeICONDIRENTRY * icons.length + pngBlobSum;
+
+            composer.writeInt32LE(pngBlob.size);                           // 4B Specifies the size of the image's data in bytes
+            composer.writeInt32LE(dataOffset);      // 4B Specifies the offset of BMP or PNG data from the beginning of the ICO/CUR file
+
+            pngBlobSum += pngBlob.size;
+        }
+
+        for(const b of pngBlobs){
+            await composer.writeBlob(b);
+        }
 
         return composer.getBlob();
-
     }
 
     static asImageData(icon: Icon): ImageData{

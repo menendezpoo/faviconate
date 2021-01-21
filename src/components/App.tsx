@@ -279,7 +279,7 @@ export class App extends React.Component<AppProps, AppState>{
     }
 
     private download(format: DownloadFormat){
-        this.state.controller.downloadAs(format)
+        this.state.controller.downloadAs(format, this.state.controllers.map(c => c.editor.document.icon))
             .then(() => console.log(`Download triggered`));
     }
 

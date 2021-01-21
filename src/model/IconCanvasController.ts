@@ -107,7 +107,7 @@ export class IconCanvasController implements CanvasViewController{
         return {success, tool, warnings};
     }
 
-    async downloadAs(format: DownloadFormat): Promise<void>{
+    async downloadAs(format: DownloadFormat, icons: Icon[] | null = null): Promise<void>{
 
         let blob: Blob;
         let name: string;
@@ -116,7 +116,7 @@ export class IconCanvasController implements CanvasViewController{
             blob = await IconService.asBlobWithMime(this.editor.document.icon, MIME_PNG);
             name = `favicon.png`;
         }else{
-            blob = await IconService.asIcoBlob(this.editor.document.icon);
+            blob = await IconService.asIcoBlob(icons || [this.editor.document.icon]);
             name = 'favicon.ico'
         }
 
