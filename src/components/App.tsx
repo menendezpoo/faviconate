@@ -12,9 +12,10 @@ import {ColorPicker} from "../hui/items/ColorPicker";
 import {PreviewPanel} from "./PreviewPanel";
 import {IconDocument, IconEditorTool} from "../model/IconEditor";
 import {SelectionTool} from "../model/tools/SelectionTool";
-import {IconService} from "../model/IconService";
+import {IconDirectory, IconService} from "../model/IconService";
 import {MenuItem} from "../hui/items/MenuItem";
 import {makeSz, Size} from "../hui/helpers/Rectangle";
+import {InvalidImageError} from "../model/errors";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -114,6 +115,29 @@ export class App extends React.Component<AppProps, AppState>{
         })
     }
 
+    private setIcons(dir: IconDirectory){
+
+        if (dir.icons.length == 0){
+            throw new InvalidImageError();
+        }
+
+        const controllers = dir.icons.map(icon => this.createController({icon}));
+        const currentIcon = 0;
+        const controller = controllers[0];
+        const selectedTool = new SelectionTool(controller);
+
+        Promise.all(controllers.map(c => IconService.asBlobUrl(c.editor.document.icon)))
+            .then(previews => {
+                this.setState({
+                    controller,
+                    controllers,
+                    selectedTool,
+                    currentIcon,
+                    previews
+                });
+            });
+    }
+
     private removeIconEntry(){
 
         let current = this.state.currentIcon;
@@ -204,8 +228,14 @@ export class App extends React.Component<AppProps, AppState>{
     }
 
     private importFile(file: File){
-        this.state.controller.importFile(file)
-            .then(selectedTool => this.setState({selectedTool}));
+        if (file.name.toLowerCase().endsWith('.ico')){
+            IconService.fromIcoBlob(file)
+                .then(dir => this.setIcons(dir))
+                .catch(e => console.log(`Can't open ico file: ${e}`));
+        }else{
+            this.state.controller.importFile(file)
+                .then(selectedTool => this.setState({selectedTool}));
+        }
     }
 
     private useEraser(){

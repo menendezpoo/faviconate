@@ -241,7 +241,7 @@ export class IconCanvasController implements CanvasViewController{
                 0, 0,
                 icon.width * pixelLength,
                 icon.height *  pixelLength)
-                .centerAt(cvBounds.center);
+                .centerAt(makePt(cvBounds.center.x, (icon.height * pixelLength)/2));
 
             const renderer = new IconDocumentRenderer(
                 this.editor.document,

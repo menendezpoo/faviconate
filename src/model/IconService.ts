@@ -3,7 +3,10 @@ import {makePt, makeSz, Point, Rectangle, scaleToContain, Size} from "../hui/hel
 import {Color} from "../hui/helpers/Color";
 import {InvalidRegionError, MemoryError} from "./errors";
 import {ImageService} from "./ImageService";
-import {BlobComposer} from "./BlobComposer";
+import {BlobComposer, readInt16LE, readInt32LE, writeInt32LE} from "./BlobComposer";
+
+const sizeICONDIR = 6;
+const sizeICONDIRENTRY = 16;
 
 export interface IconDirectory{
     icons: Icon[];
@@ -58,8 +61,6 @@ export class IconService{
 
         const composer = new BlobComposer();
         const pngBlobs: Blob[] = [];
-        const sizeICONDIR = 6;
-        const sizeICONDIRENTRY = 16;
         let pngBlobSum = 0;
 
         // ICONDIR structure
@@ -88,7 +89,7 @@ export class IconService{
 
             const dataOffset = sizeICONDIR + sizeICONDIRENTRY * icons.length + pngBlobSum;
 
-            composer.writeInt32LE(pngBlob.size);                           // 4B Specifies the size of the image's data in bytes
+            composer.writeInt32LE(pngBlob.size);    // 4B Specifies the size of the image's data in bytes
             composer.writeInt32LE(dataOffset);      // 4B Specifies the offset of BMP or PNG data from the beginning of the ICO/CUR file
 
             pngBlobSum += pngBlob.size;
@@ -99,6 +100,46 @@ export class IconService{
         }
 
         return composer.getBlob();
+    }
+
+    static async fromIcoBlob(blob: Blob): Promise<IconDirectory>{
+
+        const icons: Icon[] = [];
+
+        const buffer = await blob.arrayBuffer();
+        const array = new Uint8ClampedArray(buffer);
+        const iconCount = readInt16LE(array, 4);
+
+        for(let i = 0; i < iconCount; i++){
+
+            const dirEntryStart = sizeICONDIR + sizeICONDIRENTRY * i;
+            const dirEntry = array.slice(dirEntryStart, dirEntryStart + sizeICONDIRENTRY);
+            const dataSize = readInt32LE(dirEntry, 8);
+            const dataOffset = readInt32LE(dirEntry, 12);
+            const data = array.slice(dataOffset, dataOffset + dataSize);
+            const composer = new BlobComposer();
+
+            // ICONDIR structure
+            composer.writeUint8Clamped(new Uint8ClampedArray([
+                0, 0, // 2B	Reserved. Must always be 0.
+                1, 0, // 2B Specifies image type: 1 for icon (.ICO) image, 2 for cursor (.CUR) image. Other values are invalid.
+                1, 0, // 2B Specifies number of images in the file.
+            ]));
+
+            // Update offset
+            writeInt32LE(dirEntry, 12, 22);
+
+            composer.writeUint8Clamped(dirEntry);
+            composer.writeUint8Clamped(data);
+
+            const blob = composer.getBlob({type: "image/x-icon"});
+            const image = await ImageService.fromFile(blob);
+
+            icons.push(IconService.fromImage(image));
+
+        }
+
+        return {icons};
     }
 
     static asImageData(icon: Icon): ImageData{
@@ -143,12 +184,12 @@ export class IconService{
         }
     }
 
-    static fromImage(image: HTMLImageElement, newSize: Size): Icon{
+    static fromImage(image: HTMLImageElement, newSize?: Size): Icon{
 
         const model: IconColorModel = 'rgba';
-        const width = newSize.width;
-        const height = newSize.height;
-        const data = ImageService.resize(image, newSize);
+        const width = newSize? newSize.width : image.naturalWidth;
+        const height = newSize? newSize.height : image.naturalHeight;
+        const data = ImageService.resize(image, makeSz(width, height));
 
         return {width, height, model, data};
 
