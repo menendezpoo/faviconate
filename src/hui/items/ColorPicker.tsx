@@ -149,15 +149,17 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     }
 
     private updateHue(hue: number){
+        console.log(`Hue: ${hue}`);
         const color = this.state.currentColor;
         const hsv = color.hsv;
         this.updateColor(Color.fromHsv(hue, hsv[1], hsv[2]), hue);
     }
 
-    private updateSat(sat: Size){
-        console.log(`Sat: ${sat.width}, ${sat.height}`);
+    private updateSat(dim: Size){
         const hue = this.state.selectedHue;
-        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat.height / 100, sat.width / 100));
+        const sat = dim.width / 100;
+        const light = 1 - dim.height / 100;
+        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat, light));
     }
 
     private handleChange(where: ColorPickerFocus){

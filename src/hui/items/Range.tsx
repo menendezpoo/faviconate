@@ -68,12 +68,13 @@ export class Range extends React.Component<SliderProps, SliderState>{
             }
 
             if (this.props.direction !== 'vertical'){
-                const maxSpace = container.height - handle.height;
-                const curSpace = handle.top - container.top;
-                return Math.round(curSpace * (max - min) / maxSpace + min);
-            }else{
                 const maxSpace = container.width - handle.width;
                 const curSpace = handle.left - container.left;
+                return Math.round(curSpace * (max - min) / maxSpace + min);
+
+            }else{
+                const maxSpace = container.height - handle.height;
+                const curSpace = handle.top - container.top;
                 return Math.round(curSpace * (max - min) / maxSpace + min);
             }
         }
