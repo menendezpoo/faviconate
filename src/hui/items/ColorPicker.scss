@@ -10,8 +10,21 @@
   > .layer{
     margin: 10px 0;
 
+    &.slider-2d{
+
+      .ui-range{
+        height: 100px;
+        background-size: 100% 100px;
+
+        .handle{
+          width: 5px;
+          height: 5px;
+        }
+      }
+    }
+
     &.slider-1d{
-      .ui-slider{
+      .ui-range{
         .handle{
           box-shadow: 0 0 0 5px white, 0 3px 9px 6px rgba(0,0,0,0.5);
         }

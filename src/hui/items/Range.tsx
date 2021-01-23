@@ -1,19 +1,20 @@
 
 import * as React from "react";
-import {makePt, Point, Rectangle} from "../helpers/Rectangle";
-import {RefObject} from "react";
+import {makePt, Point, Rectangle, Size} from "../helpers/Rectangle";
+import {CSSProperties, RefObject} from "react";
 
 export interface SliderProps{
-    min: number;
-    max: number;
-    value?: number;
+    min: number | Size;
+    max: number | Size;
+    value?: number | Size;
     onChange?: (value: number) => void;
-    backgroundUrl?: string;
-    handleBackground?: string;
+    containerStyle?: CSSProperties;
+    handleStyle?: CSSProperties;
+    direction?: 'horizontal' | 'vertical' | '2d';
 }
 
 export interface SliderState{
-    value: number;
+    value: number | Size;
 }
 
 interface GestureData{
@@ -27,6 +28,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
     private handleRef: RefObject<HTMLDivElement> = React.createRef();
     private dragging = false;
     private handleOffset: Point = makePt(0, 0);
+
     private mouseMoveHandler = (e: MouseEvent) => this.mouseMove(e);
     private mouseUpHandler = (e: MouseEvent) => this.mouseUp(e);
     private touchMoveHandler = (e: TouchEvent) => this.touchMove(e);
@@ -42,12 +44,17 @@ export class Range extends React.Component<SliderProps, SliderState>{
 
     private valueFromRects(): number{
 
-        const {container, handle} = this.boundingRects();
+        if (this.props.direction !== '2d'){
+            const {container, handle} = this.boundingRects();
+            const max = this.props.max as number;
+            const min = this.props.min as number;
+            const maxSpace = container.width - handle.width;
+            const curSpace = handle.left - container.left;
 
-        const maxSpace = container.width - handle.width;
-        const curSpace = handle.left - container.left;
-
-        return Math.round(curSpace * (this.props.max - this.props.min) / maxSpace + this.props.min);
+            return Math.round(curSpace * (max - min) / maxSpace + min);
+        }else{
+            throw new Error('TODO');
+        }
 
     }
 
@@ -156,14 +163,18 @@ export class Range extends React.Component<SliderProps, SliderState>{
     }
 
     private handleOffsetFromValue(value: number): number{
-        const {container, handle} = this.boundingRects();
 
-        const {min, max} = this.props;
-        const avail = container.width - handle.width;
-        const result = value * avail / (max-min);
+        if (this.props.direction !== '2d'){
+            const {container, handle} = this.boundingRects();
+            const max = this.props.max as number;
+            const min = this.props.min as number;
+            const avail = container.width - handle.width;
+            const result = value * avail / (max-min);
 
-        return result;
-
+            return result;
+        }else{
+            throw new Error('TODO');
+        }
     }
 
     private get refsReady(): boolean {
@@ -172,19 +183,17 @@ export class Range extends React.Component<SliderProps, SliderState>{
 
     render() {
 
-        const {backgroundUrl, handleBackground} = this.props;
+        const {containerStyle, handleStyle} = this.props;
 
         return (
             <div ref={this.containerRef}
-                 className="ui-slider"
+                 className="ui-range"
                  tabIndex={0}
-                 style={{backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined}}>
+                 style={containerStyle}>
                 <div
                     ref={this.handleRef}
                     className="handle"
-                    style={{
-                        background: handleBackground
-                    }}
+                    style={handleStyle}
                     onMouseDown={e => this.handleMouseDown(e)}
                     onTouchStart={e => this.handleTouchStart(e)}
                 />

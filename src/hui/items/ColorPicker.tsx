@@ -3,6 +3,7 @@ import {Color} from "../helpers/Color";
 import {RefObject} from "react";
 import {GraphicsMemoryError} from "../helpers/errors";
 import {Range} from "./Range";
+import {makePt, makeSz} from "../helpers/Rectangle";
 
 export interface ColorPickerProps{
     colorPicked: (color: Color) => any;
@@ -199,22 +200,29 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const hsv = color.hsv;
         const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
 
+        const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb}
+        const hueContainerStyle = {backgroundImage: `url(${ColorPicker.hueBar})`};
+        const satContainerStyle = {backgroundImage: `url(${ColorPicker.satBar})`}
+
         return (
             <div className="ui-color-picker">
                 <div className="layer swatch"><div className="swatch" style={{background: color.cssRgba}}/></div>
-                <div className="layer 2d-select">
-                    <div className="2d-select">
+                <div className="layer slider-2d">
                         <img src={ColorPicker.satBar} alt=""/>
-                        <div className="hotspot"/>
-                    </div>
+                    <Range
+                        min={makeSz(0,0)}
+                        max={makeSz(100, 100)}
+                        value={makeSz(0,0)}
+                        containerStyle={satContainerStyle}
+                    />
                 </div>
                 <div className="layer slider-1d">
                     <Range
                         min={0}
                         max={360}
                         value={hue}
-                        handleBackground={Color.fromHsv(hue, 1, 1).hexRgb}
-                        backgroundUrl={ColorPicker.hueBar}
+                        handleStyle={hueHandleStyle}
+                        containerStyle={hueContainerStyle}
                         onChange={hue => this.updateHue(hue)}
                     />
                 </div>
