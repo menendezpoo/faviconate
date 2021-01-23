@@ -1,13 +1,13 @@
 
 import * as React from "react";
-import {makePt, Point, Rectangle, Size} from "../helpers/Rectangle";
+import {makePt, makeSz, Point, Rectangle, Size} from "../helpers/Rectangle";
 import {CSSProperties, RefObject} from "react";
 
 export interface SliderProps{
     min: number | Size;
     max: number | Size;
     value?: number | Size;
-    onChange?: (value: number) => void;
+    onChange?: (value: number | Size) => void;
     containerStyle?: CSSProperties;
     handleStyle?: CSSProperties;
     direction?: 'horizontal' | 'vertical' | '2d';
@@ -42,20 +42,41 @@ export class Range extends React.Component<SliderProps, SliderState>{
         };
     }
 
-    private valueFromRects(): number{
+    private valueFromRects(): number | Size{
 
-        if (this.props.direction !== '2d'){
-            const {container, handle} = this.boundingRects();
-            const max = this.props.max as number;
-            const min = this.props.min as number;
-            const maxSpace = container.width - handle.width;
-            const curSpace = handle.left - container.left;
+        const {container, handle} = this.boundingRects();
+        const max = this.props.max;
+        const min = this.props.min;
 
-            return Math.round(curSpace * (max - min) / maxSpace + min);
+        if(this.props.direction === '2d') {
+
+            if(typeof max == "number" || typeof min == "number"){
+                throw new Error(`min and max must be Size`)
+            }
+
+            const maxSpace = makeSz(container.width - handle.width, container.height - handle.height);
+            const curSpace = makeSz(handle.left - container.left, handle.top - container.top);
+            return makeSz(
+                Math.round(curSpace.width * (max.width - min.width) / maxSpace.width + min.width),
+                Math.round(curSpace.height * (max.height - min.height) / maxSpace.height + min.height)
+            );
+
         }else{
-            throw new Error('TODO');
-        }
 
+            if(typeof max !== "number" || typeof min !== "number"){
+                throw new Error(`min and max must be number`);
+            }
+
+            if (this.props.direction !== 'vertical'){
+                const maxSpace = container.height - handle.height;
+                const curSpace = handle.top - container.top;
+                return Math.round(curSpace * (max - min) / maxSpace + min);
+            }else{
+                const maxSpace = container.width - handle.width;
+                const curSpace = handle.left - container.left;
+                return Math.round(curSpace * (max - min) / maxSpace + min);
+            }
+        }
     }
 
     private handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
@@ -144,16 +165,27 @@ export class Range extends React.Component<SliderProps, SliderState>{
             x = Math.max(0, x);
             x = Math.min(container.width - handle.width, x);
 
-            this.updateHandleOffset(x);
+            let y = e.clientY - container.top - this.handleOffset.y;
+            y = Math.max(0, y);
+            y = Math.min(container.height - handle.height, y);
 
+            this.updateHandleOffset(x, y);
         }
-
     }
 
-    private updateHandleOffset(handleOffset: number){
+    private updateHandleOffset(handleOffsetX: number, handleOffsetY: number){
 
         if (this.handleRef.current){
-            this.handleRef.current.style.left = `${handleOffset}px`;
+            const {direction} = this.props;
+
+            if(direction !== 'vertical') {
+                this.handleRef.current.style.left = `${handleOffsetX}px`;
+            }
+
+            if(direction === 'vertical' || direction === '2d'){
+                this.handleRef.current.style.top = `${handleOffsetY}px`;
+            }
+
         }
 
         if (this.props.onChange){

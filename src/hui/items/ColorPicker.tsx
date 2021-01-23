@@ -3,7 +3,7 @@ import {Color} from "../helpers/Color";
 import {RefObject} from "react";
 import {GraphicsMemoryError} from "../helpers/errors";
 import {Range} from "./Range";
-import {makePt, makeSz} from "../helpers/Rectangle";
+import {makePt, makeSz, Size} from "../helpers/Rectangle";
 
 export interface ColorPickerProps{
     colorPicked: (color: Color) => any;
@@ -46,15 +46,16 @@ function createHuePattern(): string{
 
 }
 
-function createSaturationPattern(): string{
+function createSaturationPattern_OLD(): string{
 
-    const arr = new Uint8ClampedArray(10000 * 4);
+    const length = 20;
+    const arr = new Uint8ClampedArray(length * length * 4);
     const hue = 1;
     let a = 0;
 
-    for(let j = 100; j >= 0; j--){
-        for(let i = 0; i < 100; i++){
-            const hsv = Color.fromHsv(hue, i/100, j/100);
+    for(let j = length; j >= 0; j--){
+        for(let i = 0; i < length; i++){
+            const hsv = Color.fromHsv(hue, i/length, j/length);
             arr[a++] = hsv.r;
             arr[a++] = hsv.g;
             arr[a++] = hsv.b;
@@ -62,13 +63,31 @@ function createSaturationPattern(): string{
         }
     }
 
-    return dataUrlFrom(arr, 100);
+    return dataUrlFrom(arr, length);
+}
+
+function createSaturationPattern(hue = 1, length = 10): string{
+
+    const arr = new Uint8ClampedArray(length * length * 4);
+    let z = 0
+
+    for(let j = length; j >= 0; j--){
+        for(let i = 0; i < length; i++){
+            const hsv = Color.fromHsv(hue, i/length, j/length);
+            let [r, g, b, a] = hsv.tupleInt8;
+            arr[z++] = r;
+            arr[z++] = g;
+            arr[z++] = b;
+            arr[z++] = a;
+        }
+    }
+
+    return dataUrlFrom(arr, length);
 }
 
 export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerState>{
 
     static hueBar = createHuePattern();
-    static satBar = createSaturationPattern();
 
     private focus: ColorPickerFocus | null = null;
     private txtHex: RefObject<HTMLInputElement> = React.createRef();
@@ -132,40 +151,33 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     private updateHue(hue: number){
         const color = this.state.currentColor;
         const hsv = color.hsv;
-
         this.updateColor(Color.fromHsv(hue, hsv[1], hsv[2]), hue);
+    }
 
+    private updateSat(sat: Size){
+        console.log(`Sat: ${sat.width}, ${sat.height}`);
+        const hue = this.state.selectedHue;
+        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat.height / 100, sat.width / 100));
     }
 
     private handleChange(where: ColorPickerFocus){
-
         const txt = this.getInput(where);
-
         if (where == 'hex'){
-
             const value = txt.value;
-
             if (Color.hexParsable(value)){
                 this.updateColor(Color.fromHex(value));
             }
-
         }else{
-
             const a = parseInt(this.getInput("a").value) || 0;
             const b = parseInt(this.getInput("b").value) || 0;
             const g = parseInt(this.getInput("g").value) || 0;
             const r = parseInt(this.getInput("r").value) || 0;
-
             const color = new Color(r, g, b, a);
-
             this.updateColor(color);
-
         }
-
     }
 
     componentDidMount() {
-
         ColorPickerFields.forEach(type => {
             const txt = this.getInput(type);
 
@@ -176,13 +188,10 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
             txt.addEventListener('blur', () => {
                 this.focus = null;
             });
-
         });
-
     }
 
     syncInputValues(){
-
         for(const type of ColorPickerFields){
             if (this.focus !== type){
                 this.getInput(type).value = this.getInputValueFor(type);
@@ -200,20 +209,23 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const hsv = color.hsv;
         const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
 
+        const satImg = createSaturationPattern(hue, 10);
         const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb}
         const hueContainerStyle = {backgroundImage: `url(${ColorPicker.hueBar})`};
-        const satContainerStyle = {backgroundImage: `url(${ColorPicker.satBar})`}
+        const satContainerStyle = {backgroundImage: `url(${satImg})`}
 
         return (
             <div className="ui-color-picker">
                 <div className="layer swatch"><div className="swatch" style={{background: color.cssRgba}}/></div>
                 <div className="layer slider-2d">
-                        <img src={ColorPicker.satBar} alt=""/>
+                        <img src={satImg} alt=""/>
                     <Range
                         min={makeSz(0,0)}
                         max={makeSz(100, 100)}
                         value={makeSz(0,0)}
+                        direction={'2d'}
                         containerStyle={satContainerStyle}
+                        onChange={sat => this.updateSat(sat as Size)}
                     />
                 </div>
                 <div className="layer slider-1d">
@@ -223,7 +235,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                         value={hue}
                         handleStyle={hueHandleStyle}
                         containerStyle={hueContainerStyle}
-                        onChange={hue => this.updateHue(hue)}
+                        onChange={hue => this.updateHue(hue as number)}
                     />
                 </div>
                 <div className="layer alpha-select">

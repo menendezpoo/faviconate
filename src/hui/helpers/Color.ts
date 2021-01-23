@@ -173,7 +173,7 @@ export class Color{
     }
 
     get tupleInt8(): [number, number, number, number]{
-        return [this.r, this.g, this.b, this.a * 255];
+        return [this.r, this.g, this.b, Math.round(this.a * 255)];
     }
 
 }
