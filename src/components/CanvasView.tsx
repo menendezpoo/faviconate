@@ -216,7 +216,7 @@ export class CanvasView extends React.Component<CanvasViewProps>{
         document.addEventListener('keydown', this.keyDownCatcher);
     }
 
-    componentWillUnmount(): void {0
+    componentWillUnmount(): void {
 
         window.removeEventListener('resize', this.resizer);
         document.removeEventListener('keyup', this.keyUpCatcher);
@@ -232,7 +232,6 @@ export class CanvasView extends React.Component<CanvasViewProps>{
             <div ref={this.containerRef} className={`canvas-view`}>
                 <canvas
                     ref={this.canvasRef}
-                    tabIndex={0}
                     onMouseDown={e => this.mouseDown(e)}
                     onMouseMove={e => this.mouseMove(e)}
                     onTouchStart={e => this.touchStart(e)}

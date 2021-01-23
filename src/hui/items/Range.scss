@@ -1,0 +1,20 @@
+.ui-slider{
+
+  height: 40px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  background-size: contain;
+  position: relative;
+
+  .handle{
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 100%;
+    //border: solid 2px Highlight;
+    background: Highlight;
+    //margin-top: -2px;
+    //margin-left: -2px;
+  }
+
+}

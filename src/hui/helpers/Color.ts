@@ -41,6 +41,50 @@ export class Color{
 
     }
 
+    /**
+     * HSV to RGB color conversion
+     *
+     * H runs from 0 to 360 degrees
+     * S and V run from 0 to 1
+     *
+     * Ported from the excellent java algorithm by Eugene Vishnevsky at:
+     * http://www.cs.rit.edu/~ncs/color/t_convert.html
+     */
+    static fromHsv(h: number, s: number, v: number): Color{
+        let r, g, b;
+        let i;
+        let f, p, q, t;
+
+        // Make sure our arguments stay in-range
+        h = Math.max(0, Math.min(360, h));
+        s = Math.max(0, Math.min(100, s));
+        v = Math.max(0, Math.min(100, v));
+
+        if(s == 0) {
+            // Achromatic (grey)
+            r = g = b = v;
+            return new Color(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
+        }
+
+        h /= 60; // sector 0 to 5
+        i = Math.floor(h);
+        f = h - i; // factorial part of h
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+
+        switch(i) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            default: r = v; g = p; b = q;
+        }
+
+        return new Color(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
+    }
+
     static get transparent(): Color{
         return new Color(0, 0, 0, 0);
     }
@@ -80,11 +124,56 @@ export class Color{
         return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex(Math.round(this.a * 255))}`
     }
 
+    get hsv(): [number, number, number]{
+        let rr, gg, bb;
+        let r = this.r / 255;
+        let g = this.g / 255;
+        let b = this.b / 255;
+        let h = 0;
+        let s = 0;
+        let v = Math.max(r, g, b);
+        let diff = v - Math.min(r, g, b);
+        let diff_c = (c: number) => { return (v - c) / 6 / diff + 1 / 2 };
+
+        if(diff == 0) {
+            h = s = 0;
+        }else {
+            s = diff / v;
+            rr = diff_c(r);
+            gg = diff_c(g);
+            bb = diff_c(b);
+
+            if(r === v) {
+                h = bb - gg;
+            }else if(g === v) {
+                h = (1 / 3) + rr - bb;
+            }else if(b === v) {
+                h = (2 / 3) + gg - rr;
+            }
+        }
+
+        if(h < 0) {
+            h += 1;
+        }else if(h > 1) {
+            h -= 1;
+        }
+
+        return [
+            Math.round(h * 360),
+            Math.round(s),
+            Math.round(v)
+        ];
+    }
+
     get isTransparent(): boolean{
         return (this.r === 0 &&
             this.g ===  0 &&
             this.b ===  0 &&
             this.a === 0);
+    }
+
+    get tupleInt8(): [number, number, number, number]{
+        return [this.r, this.g, this.b, this.a * 255];
     }
 
 }

@@ -1,6 +1,8 @@
 import * as React from "react";
 import {Color} from "../helpers/Color";
-import {Ref, RefObject} from "react";
+import {RefObject} from "react";
+import {GraphicsMemoryError} from "../helpers/errors";
+import {Range} from "./Range";
 
 export interface ColorPickerProps{
     colorPicked: (color: Color) => any;
@@ -8,12 +10,64 @@ export interface ColorPickerProps{
 
 export interface ColorPickerState{
     currentColor: Color;
+    selectedHue: number;
 }
 
 type ColorPickerFocus = 'hex' | 'r' | 'g' | 'b' | 'a';
 const ColorPickerFields: ColorPickerFocus[] = ['hex', 'r', 'g', 'b', 'a'];
 
+function dataUrlFrom(data: Uint8ClampedArray, width: number): string{
+    const imageData = new ImageData(data, width);
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = data.length / 4 / width;
+
+    const cx = canvas.getContext('2d');
+
+    if(!cx){
+        throw new GraphicsMemoryError();
+    }
+
+    cx.putImageData(imageData, 0,0);
+
+    return canvas.toDataURL();
+}
+
+function createHuePattern(): string{
+
+    const convert = (foo: number, hue: number) => Color.fromHsv(hue, 1, 1).tupleInt8;
+    const array360 = new Array(360).fill(0);
+    const arrayColors = array360.map(convert);
+    const flatArrayColors: number[] = [].concat(...arrayColors as any);
+    const data = new Uint8ClampedArray(flatArrayColors);
+
+    return dataUrlFrom(data, 360);
+
+}
+
+function createSaturationPattern(): string{
+
+    const arr = new Uint8ClampedArray(10000 * 4);
+    const hue = 1;
+    let a = 0;
+
+    for(let j = 100; j >= 0; j--){
+        for(let i = 0; i < 100; i++){
+            const hsv = Color.fromHsv(hue, i/100, j/100);
+            arr[a++] = hsv.r;
+            arr[a++] = hsv.g;
+            arr[a++] = hsv.b;
+            arr[a++] = 255;
+        }
+    }
+
+    return dataUrlFrom(arr, 100);
+}
+
 export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerState>{
+
+    static hueBar = createHuePattern();
+    static satBar = createSaturationPattern();
 
     private focus: ColorPickerFocus | null = null;
     private txtHex: RefObject<HTMLInputElement> = React.createRef();
@@ -26,7 +80,8 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         super(props);
 
         this.state = {
-            currentColor: Color.transparent
+            currentColor: Color.transparent,
+            selectedHue: -1,
         }
 
     }
@@ -64,12 +119,21 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
 
     }
 
-    private updateColor(color: Color){
-        this.setState({currentColor: color});
+    private updateColor(color: Color, selectedHue?: number){
+
+        this.setState({currentColor: color, selectedHue: typeof selectedHue === "number" ? selectedHue : -1});
 
         if (this.props.colorPicked){
             this.props.colorPicked(color);
         }
+    }
+
+    private updateHue(hue: number){
+        const color = this.state.currentColor;
+        const hsv = color.hsv;
+
+        this.updateColor(Color.fromHsv(hue, hsv[1], hsv[2]), hue);
+
     }
 
     private handleChange(where: ColorPickerFocus){
@@ -81,11 +145,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
             const value = txt.value;
 
             if (Color.hexParsable(value)){
-
-                const color = Color.fromHex(value);
-
-                this.updateColor(color);
-
+                this.updateColor(Color.fromHex(value));
             }
 
         }else{
@@ -130,21 +190,38 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     }
 
     render() {
+
         if (this.txtHex.current){
             this.syncInputValues(); // Dont update if not rendered yet
         }
 
+        const color = this.state.currentColor;
+        const hsv = color.hsv;
+        const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
+
         return (
             <div className="ui-color-picker">
-                <div className="layer-swatch"><div className="swatch" style={{background: this.state.currentColor.hexRgb}}/></div>
-                <div className="layer-2d-select">
+                <div className="layer swatch"><div className="swatch" style={{background: color.cssRgba}}/></div>
+                <div className="layer 2d-select">
                     <div className="2d-select">
+                        <img src={ColorPicker.satBar} alt=""/>
                         <div className="hotspot"/>
                     </div>
                 </div>
-                <div className="layer-1d-select"/>
-                <div className="layer-alpha-select"/>
-                <div className="layer-inputs">
+                <div className="layer slider-1d">
+                    <Range
+                        min={0}
+                        max={360}
+                        value={hue}
+                        handleBackground={Color.fromHsv(hue, 1, 1).hexRgb}
+                        backgroundUrl={ColorPicker.hueBar}
+                        onChange={hue => this.updateHue(hue)}
+                    />
+                </div>
+                <div className="layer alpha-select">
+
+                </div>
+                <div className="layer inputs">
                     <div className="item">
                         <input type="text" ref={this.txtHex}/>
                         <div className="label">Hex</div>
