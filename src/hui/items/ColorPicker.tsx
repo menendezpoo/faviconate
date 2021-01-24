@@ -35,35 +35,12 @@ function dataUrlFrom(data: Uint8ClampedArray, width: number): string{
 }
 
 function createHuePattern(): string{
-
     const convert = (foo: number, hue: number) => Color.fromHsv(hue, 1, 1).tupleInt8;
     const array360 = new Array(360).fill(0);
     const arrayColors = array360.map(convert);
     const flatArrayColors: number[] = [].concat(...arrayColors as any);
     const data = new Uint8ClampedArray(flatArrayColors);
-
     return dataUrlFrom(data, 360);
-
-}
-
-function createSaturationPattern_OLD(): string{
-
-    const length = 20;
-    const arr = new Uint8ClampedArray(length * length * 4);
-    const hue = 1;
-    let a = 0;
-
-    for(let j = length; j >= 0; j--){
-        for(let i = 0; i < length; i++){
-            const hsv = Color.fromHsv(hue, i/length, j/length);
-            arr[a++] = hsv.r;
-            arr[a++] = hsv.g;
-            arr[a++] = hsv.b;
-            arr[a++] = 255;
-        }
-    }
-
-    return dataUrlFrom(arr, length);
 }
 
 function createSaturationPattern(hue = 1, length = 10): string{
@@ -149,10 +126,13 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     }
 
     private updateHue(hue: number){
-        console.log(`Hue: ${hue}`);
         const color = this.state.currentColor;
         const hsv = color.hsv;
         this.updateColor(Color.fromHsv(hue, hsv[1], hsv[2]), hue);
+    }
+
+    private updateAlpha(alpha: number){
+
     }
 
     private updateSat(dim: Size){
@@ -210,6 +190,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const color = this.state.currentColor;
         const hsv = color.hsv;
         const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
+        const alpha = color.a * 100;
 
         const satImg = createSaturationPattern(hue, 10);
         const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb}
@@ -239,8 +220,13 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                         onChange={hue => this.updateHue(hue as number)}
                     />
                 </div>
-                <div className="layer alpha-select">
-
+                <div className="layer slider-alpha">
+                    <Range
+                        min={0}
+                        max={100}
+                        value={alpha}
+                        onChange={a => this.updateAlpha(a as number)}
+                    />
                 </div>
                 <div className="layer inputs">
                     <div className="item">
