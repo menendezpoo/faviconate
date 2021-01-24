@@ -20,6 +20,7 @@ export interface SliderState{
 interface GestureData{
     clientX: number;
     clientY: number;
+    target: EventTarget | null;
 }
 
 export class Range extends React.Component<SliderProps, SliderState>{
@@ -145,10 +146,17 @@ export class Range extends React.Component<SliderProps, SliderState>{
         this.dragging = true;
 
         // Save handle offset
-        if (this.handleRef.current){
+        if (this.refsReady){
             const {handle} = this.boundingRects();
-            this.handleOffset = makePt(e.clientX - handle.left, e.clientY - handle.top);
+            if (e.target === this.handleRef.current){
+                this.handleOffset = makePt(e.clientX - handle.left, e.clientY - handle.top);
+            }else{
+                this.handleOffset = makePt(handle.width/2, handle.height/2);
+            }
+
         }
+
+        this.pointingGestureMove(e);
 
     }
 
@@ -222,7 +230,9 @@ export class Range extends React.Component<SliderProps, SliderState>{
             <div ref={this.containerRef}
                  className="ui-range"
                  tabIndex={0}
-                 style={containerStyle}>
+                 style={containerStyle}
+                 onMouseDown={e => this.handleMouseDown(e)}
+                 onTouchStart={e => this.handleTouchStart(e)}>
                 <div
                     ref={this.handleRef}
                     className="handle"

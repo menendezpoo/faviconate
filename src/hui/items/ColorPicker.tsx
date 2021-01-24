@@ -220,7 +220,6 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
             <div className="ui-color-picker">
                 <div className="layer swatch"><div className="swatch" style={{background: color.cssRgba}}/></div>
                 <div className="layer slider-2d">
-                        <img src={satImg} alt=""/>
                     <Range
                         min={makeSz(0,0)}
                         max={makeSz(100, 100)}
