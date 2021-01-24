@@ -159,7 +159,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const hue = this.state.selectedHue;
         const sat = dim.width / 100;
         const light = 1 - dim.height / 100;
-        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat, light));
+        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat, light), hue);
     }
 
     private handleChange(where: ColorPickerFocus){
@@ -232,7 +232,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                 <div className="layer slider-1d">
                     <Range
                         min={0}
-                        max={360}
+                        max={359}
                         value={hue}
                         handleStyle={hueHandleStyle}
                         containerStyle={hueContainerStyle}
