@@ -27,6 +27,14 @@ export function makeSz(width: number, height: number): Size{
     return {width, height};
 }
 
+export function roundPt(p: Point): Point{
+    return makePt(Math.round(p.x), Math.round(p.y));
+}
+
+export function roundSz(size: Size): Size{
+    return makeSz(Math.round(size.width), Math.round(size.height));
+}
+
 export function slope(a: Point, b: Point): number{
     return (b.y - a.y) / (b.x - a.x);
 }

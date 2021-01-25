@@ -104,6 +104,13 @@ export class Color{
         readonly a: number = 1, //  0 - 1
     ) {}
 
+    withAlpha(alpha: number){
+        if (alpha < 0 || alpha > 100){
+            throw new Error(`Invalid alpha: ${alpha}`);
+        }
+        return new Color(this.r, this.g, this.b, alpha);
+    }
+
     get cssRgb(): string{
         return `rgb(${this.r}, ${this.g}, ${this.b})`;
     }
@@ -168,8 +175,8 @@ export class Color{
 
         return [
             Math.round(h * 360),
-            Math.round(s),
-            Math.round(v)
+            s,
+            v
         ];
     }
 

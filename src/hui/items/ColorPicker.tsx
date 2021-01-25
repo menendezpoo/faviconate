@@ -3,7 +3,11 @@ import {Color} from "../helpers/Color";
 import {RefObject} from "react";
 import {GraphicsMemoryError} from "../helpers/errors";
 import {Range} from "./Range";
-import {makePt, makeSz, Size} from "../helpers/Rectangle";
+import {makeSz} from "../helpers/Rectangle";
+
+const BG_SQ_SIZE = 5;
+const BG_COLOR_A = [0, 0, 0, 0];
+const BG_COLOR_B = [200, 200, 200, 255];
 
 export interface ColorPickerProps{
 
@@ -33,6 +37,18 @@ function dataUrlFrom(data: Uint8ClampedArray, width: number): string{
     cx.putImageData(imageData, 0,0);
 
     return canvas.toDataURL();
+}
+
+function createBgPattern(): string{
+    const lineOfA = new Array(BG_SQ_SIZE).fill(BG_COLOR_A);
+    const lineOfB = new Array(BG_SQ_SIZE).fill(BG_COLOR_B);
+    const rowA = [].concat(...lineOfA, ...lineOfB);
+    const rowB = [].concat(...lineOfB, ...lineOfA);
+    const chunkA = new Array(BG_SQ_SIZE).fill(rowA);
+    const chunkB = new Array(BG_SQ_SIZE).fill(rowB);
+    const data = new Uint8ClampedArray([].concat(...chunkA, ...chunkB));
+
+    return dataUrlFrom(data, BG_SQ_SIZE * 2);
 }
 
 function createHuePattern(): string{
@@ -66,6 +82,7 @@ function createSaturationPattern(hue = 1, length = 10): string{
 export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerState>{
 
     static hueBar = createHuePattern();
+    static bgPattern = createBgPattern();
 
     private focus: ColorPickerFocus | null = null;
     private txtHex: RefObject<HTMLInputElement> = React.createRef();
@@ -108,18 +125,18 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const color = this.state.currentColor;
 
         switch (type){
-            case "a": return color.a.toString();
+            case "a": return Math.round(color.a * 100).toString();
             case "r": return color.r.toString();
             case "g": return color.g.toString();
             case "b": return color.b.toString();
-            case "hex": return color.a !== 1 ? color.hexRgba : color.hexRgb;
+            case "hex": return color.hexRgb;
         }
 
     }
 
     private updateColor(color: Color, selectedHue?: number){
 
-        this.setState({currentColor: color, selectedHue: typeof selectedHue === "number" ? selectedHue : -1});
+        this.setState({currentColor: color, selectedHue: typeof selectedHue === "number" ? selectedHue : color.hsv[0]});
 
         if (this.props.colorPicked){
             this.props.colorPicked(color);
@@ -129,18 +146,21 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     private updateHue(hue: number){
         const color = this.state.currentColor;
         const hsv = color.hsv;
-        this.updateColor(Color.fromHsv(hue, hsv[1], hsv[2]), hue);
+        this.updateColor(Color.fromHsv(hue, hsv[1], hsv[2]).withAlpha(color.a), hue);
     }
 
     private updateAlpha(alpha: number){
-
+        const color = this.state.currentColor;
+        this.updateColor(color.withAlpha(alpha / 100));
     }
 
-    private updateSat(dim: Size){
+    private updateSatLight(satValue?: number, keyValue?: number){
+        const current = this.state.currentColor;
         const hue = this.state.selectedHue;
-        const sat = dim.width / 100;
-        const light = 1 - dim.height / 100;
-        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat, light), hue);
+        const sat = 1 - (satValue || 0) / 100;
+        const key = (keyValue || 0) / 100;
+        console.log(`in s, v: ${sat}, ${key}`);
+        this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat, key).withAlpha(current.a), hue);
     }
 
     private handleChange(where: ColorPickerFocus){
@@ -191,25 +211,32 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const color = this.state.currentColor;
         const hsv = color.hsv;
         const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
+        const sat = Math.round(hsv[1] * 100);
+        const keyValue = Math.round(hsv[2] * 100);
         const alpha = color.a * 100;
-        console.log(`alpha: ${alpha}`);
+        console.log(`out s, v: ${hsv[1]}, ${hsv[2]}`);
 
         const satImg = createSaturationPattern(hue, 10);
-        const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb}
+        const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb};
         const hueContainerStyle = {backgroundImage: `url(${ColorPicker.hueBar})`};
-        const satContainerStyle = {backgroundImage: `url(${satImg})`}
+        const satContainerStyle = {backgroundImage: `url(${satImg})`};
+        const alphaContainerStyle = {backgroundImage: `url(${ColorPicker.bgPattern})`};
+        const swatchBgStyle = {backgroundImage: `url(${ColorPicker.bgPattern})`};
+        const swatchStyle = {backgroundColor: color.cssRgba};
 
         return (
             <div className="ui-color-picker">
-                <div className="layer swatch"><div className="swatch" style={{background: color.cssRgba}}/></div>
+                <div className="layer swatch" style={swatchBgStyle}>
+                    <div className="swatch" style={swatchStyle}/>
+                </div>
                 <div className="layer slider-2d">
                     <Range
                         min={makeSz(0,0)}
                         max={makeSz(100, 100)}
-                        value={makeSz(0,0)}
+                        value={makeSz(keyValue, 100 - sat)}
                         direction={'2d'}
                         containerStyle={satContainerStyle}
-                        onChange={sat => this.updateSat(sat as Size)}
+                        onChange={(key, sat) => this.updateSatLight(sat, key)}
                     />
                 </div>
                 <div className="layer slider-1d">
@@ -227,6 +254,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                         min={0}
                         max={100}
                         value={alpha}
+                        containerStyle={alphaContainerStyle}
                         onChange={a => this.updateAlpha(a as number)}
                     />
                 </div>

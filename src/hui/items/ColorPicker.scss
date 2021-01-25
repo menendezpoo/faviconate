@@ -3,6 +3,27 @@
   $slider-height: 10px;
   $slider-margin: 40px 0;
   $handle-margin-top: -14px;
+  $layer-border: solid 1px silver;
+  $swatch-height: 40px;
+
+  %handle{
+    width: 8px;
+    height: 8px;
+    border: solid 1px silver;
+    background: white;
+  }
+
+  %handleAura{
+    content: '.';
+    color: transparent;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    position: absolute;
+    border-radius: 100%;
+    top: -16px;
+    left: -16px;
+  }
 
   padding: 10px;
 
@@ -14,6 +35,16 @@
   > .layer{
     margin: 10px 0;
 
+    &.swatch{
+      border-radius: 5px;
+      overflow: hidden;
+      border: $layer-border;
+      height: $swatch-height;
+      .swatch{
+        height: $swatch-height;
+      }
+    }
+
     &.slider-2d{
 
       .ui-range{
@@ -21,26 +52,13 @@
         background-size: 100% 100px;
         background-repeat: no-repeat;
         border-radius: 5px;
-        border: solid 1px silver;
+        border: $layer-border;
         background-color: blue;
 
         .handle{
-          width: 5px;
-          height: 5px;
-          border: solid 1px silver;
-          background: white;
+          @extend %handle;
 
-          &:after{
-            content: '.';
-            color: transparent;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            position: absolute;
-            border-radius: 100%;
-            top: -18px;
-            left: -18px;
-          }
+          &:after{ @extend %handleAura; }
         }
 
       }
@@ -48,22 +66,34 @@
 
     &.slider-1d{
       .ui-range{
+        border: $layer-border;
         height: $slider-height;
         margin: $slider-margin;
         .handle{
-          box-shadow: 0 0 0 5px white, 0 3px 9px 6px rgba(0,0,0,0.5);;
-          margin-top: -14px;
+          @extend %handle;
+          &:after{ @extend %handleAura; }
         }
       }
     }
 
     &.slider-alpha{
       .ui-range{
+        border: $layer-border;
         height: $slider-height;
         margin: $slider-margin;
+        overflow: hidden;
+        background-color: transparent;
+        background-size: contain;
+        background-repeat: repeat;
         .handle{
-          box-shadow: 0 3px 4px 2px rgba(0,0,0,0.5);
-          margin-top: -14px;
+          @extend %handle;
+          &:after{ @extend %handleAura; }
+        }
+        &:before{
+          content: '.'; color: transparent;
+          position: absolute;
+          left: 0; top: 0; right: 0; bottom: 0;
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
         }
       }
     }

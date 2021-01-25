@@ -7,7 +7,7 @@ export interface SliderProps{
     min: number | Size;
     max: number | Size;
     value?: number | Size;
-    onChange?: (value: number | Size) => void;
+    onChange?: (value: number, value2d?: number) => void;
     containerStyle?: CSSProperties;
     handleStyle?: CSSProperties;
     direction?: 'horizontal' | 'vertical' | '2d';
@@ -58,8 +58,8 @@ export class Range extends React.Component<SliderProps, SliderState>{
             const maxSpace = makeSz(container.width - handle.width, container.height - handle.height);
             const curSpace = makeSz(handle.left - container.left, handle.top - container.top);
             return makeSz(
-                Math.round(curSpace.width * (max.width - min.width) / maxSpace.width + min.width),
-                Math.round(curSpace.height * (max.height - min.height) / maxSpace.height + min.height)
+                curSpace.width * (max.width - min.width) / maxSpace.width + min.width,
+                curSpace.height * (max.height - min.height) / maxSpace.height + min.height
             );
 
         }else{
@@ -71,12 +71,12 @@ export class Range extends React.Component<SliderProps, SliderState>{
             if (this.props.direction !== 'vertical'){
                 const maxSpace = container.width - handle.width;
                 const curSpace = handle.left - container.left;
-                return Math.round(curSpace * (max - min) / maxSpace + min);
+                return curSpace * (max - min) / maxSpace + min;
 
             }else{
                 const maxSpace = container.height - handle.height;
                 const curSpace = handle.top - container.top;
-                return Math.round(curSpace * (max - min) / maxSpace + min);
+                return curSpace * (max - min) / maxSpace + min;
             }
         }
     }
@@ -153,7 +153,6 @@ export class Range extends React.Component<SliderProps, SliderState>{
             }else{
                 this.handleOffset = makePt(handle.width/2, handle.height/2);
             }
-
         }
 
         this.pointingGestureMove(e);
@@ -194,13 +193,17 @@ export class Range extends React.Component<SliderProps, SliderState>{
             if(direction === 'vertical' || direction === '2d'){
                 this.handleRef.current.style.top = `${handleOffsetY}px`;
             }
-
         }
 
         if (this.props.onChange){
-            this.props.onChange(this.valueFromRects());
+            const value = this.valueFromRects();
+            if (this.props.direction === '2d'){
+                const v2d = value as Size;
+                this.props.onChange(v2d.width, v2d.height);
+            }else{
+                this.props.onChange(value as number);
+            }
         }
-
     }
 
     private handleOffsetFromValue(value: number | Size): number | Size{
@@ -212,8 +215,8 @@ export class Range extends React.Component<SliderProps, SliderState>{
             const min = this.props.min as Size;
             const v = value as Size;
             const avail = makeSz(
-                container.height - handle.height,
-                container.width - handle.width
+                container.width - handle.width,
+                container.height - handle.height
             );
             return makeSz(
                 v.width * avail.width / (max.width - min.width),
@@ -238,8 +241,37 @@ export class Range extends React.Component<SliderProps, SliderState>{
         }
     }
 
+    private updateHandleForValue(rawValue: number | Size){
+
+        const value = this.handleOffsetFromValue(rawValue);
+
+        if (typeof value === 'number'){
+            if (this.props.direction === 'vertical'){
+                this.handleRef.current!.style.top = value + 'px';
+            }else{
+                this.handleRef.current!.style.left = value + 'px';
+            }
+        }else{
+            const value2d = value as Size;
+            this.handleRef.current!.style.left = value2d.width + 'px';
+            this.handleRef.current!.style.top = value2d.height + 'px';
+        }
+    }
+
     private get refsReady(): boolean {
         return !!this.containerRef.current && !!this.handleRef.current;
+    }
+
+    componentDidMount() {
+        if (!this.dragging && this.refsReady && typeof this.props.value !== 'undefined'){
+            this.updateHandleForValue(this.props.value)
+        }
+    }
+
+    componentDidUpdate(prevProps: Readonly<SliderProps>, prevState: Readonly<SliderState>, snapshot?: any) {
+        if (!this.dragging && this.refsReady && typeof this.props.value !== 'undefined'){
+            this.updateHandleForValue(this.props.value);
+        }
     }
 
     render() {
