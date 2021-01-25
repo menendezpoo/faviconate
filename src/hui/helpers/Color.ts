@@ -3,6 +3,10 @@ export class InvalidColorFormatError extends Error{}
 
 export class Color{
 
+    static black(): Color{
+        return new Color(0, 0,0);
+    }
+
     static hexParsable(hexColor: string): boolean{
         return hexColor.match(/#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?/) !== null;
     }
@@ -87,6 +91,10 @@ export class Color{
 
     static get transparent(): Color{
         return new Color(0, 0, 0, 0);
+    }
+
+    static get white(): Color{
+        return new Color(255, 255, 255);
     }
 
     constructor(

@@ -191,6 +191,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const hsv = color.hsv;
         const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
         const alpha = color.a * 100;
+        console.log(`alpha: ${alpha}`);
 
         const satImg = createSaturationPattern(hue, 10);
         const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb}
