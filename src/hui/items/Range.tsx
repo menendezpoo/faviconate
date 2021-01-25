@@ -14,7 +14,7 @@ export interface SliderProps{
 }
 
 export interface SliderState{
-    value: number | Size;
+    value: number | Size | 'pristine';
 }
 
 interface GestureData{
@@ -39,7 +39,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
         super(props);
 
         this.state = {
-            value: props.value || props.min,
+            value: 'pristine',
         };
     }
 
@@ -203,18 +203,38 @@ export class Range extends React.Component<SliderProps, SliderState>{
 
     }
 
-    private handleOffsetFromValue(value: number): number{
+    private handleOffsetFromValue(value: number | Size): number | Size{
 
-        if (this.props.direction !== '2d'){
-            const {container, handle} = this.boundingRects();
+        const {container, handle} = this.boundingRects();
+
+        if (this.props.direction === '2d'){
+            const max = this.props.max as Size;
+            const min = this.props.min as Size;
+            const v = value as Size;
+            const avail = makeSz(
+                container.height - handle.height,
+                container.width - handle.width
+            );
+            return makeSz(
+                v.width * avail.width / (max.width - min.width),
+                v.height * avail.height / (max.height - min.height),
+            );
+        }else{
             const max = this.props.max as number;
             const min = this.props.min as number;
-            const avail = container.width - handle.width;
-            const result = value * avail / (max-min);
+            const v = value as number;
+            let avail;
+
+            if(this.props.direction === 'vertical') {
+                avail = container.height - handle.height;
+            }else{
+                avail = container.width - handle.width;
+            }
+
+            const result = v * avail / (max-min);
 
             return result;
-        }else{
-            throw new Error('TODO');
+
         }
     }
 

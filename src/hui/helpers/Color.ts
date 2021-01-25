@@ -3,7 +3,7 @@ export class InvalidColorFormatError extends Error{}
 
 export class Color{
 
-    static black(): Color{
+    static get black(): Color{
         return new Color(0, 0,0);
     }
 

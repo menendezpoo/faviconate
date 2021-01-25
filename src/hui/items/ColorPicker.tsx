@@ -6,6 +6,7 @@ import {Range} from "./Range";
 import {makePt, makeSz, Size} from "../helpers/Rectangle";
 
 export interface ColorPickerProps{
+
     colorPicked: (color: Color) => any;
 }
 
@@ -77,7 +78,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         super(props);
 
         this.state = {
-            currentColor: Color.transparent,
+            currentColor: Color.black,
             selectedHue: -1,
         }
 
