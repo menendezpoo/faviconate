@@ -6,8 +6,11 @@ export class EraserTool extends PencilTool{
 
     constructor(controller: IconCanvasController) {
         super(controller);
-
         this.color = Color.transparent;
+    }
+
+    useColor(color: Color) {
+        // do nothing, color must be transparent
     }
 
 }
