@@ -505,7 +505,7 @@ export class App extends React.Component<AppProps, AppState>{
             >
             <ToolbarView items={mainToolbarItems}>
                 <DockView side={`right`} sideView={sideBar}>
-                    <ToolbarView side={`left`} items={toolToolbarItems}>
+                    <ToolbarView classNames={`canvas-main`} side={`left`} items={toolToolbarItems}>
                         <CanvasView controller={controller} />
                     </ToolbarView>
                 </DockView>
