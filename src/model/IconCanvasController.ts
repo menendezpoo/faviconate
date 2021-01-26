@@ -45,7 +45,6 @@ export class IconCanvasController implements CanvasViewController{
             });
         }
 
-        (window as any)._editor = this.editor;
     }
 
     async copy(): Promise<void>{

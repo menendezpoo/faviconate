@@ -1,4 +1,18 @@
+
+html {
+  height  : 100%;
+  overflow: hidden;
+  position: relative;
+}
+body {
+  height  : 100%;
+  overflow: auto;
+  position: relative;
+}
+
 #app{
+  height  : 100%;
+  overflow: hidden;
   position: absolute;
   top: 0;
   left: 0;

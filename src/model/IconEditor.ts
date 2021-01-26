@@ -3,6 +3,7 @@ import {Editor} from "./Editor";
 import {CanvasSensor} from "../components/CanvasView";
 import {Rectangle} from "../hui/helpers/Rectangle";
 import {IconService} from "./IconService";
+import {Color} from "../hui/helpers/Color";
 
 
 
@@ -20,6 +21,7 @@ export interface IconDocument{
 export interface IconEditorTool extends CanvasSensor{
     activate?: () => void;
     deactivate?: () => void;
+    useColor?: (color: Color) => void;
 }
 
 export class IconEditor extends Editor<IconDocument>{

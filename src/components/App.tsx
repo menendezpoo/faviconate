@@ -16,6 +16,7 @@ import {IconDirectory, IconService} from "../model/IconService";
 import {MenuItem} from "../hui/items/MenuItem";
 import {makeSz, Size} from "../hui/helpers/Rectangle";
 import {InvalidImageError} from "../model/errors";
+import {FloodFillTool} from "../model/tools/FloodFillTool";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -43,6 +44,7 @@ export interface AppState{
     redos: number;
     showBackground: boolean;
     showGrid: boolean;
+    colorA: Color;
 }
 
 export class App extends React.Component<AppProps, AppState>{
@@ -51,9 +53,7 @@ export class App extends React.Component<AppProps, AppState>{
         super(props);
 
         this.state = this.newDocumentState(DEFAULT_ICON);
-
         const icon = this.state.controller.editor.document.icon;
-
         IconService.asBlobUrl(icon).then(data => this.setState({previews: [data]}));
 
     }
@@ -73,6 +73,7 @@ export class App extends React.Component<AppProps, AppState>{
             redos: 0,
             showBackground: true,
             showGrid: true,
+            colorA: Color.black,
         }
     }
 
@@ -239,24 +240,37 @@ export class App extends React.Component<AppProps, AppState>{
     }
 
     private useEraser(){
-        this.setState({selectedTool: new EraserTool(this.state.controller)});
+        this.useTool(new EraserTool(this.state.controller));
+    }
+
+    private useFlood(){
+        this.useTool(new FloodFillTool(this.state.controller));
     }
 
     private usePen(){
-        const pen = new PencilTool(this.state.controller);
-        this.setState({selectedTool: pen});
-
+        this.useTool(new PencilTool(this.state.controller));
     }
 
     private useSelection(){
-        this.setState({selectedTool: new SelectionTool(this.state.controller)});
+        this.useTool(new SelectionTool(this.state.controller));
     }
 
     private colorPick(color: Color){
-        if (this.state.controller.tool instanceof PencilTool){
-            const p: PencilTool = this.state.controller.tool as PencilTool;
-            p.color = color;
-        }
+
+        this.state.controllers.forEach(c => {
+            if (c.tool && c.tool.useColor){
+                c.tool.useColor(color);
+            }
+        });
+
+        this.setState({colorA: color});
+    }
+
+    private useTool(tool: IconEditorTool){
+        // if (tool.useColor){
+        //     tool.useColor(this.state.colorA);
+        // }
+        this.setState({selectedTool: tool});
     }
 
     private undo(){
@@ -340,6 +354,10 @@ export class App extends React.Component<AppProps, AppState>{
                 this.usePen();
                 e.preventDefault();
 
+            }else if((e.key === 'f') && !ctrlMeta){
+                this.useFlood();
+                e.preventDefault();
+
             }else if(e.key === 'e' && !ctrlMeta){
                 this.useEraser();
                 e.preventDefault();
@@ -379,7 +397,7 @@ export class App extends React.Component<AppProps, AppState>{
     render() {
 
         const controller = this.state.controller;
-
+        const tool = this.state.selectedTool;
         const mainToolbarItems = <>
             <Button text={`Faviconate`}>
                 <MenuItem text={`New 16x16 Icon`} onActivate={() => this.newDocument(16)}/>
@@ -395,22 +413,26 @@ export class App extends React.Component<AppProps, AppState>{
             <Button text={`Copy`} onClick={() => this.copy()}/>
             <Button text={`Paste`} onClick={() => this.paste()}/>
         </>;
-
         const toolToolbarItems = <>
             <Button
                 text={`Sel`}
                 onClick={() => this.useSelection()}
-                selected={this.state.selectedTool instanceof SelectionTool}
+                selected={tool instanceof SelectionTool}
             />
             <Button
                 text={`Pen`}
                 onClick={() => this.usePen()}
-                selected={this.state.selectedTool instanceof PencilTool && !(this.state.selectedTool instanceof EraserTool)}
+                selected={tool instanceof PencilTool && !(tool instanceof EraserTool)}
+            />
+            <Button
+                text={`Fld`}
+                onClick={() => this.useFlood()}
+                selected={tool instanceof FloodFillTool}
             />
             <Button
                 text={`Ers`}
                 onClick={() => this.useEraser()}
-                selected={this.state.selectedTool instanceof EraserTool}/>
+                selected={tool instanceof EraserTool}/>
             <Button
                 text={`Bg`}
                 onClick={() => this.setState({showBackground: !this.state.showBackground})}
@@ -422,7 +444,6 @@ export class App extends React.Component<AppProps, AppState>{
                 selected={this.state.showGrid}
             />
         </>;
-
         const sideBar = (
             <div className="editor-sidebar">
                 <Button text={`+`} onClick={() => this.newIconEntry(16)}>
@@ -452,9 +473,13 @@ export class App extends React.Component<AppProps, AppState>{
             changeFavicon(this.state.previews[this.state.currentIcon]);
         }
 
-        controller.tool = this.state.selectedTool;
+        controller.tool = tool;
         controller.showBackground = this.state.showBackground;
         controller.showGrid = this.state.showGrid;
+
+        if (controller.tool && controller.tool.useColor){
+            controller.tool.useColor(this.state.colorA);
+        }
 
         return (
             <div id={`app`}

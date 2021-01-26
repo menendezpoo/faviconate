@@ -109,6 +109,10 @@ export class Color{
         this.a = Math.max(Math.min(a, 1), 0);
     }
 
+    equals(c: Color): boolean{
+        return c.r === this.r && c.g === this.g && c.b === this.b && c.a === this.a;
+    }
+
     withAlpha(alpha: number){
         if (alpha < 0 || alpha > 100){
             throw new Error(`Invalid alpha: ${alpha}`);

@@ -58,4 +58,8 @@ export class PencilTool implements IconEditorTool{
 
     }
 
+    useColor(color: Color){
+        this.color = color;
+    }
+
 }
