@@ -228,7 +228,24 @@ export class App extends React.Component<AppProps, AppState>{
             .catch(e => console.log(`Not pasted: ${e}`));
     }
 
+    private importFileDialog(){
+        const input: HTMLInputElement = document.createElement('input');
+        input.type = 'file';
+        input.style.display = 'none';
+        input.onchange = e => {
+            if (input.files && input.files.length > 0){
+                this.importFile(input.files[0]);
+            }
+        };
+
+        document.body.appendChild(input);
+
+        setTimeout(() => input.click());
+
+    }
+
     private importFile(file: File){
+
         if (file.name.toLowerCase().endsWith('.ico')){
             IconService.fromIcoBlob(file)
                 .then(dir => this.setIcons(dir))
@@ -388,9 +405,7 @@ export class App extends React.Component<AppProps, AppState>{
                 }
                 setTimeout(() => (this.state.selectedTool as SelectionTool).selectAll());
                 e.preventDefault();
-
             }
-
         });
     }
 
@@ -405,6 +420,8 @@ export class App extends React.Component<AppProps, AppState>{
                 <MenuItem text={`New 64x64 Icon`} onActivate={() => this.newDocument(64)}/>
                 <MenuItem text={`New 128x128 Icon`} onActivate={() => this.newDocument(128)}/>
                 <MenuItem text={`New 256x256 Icon`} onActivate={() => this.newDocument(256)}/>
+                <Separator/>
+                <MenuItem text={`Import File`} onActivate={() => this.importFileDialog()}/>
             </Button>
             <Separator/>
             <Button text={`Undo`} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
