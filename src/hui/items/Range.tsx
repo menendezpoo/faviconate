@@ -119,11 +119,9 @@ export class Range extends React.Component<SliderProps, SliderState>{
     }
 
     private boundingRects(): {container: Rectangle; handle: Rectangle}{
-
         if(!this.containerRef.current || !this.handleRef.current){
             throw new Error(`Refs not ready`);
         }
-
         return {
             container: Rectangle.fromDOMRect(this.containerRef.current.getBoundingClientRect()),
             handle: Rectangle.fromDOMRect(this.handleRef.current.getBoundingClientRect()),
@@ -132,12 +130,10 @@ export class Range extends React.Component<SliderProps, SliderState>{
     }
 
     private touchEnd(e: TouchEvent){
-
         if (e.touches.length > 0){
             this.pointingGestureEnd(e.touches[0]);
             e.preventDefault();
         }
-
         window.removeEventListener('touchmove', this.touchMoveHandler);
         window.removeEventListener('touchend', this.touchEndHandler);
     }

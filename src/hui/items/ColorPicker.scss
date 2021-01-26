@@ -1,9 +1,10 @@
 .ui-color-picker{
 
   $slider-height: 10px;
-  $slider-margin: 40px 0;
+  $slider-margin: 30px 0;
   $handle-margin-top: -14px;
   $layer-border: solid 1px silver;
+  $layer-border-radius: 5px;
   $swatch-height: 40px;
 
   %handle{
@@ -18,7 +19,7 @@
     color: transparent;
     width: 40px;
     height: 40px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(127, 127, 127, 0.2);
     position: absolute;
     border-radius: 100%;
     top: -16px;
@@ -36,7 +37,7 @@
     margin: 10px 0;
 
     &.swatch{
-      border-radius: 5px;
+      border-radius: $layer-border-radius;
       overflow: hidden;
       border: $layer-border;
       height: $swatch-height;
@@ -46,32 +47,28 @@
     }
 
     &.slider-2d{
-
       .ui-range{
         height: 100px;
         background-size: 100% 100px;
         background-repeat: no-repeat;
-        border-radius: 5px;
+        border-radius: $layer-border-radius;
         border: $layer-border;
-        background-color: blue;
-
         .handle{
           @extend %handle;
-
-          &:after{ @extend %handleAura; }
+          &:before{ @extend %handleAura; }
         }
-
       }
     }
 
     &.slider-1d{
       .ui-range{
         border: $layer-border;
+        border-radius: $layer-border-radius;
         height: $slider-height;
         margin: $slider-margin;
         .handle{
           @extend %handle;
-          &:after{ @extend %handleAura; }
+          &:before{ @extend %handleAura; }
         }
       }
     }
@@ -81,7 +78,6 @@
         border: $layer-border;
         height: $slider-height;
         margin: $slider-margin;
-        overflow: hidden;
         background-color: transparent;
         background-size: contain;
         background-repeat: repeat;
@@ -94,10 +90,26 @@
           position: absolute;
           left: 0; top: 0; right: 0; bottom: 0;
           background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+          border-radius: $layer-border-radius;
         }
       }
     }
+    &.inputs{
+      display: flex;
+      .item{
+        flex-shrink: 3;
+        text-align: center;
 
+        &.hex{
+          flex-shrink: 1;
+        }
+
+        input{
+          width: 70%;
+          text-align: center;
+        }
+      }
+    }
   }
 
 }

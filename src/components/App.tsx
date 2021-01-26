@@ -423,28 +423,30 @@ export class App extends React.Component<AppProps, AppState>{
             />
         </>;
 
-        const sideBar = <>
-            <Button text={`+`} onClick={() => this.newIconEntry(16)}>
-                <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
-                <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
-                <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
-                <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
-                <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
-            </Button>
-            <Button text={`-`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
-            <div>
-                {this.state.previews.map((item, index) => (
-                    <PreviewPanel
-                        key={item}
-                        data={item}
-                        selected={index === this.state.currentIcon}
-                        onActivate={() => this.goToIcon(index)}/>
-                ))}
+        const sideBar = (
+            <div className="editor-sidebar">
+                <Button text={`+`} onClick={() => this.newIconEntry(16)}>
+                    <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
+                    <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
+                    <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
+                    <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
+                    <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
+                </Button>
+                <Button text={`-`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
+                <div>
+                    {this.state.previews.map((item, index) => (
+                        <PreviewPanel
+                            key={item}
+                            data={item}
+                            selected={index === this.state.currentIcon}
+                            onActivate={() => this.goToIcon(index)}/>
+                    ))}
+                </div>
+                <ColorPicker colorPicked={color => this.colorPick(color) } />
+                <Button text={`PNG`} onClick={() => this.download('png')}/>
+                <Button text={`ICO`} onClick={() => this.download('ico')}/>
             </div>
-            <ColorPicker colorPicked={color => this.colorPick(color) } />
-            <Button text={`PNG`} onClick={() => this.download('png')}/>
-            <Button text={`ICO`} onClick={() => this.download('ico')}/>
-        </>;
+        );
 
         if (this.state.previews[this.state.currentIcon]){
             changeFavicon(this.state.previews[this.state.currentIcon]);

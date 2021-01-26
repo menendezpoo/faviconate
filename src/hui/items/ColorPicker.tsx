@@ -7,7 +7,7 @@ import {makeSz} from "../helpers/Rectangle";
 
 const BG_SQ_SIZE = 5;
 const BG_COLOR_A = [0, 0, 0, 0];
-const BG_COLOR_B = [200, 200, 200, 255];
+const BG_COLOR_B = [127, 127, 127, 127];
 
 export interface ColorPickerProps{
 
@@ -157,9 +157,8 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     private updateSatLight(satValue?: number, keyValue?: number){
         const current = this.state.currentColor;
         const hue = this.state.selectedHue;
-        const sat = 1 - (satValue || 0) / 100;
+        const sat = (satValue || 0) / 100;
         const key = (keyValue || 0) / 100;
-        console.log(`in s, v: ${sat}, ${key}`);
         this.updateColor(Color.fromHsv(hue >= 0 ? hue : 0, sat, key).withAlpha(current.a), hue);
     }
 
@@ -211,10 +210,9 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         const color = this.state.currentColor;
         const hsv = color.hsv;
         const hue = this.state.selectedHue >= 0 ? this.state.selectedHue : hsv[0];
-        const sat = Math.round(hsv[1] * 100);
-        const keyValue = Math.round(hsv[2] * 100);
+        const sat = hsv[1] * 100;
+        const keyValue = hsv[2] * 100;
         const alpha = color.a * 100;
-        console.log(`out s, v: ${hsv[1]}, ${hsv[2]}`);
 
         const satImg = createSaturationPattern(hue, 10);
         const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb};
@@ -233,10 +231,10 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                     <Range
                         min={makeSz(0,0)}
                         max={makeSz(100, 100)}
-                        value={makeSz(keyValue, 100 - sat)}
+                        value={makeSz(sat, 100-keyValue)}
                         direction={'2d'}
                         containerStyle={satContainerStyle}
-                        onChange={(key, sat) => this.updateSatLight(sat, key)}
+                        onChange={(sat, key) => this.updateSatLight(sat, 100 - (key||0))}
                     />
                 </div>
                 <div className="layer slider-1d">
@@ -259,23 +257,23 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                     />
                 </div>
                 <div className="layer inputs">
-                    <div className="item">
+                    <div className="item hex">
                         <input type="text" ref={this.txtHex}/>
                         <div className="label">Hex</div>
                     </div>
-                    <div className="item">
+                    <div className="item r">
                         <input type="text" ref={this.txtR}/>
                         <div className="label">R</div>
                     </div>
-                    <div className="item">
+                    <div className="item g">
                         <input type="text" ref={this.txtG}/>
                         <div className="label">G</div>
                     </div>
-                    <div className="item">
+                    <div className="item g">
                         <input type="text" ref={this.txtB}/>
                         <div className="label">B</div>
                     </div>
-                    <div className="item">
+                    <div className="item b">
                         <input type="text" ref={this.txtA}/>
                         <div className="label">A</div>
                     </div>
