@@ -424,39 +424,39 @@ export class App extends React.Component<AppProps, AppState>{
                 <MenuItem text={`Import File`} onActivate={() => this.importFileDialog()}/>
             </Button>
             <Separator/>
-            <Button text={`Undo`} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
-            <Button text={`Redo`} onClick={() => this.redo()} disabled={controller.editor.redoCount == 0}/>
-            <Button text={`Cut`} onClick={() => this.cut()}/>
-            <Button text={`Copy`} onClick={() => this.copy()}/>
-            <Button text={`Paste`} onClick={() => this.paste()}/>
+            <Button icon={`undo`} iconSize={50} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
+            <Button icon={`redo`} iconSize={50} onClick={() => this.redo()} disabled={controller.editor.redoCount == 0}/>
+            <Button icon={`cut`} iconSize={50} onClick={() => this.cut()}/>
+            <Button icon={`copy`} iconSize={50} onClick={() => this.copy()}/>
+            <Button icon={`paste`} iconSize={50} onClick={() => this.paste()}/>
         </>;
         const toolToolbarItems = <>
             <Button
-                text={`Sel`}
+                icon={`select`} iconSize={50}
                 onClick={() => this.useSelection()}
                 selected={tool instanceof SelectionTool}
             />
             <Button
-                text={`Pen`}
+                icon={`pencil`} iconSize={50}
                 onClick={() => this.usePen()}
                 selected={tool instanceof PencilTool && !(tool instanceof EraserTool)}
             />
             <Button
-                text={`Fld`}
+                icon={`bucket`} iconSize={50}
                 onClick={() => this.useFlood()}
                 selected={tool instanceof FloodFillTool}
             />
             <Button
-                text={`Ers`}
+                icon={`eraser`} iconSize={50}
                 onClick={() => this.useEraser()}
                 selected={tool instanceof EraserTool}/>
             <Button
-                text={`Bg`}
+                icon={`checker`} iconSize={50}
                 onClick={() => this.setState({showBackground: !this.state.showBackground})}
                 selected={this.state.showBackground}
             />
             <Button
-                text={`Gr`}
+                icon={`grid`} iconSize={50}
                 onClick={() => this.setState({showGrid: !this.state.showGrid})}
                 selected={this.state.showGrid}
             />
@@ -503,9 +503,9 @@ export class App extends React.Component<AppProps, AppState>{
                  onDragOver={e => this.appDragOver(e)}
                  onDrop={e => this.appDrop(e)}
             >
-            <ToolbarView items={mainToolbarItems}>
+            <ToolbarView sideClassNames={`main-tools`} items={mainToolbarItems}>
                 <DockView side={`right`} sideView={sideBar}>
-                    <ToolbarView classNames={`canvas-main`} side={`left`} items={toolToolbarItems}>
+                    <ToolbarView sideClassNames={`main-tools`} length={50} classNames={`canvas-main`} side={`left`} items={toolToolbarItems}>
                         <CanvasView controller={controller} />
                     </ToolbarView>
                 </DockView>

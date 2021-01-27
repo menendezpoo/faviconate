@@ -31,4 +31,15 @@ body {
     overscroll-behavior: none;
   }
 
+  .toolbar.main-tools{
+    .ui-button{
+      border-radius: 5px;
+      padding: 0;
+
+      &.selected{
+        background-color: #f0f0f0;
+      }
+    }
+  }
+
 }

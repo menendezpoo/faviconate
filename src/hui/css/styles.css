@@ -15,3 +15,4 @@ body{
 .ui-icon.icon-chevron-down { background-image: url("icons/0827-chevron-down.svg"); }
 .ui-icon.icon-chevron-left { background-image: url("icons/0828-chevron-left.svg"); }
 .ui-icon.icon-chevron-right { background-image: url("icons/0829-chevron-right.svg"); }
+.ui-icon.icon-select { background-image: url("../../components/icons/select.svg"); }
