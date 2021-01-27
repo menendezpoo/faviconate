@@ -13,6 +13,7 @@ body {
 }
 
 #app{
+  user-select: none;
   height  : 100%;
   overflow: hidden;
   position: absolute;
