@@ -8,6 +8,7 @@ body {
   height  : 100%;
   overflow: auto;
   position: relative;
+  overscroll-behavior: none;
 }
 
 #app{
@@ -26,6 +27,7 @@ body {
   .canvas-main.main-side{
     overflow: hidden;
     height: 100%;
+    overscroll-behavior: none;
   }
 
 }
