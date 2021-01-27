@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="0 0 50 50" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group</title>
+    <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-229.000000, -410.000000)">
+            <g id="Group" transform="translate(229.000000, 410.000000)">
+                <rect id="Rectangle" x="0" y="0" width="50" height="50"></rect>
+                <path d="M15.5,35 C15.37,35 15.242,34.949 15.146,34.854 C15.009,34.717 14.963,34.512 15.03,34.33 L17.03,28.83 C17.055,28.761 17.095,28.699 17.146,28.647 L30.646,15.147 C30.841,14.952 31.158,14.952 31.353,15.147 L34.853,18.647 C35.048,18.842 35.048,19.159 34.853,19.354 L21.353,32.854 C21.301,32.906 21.239,32.945 21.17,32.97 L15.67,34.97 C15.614,34.99 15.557,35 15.499,35 L15.5,35 Z M17.932,29.275 L16.336,33.664 L20.725,32.068 L33.793,19 L31,16.207 L17.932,29.275 Z" id="Shape" fill="#8D8D8D" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>
