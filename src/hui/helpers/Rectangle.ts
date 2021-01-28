@@ -157,6 +157,10 @@ export class Rectangle{
         return (rectX < thisX + thisW) && (thisX < (rectX + rectW)) && (rectY < thisY + thisH) && (thisY < rectY + rectH);
     }
 
+    offset(xOffset: number, yOffset: number): Rectangle{
+        return this.withLocation(makePt(this.left + xOffset, this.top + yOffset));
+    }
+
     round(): Rectangle{
         return new Rectangle(
             Math.round(this.left),
@@ -258,16 +262,32 @@ export class Rectangle{
         return makePt(this.right, this.center.y);
     }
 
+    get eastSegment(): [Point, Point]{
+        return [this.northEast, this.southEast];
+    }
+
     get north(): Point{
         return makePt(this.center.x, this.top);
+    }
+
+    get northSegment(): [Point, Point]{
+        return [this.northEast, this.northWest];
     }
 
     get south(): Point{
         return makePt(this.center.x, this.bottom);
     }
 
+    get southSegment(): [Point, Point]{
+        return [this.southEast, this.southWest];
+    }
+
     get west(): Point{
         return makePt(this.left, this.center.y);
+    }
+
+    get westSegment(): [Point, Point]{
+        return [this.southWest, this.northWest];
     }
 
     get size(): Size{

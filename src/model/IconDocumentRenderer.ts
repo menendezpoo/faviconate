@@ -1,18 +1,28 @@
 import {IconDocument} from "./IconEditor";
-import {makeSz, Rectangle, Size} from "../hui/helpers/Rectangle";
+import {makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
 import {MemoryError} from "./errors";
 import {darkModeOn} from "../hui/helpers/Utils";
 
-const GRID_OUT = Color.fromHex(darkModeOn() ? `#646363` : `#d0d0d0`);
-const GRID_STRONG = Color.fromHex(darkModeOn() ? `#4C4A4A` : `#e0e0e0`);
-const GRID_LIGHT = Color.fromHex(darkModeOn() ? `343434` : `#e0e0e0`);
+const dark = darkModeOn();
+const GRID_OUT = Color.fromHex(dark ? 'fff' : '000').withAlpha(0.05);
+const GRID_STRONG = Color.fromHex(dark ? `#4C4A4A` : `#e0e0e0`);
+const GRID_LIGHT = Color.fromHex(dark ? `fff` : `000`).withAlpha(0.05);
 const CHECKER_EVEN = Color.transparent;
-const CHECKER_ODD = Color.fromHex(darkModeOn() ? '#2a2a2a' : '#f0f0f0');
+const CHECKER_ODD = Color.fromHex(dark ? 'fff' : '000').withAlpha(0.05);
 const CHECKER_SIZE = 10;
+const CORNER_RADIUS = 10;
+const PLATE_BG = Color.fromHex(dark ? 'fff' : '000').withAlpha(0.05);
 
 const CLOCK_MOD = 4;
 const SAFE_CLEAR = 10;
+
+interface Corners {
+    tl: number;
+    tr: number;
+    br: number;
+    bl: number;
+}
 
 export class IconDocumentRenderer {
 
@@ -76,13 +86,52 @@ export class IconDocumentRenderer {
 
     }
 
+    readonly bounds: Rectangle;
+
     constructor(
         readonly document: IconDocument,
         readonly context: CanvasRenderingContext2D,
-        readonly bounds: Rectangle,
+        readonly plateBounds: Rectangle,
         readonly drawBackground: boolean,
         readonly drawGrid: boolean,
-    ) {}
+    ) {
+        this.bounds = this.plateBounds.deflate(CORNER_RADIUS, CORNER_RADIUS);
+    }
+
+    private pathRoundRect(bounds: Rectangle, radius: number | Corners = 10) {
+
+        const ctx = this.context;
+        const {x, y} = bounds.location;
+        const {width, height} = bounds.size;
+
+        if (typeof radius === 'number') {
+            radius = {tl: radius, tr: radius, br: radius, bl: radius};
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(x + radius.tl, y);
+        ctx.lineTo(x + width - radius.tr, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        ctx.lineTo(x + width, y + height - radius.br);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        ctx.lineTo(x + radius.bl, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        ctx.lineTo(x, y + radius.tl);
+        ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+        ctx.closePath();
+
+    }
+
+    private pathLines(lines: [Point, Point][]){
+        const c = this.context;
+
+        c.beginPath();
+
+        for(const line of lines){
+            c.moveTo(line[0].x, line[0].y);
+            c.lineTo(line[1].x, line[1].y);
+        }
+    }
 
     private rectStroke(r: Rectangle, color: Color){
         this.context.strokeStyle = color.cssRgba;
@@ -158,7 +207,16 @@ export class IconDocumentRenderer {
     }
 
     private renderFrame(){
-        this.rectStroke(this.bounds, GRID_OUT);
+        const r = CORNER_RADIUS;
+        const p = this.plateBounds;
+        this.pathLines([
+            p.offset(0, r).northSegment,
+            p.offset(-r, 0).eastSegment,
+            p.offset(0, -r).southSegment,
+            p.offset(r, 0).westSegment
+        ]);
+        this.context.strokeStyle = GRID_OUT.cssRgba;
+        this.context.stroke();
     }
 
     private renderChecker(){
@@ -200,8 +258,6 @@ export class IconDocumentRenderer {
 
         // this.context.strokeStyle = '#000';
         // this.context.strokeRect(...selBounds.tuple);
-
-
 
         const fives = new Array(Math.round(selBounds.width / 5)).fill(5);
 
@@ -247,7 +303,6 @@ export class IconDocumentRenderer {
 
         segmentedRect(selBounds);
 
-
         switch(IconDocumentRenderer.clockReminder){
             case 0: this.context.setLineDash([0, 1, ...fives]); break;
             case 1: this.context.setLineDash([0, 2, ...fives]); break;
@@ -262,10 +317,15 @@ export class IconDocumentRenderer {
         this.context.strokeStyle = '#000';
         segmentedRect(selBounds);
 
-
         this.context.setLineDash([]);
         this.context.lineWidth = lineWidthBuffer;
 
+    }
+
+    private drawPlate(){
+        this.pathRoundRect(this.plateBounds, CORNER_RADIUS);
+        this.context.fillStyle = PLATE_BG.cssRgba;
+        this.context.fill();
     }
 
     render(){
@@ -274,6 +334,8 @@ export class IconDocumentRenderer {
             this.bounds.height / this.document.icon.height);
 
         this.context.clearRect(...this.bounds.inflate(SAFE_CLEAR, SAFE_CLEAR).tuple);
+
+        this.drawPlate();
 
         if (this.drawBackground){
             this.renderChecker();

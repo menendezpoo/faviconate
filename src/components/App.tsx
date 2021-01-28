@@ -62,7 +62,7 @@ export class App extends React.Component<AppProps, AppState>{
     private newDocumentState(size: Size): AppState{
         const icon = IconService.newIcon(size.width, size.height);
         const controller = this.createController({icon});
-        const selectedTool = new SelectionTool(controller);
+        const selectedTool = new PencilTool(controller);
 
         return {
             controller,
@@ -415,7 +415,7 @@ export class App extends React.Component<AppProps, AppState>{
         const controller = this.state.controller;
         const tool = this.state.selectedTool;
         const mainToolbarItems = <>
-            <Button text={`Faviconate`}>
+            <Button text={`faviconate`}>
                 <MenuItem text={`New 16x16 Icon`} onActivate={() => this.newDocument(16)}/>
                 <MenuItem text={`New 32x32 Icon`} onActivate={() => this.newDocument(32)}/>
                 <MenuItem text={`New 64x64 Icon`} onActivate={() => this.newDocument(64)}/>
