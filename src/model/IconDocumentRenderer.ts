@@ -2,12 +2,14 @@ import {IconDocument} from "./IconEditor";
 import {makeSz, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
 import {MemoryError} from "./errors";
+import {darkModeOn} from "../hui/helpers/Utils";
 
-const GRID_OUT = Color.fromHex(`#d0d0d0`);
-const GRID_INT = Color.fromHex(`#e0e0e0`);
+const GRID_OUT = Color.fromHex(darkModeOn() ? `#646363` : `#d0d0d0`);
+const GRID_STRONG = Color.fromHex(darkModeOn() ? `#4C4A4A` : `#e0e0e0`);
+const GRID_LIGHT = Color.fromHex(darkModeOn() ? `343434` : `#e0e0e0`);
 const CHECKER_EVEN = Color.transparent;
-const CHECKER_ODD = Color.fromHex(`#f0f0f0`);
-const CHECKER_SIZE = 20;
+const CHECKER_ODD = Color.fromHex(darkModeOn() ? '#2a2a2a' : '#f0f0f0');
+const CHECKER_SIZE = 10;
 
 const CLOCK_MOD = 4;
 const SAFE_CLEAR = 10;
@@ -150,7 +152,7 @@ export class IconDocumentRenderer {
             y += pixelSize.height;
         }
 
-        ctx.strokeStyle = GRID_INT.cssRgba;
+        ctx.strokeStyle = GRID_LIGHT.cssRgba;
         ctx.stroke();
 
     }

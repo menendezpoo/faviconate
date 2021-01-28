@@ -3,7 +3,7 @@
   $slider-height: 10px;
   $slider-margin: 30px 0;
   $handle-margin-top: -14px;
-  $layer-border: solid 1px silver;
+  $layer-border: none; //solid 1px #808080;
   $layer-border-radius: 5px;
   $swatch-height: 40px;
 
@@ -102,6 +102,9 @@
 
         &.hex{
           flex-shrink: 1;
+        }
+        .label{
+          margin: 10px 0;
         }
 
         input{

@@ -1,6 +1,16 @@
+
+$button-face-hover-bg: Highlight !default;
+$button-face-hover-fg: HighlightText !default;
+$button-face-selected-bg: Highlight !default;
+$button-face-selected-fg: HighlightText !default;
+$window-bg: Window !default;
+$window-fg: WindowText !default;
+$window-border: #ddd !default;
+$separator: rgba(0, 0, 0, 0.13) !default;
+
 .ui-clickable.is-open{
-    background-color: Highlight;
-    color: HighlightText;
+    background-color: $button-face-hover-bg;
+    color: $button-face-hover-fg;
 }
 
 .ui-button-wrap.split:hover > .ui-button-split-part,
@@ -8,29 +18,29 @@
 .ui-button:hover:not(.face-never):not(.disabled),
 .ui-clickable.selected:not(.disabled),
 .ui-button.is-open{
-    background-color: Highlight;
-    color: HighlightText;
+    background-color: $button-face-hover-bg;
+    color: $button-face-hover-fg;
 }
 
 .ui-menuitem.is-open,
 .ui-menuitem.is-selected{
-    background-color: Highlight;
-    color: HighlightText;
+    background-color: $button-face-selected-bg;
+    color: $button-face-selected-fg;
 }
 
 .ui-menu-overlay,
 .ui-suggestions-overlay{
-    background-color: Window;
-    color: WindowText;
-    border: solid 1px #ddd;
+    background-color: $window-bg;
+    color: $window-fg;
+    border: solid 1px $window-border;
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 .ui-separator:after{
-    background-color: rgba(0, 0, 0, 0.13);
+    background-color: $separator;
 }
 .ui-item-group{
-    border: solid 1px #ddd;
+    border: solid 1px $window-border;
     border-radius: 0.5em;
 }
 
@@ -38,7 +48,7 @@
     background-color: #ddd;
 }
 
-.ui-split-view > .dock-side{ border-color: #ddd;  }
+.ui-split-view > .dock-side{ border-color: $window-border;  }
 
 .ui-tab-view > .tabs { background-color: #ddd;}
 .ui-tab-view > .tabs  > .items > .tab {margin-top: 0.6em;}

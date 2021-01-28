@@ -10,6 +10,7 @@ body {
   overflow: auto;
   position: relative;
   overscroll-behavior: none;
+  font-family: 'San Francisco', 'Helvetica', sans-serif;
 }
 
 #app{
@@ -32,14 +33,35 @@ body {
     overscroll-behavior: none;
   }
 
+  .side-top > .toolbar.main-tools {
+     > .items.near{
+        margin: 10px;
+       .ui-button{ margin-right: 5px; }
+    }
+
+  }
+  .side-left > .toolbar.main-tools {
+     > .items.near{
+        margin: 0 10px;
+       .ui-button{ margin-bottom: 5px; }
+    }
+
+  }
+
   .toolbar.main-tools{
     .ui-button{
       border-radius: 5px;
       padding: 0;
 
-      &.selected{
-        background-color: #f0f0f0;
+      &:focus{
+        outline: none;
       }
+    }
+  }
+
+  .ui-button{
+    &:focus{
+      outline: none;
     }
   }
 

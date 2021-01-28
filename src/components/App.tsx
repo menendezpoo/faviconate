@@ -17,6 +17,7 @@ import {MenuItem} from "../hui/items/MenuItem";
 import {makeSz, Size} from "../hui/helpers/Rectangle";
 import {InvalidImageError} from "../model/errors";
 import {FloodFillTool} from "../model/tools/FloodFillTool";
+import {darkModeOn} from "../hui/helpers/Utils";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -73,7 +74,7 @@ export class App extends React.Component<AppProps, AppState>{
             redos: 0,
             showBackground: true,
             showGrid: true,
-            colorA: Color.black,
+            colorA: darkModeOn() ? Color.white : Color.black,
         }
     }
 
@@ -426,6 +427,7 @@ export class App extends React.Component<AppProps, AppState>{
             <Separator/>
             <Button icon={`undo`} iconSize={50} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
             <Button icon={`redo`} iconSize={50} onClick={() => this.redo()} disabled={controller.editor.redoCount == 0}/>
+            <Separator/>
             <Button icon={`cut`} iconSize={50} onClick={() => this.cut()}/>
             <Button icon={`copy`} iconSize={50} onClick={() => this.copy()}/>
             <Button icon={`paste`} iconSize={50} onClick={() => this.paste()}/>
@@ -436,6 +438,7 @@ export class App extends React.Component<AppProps, AppState>{
                 onClick={() => this.useSelection()}
                 selected={tool instanceof SelectionTool}
             />
+            <Separator/>
             <Button
                 icon={`pencil`} iconSize={50}
                 onClick={() => this.usePen()}
@@ -450,6 +453,7 @@ export class App extends React.Component<AppProps, AppState>{
                 icon={`eraser`} iconSize={50}
                 onClick={() => this.useEraser()}
                 selected={tool instanceof EraserTool}/>
+            <Separator/>
             <Button
                 icon={`checker`} iconSize={50}
                 onClick={() => this.setState({showBackground: !this.state.showBackground})}
@@ -503,9 +507,9 @@ export class App extends React.Component<AppProps, AppState>{
                  onDragOver={e => this.appDragOver(e)}
                  onDrop={e => this.appDrop(e)}
             >
-            <ToolbarView sideClassNames={`main-tools`} items={mainToolbarItems}>
+            <ToolbarView sideClassNames={`main-tools`} length={70} items={mainToolbarItems}>
                 <DockView side={`right`} sideView={sideBar}>
-                    <ToolbarView sideClassNames={`main-tools`} length={50} classNames={`canvas-main`} side={`left`} items={toolToolbarItems}>
+                    <ToolbarView sideClassNames={`main-tools`} length={70} classNames={`canvas-main`} side={`left`} items={toolToolbarItems}>
                         <CanvasView controller={controller} />
                     </ToolbarView>
                 </DockView>
