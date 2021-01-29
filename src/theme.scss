@@ -30,7 +30,7 @@ $button-face-selected-bg: $color-strong;
 .expando {
   > .head{
     color: #101010;
-    background-color: rgba(0,0,0,0.1)
+    background-color: rgba(0,0,0,0.1);
   }
   > .body{ background-color: rgba(0,0,0,0.05) }
 }
@@ -40,7 +40,15 @@ $button-face-selected-bg: $color-strong;
     background-color: $color-strong;
     > .preview{ border-right: solid 1px $color-light; }
   }
+}
 
+.adjusters{
+  .ui-range{
+    background: $color-light;
+    .handle{
+      background-color: $color-strong;
+    }
+  }
 }
 
 /* Dark mode */
@@ -120,7 +128,15 @@ $button-face-selected-bg: $color-strong;
       background-color: $color-strong;
       > .preview{ border-right: solid 1px $color-light; }
     }
+  }
 
+  .adjusters{
+    .ui-range{
+      background: $color-light;
+      .handle{
+        background-color: $color-strong;
+      }
+    }
   }
 
 }

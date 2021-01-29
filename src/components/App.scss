@@ -14,6 +14,7 @@ body {
 }
 
 #app{
+  $space: 10px;
   user-select: none;
   height  : 100%;
   overflow: hidden;
@@ -34,6 +35,14 @@ body {
     &:focus{
       outline: none;
     }
+  }
+
+  .adjusters > .ui-range{
+
+    &:first-child{
+      margin-bottom: $space;
+    }
+
   }
 
   .editor-sidebar{

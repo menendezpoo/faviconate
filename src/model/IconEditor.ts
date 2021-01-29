@@ -26,13 +26,15 @@ export interface IconEditorTool extends CanvasSensor{
 
 export class IconEditor extends Editor<IconDocument>{
 
-    cloneDocument(): IconDocument{
+    cloneDocument(doc?: IconDocument): IconDocument{
 
-        const doc = this.document;
+        if (typeof doc === "undefined"){
+            doc = this.document;
+        }
 
         const newDocument = {
             ...doc,
-            icon: IconService.clone(this.document.icon),
+            icon: IconService.clone(doc.icon),
         };
 
         return newDocument;

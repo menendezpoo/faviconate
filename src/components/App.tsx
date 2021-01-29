@@ -1,6 +1,7 @@
 import * as React from "react";
 import {ToolbarView} from "../hui/layout/ToolbarView";
 import {Button} from "../hui/items/Button";
+import {Range} from "../hui/items/Range";
 import {Separator} from "../hui/items/Separator";
 import {DockView} from "../hui/layout/DockView";
 import {CanvasView} from "./CanvasView";
@@ -21,6 +22,8 @@ import {darkModeOn} from "../hui/helpers/Utils";
 import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
 import {Label} from "../hui/items/Label";
+import {AdjustTool} from "../model/tools/AdjustTool";
+import {log} from "util";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -260,6 +263,10 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
+    private useAdjustments(){
+        this.useTool(new AdjustTool(this.state.controller));
+    }
+
     private useEraser(){
         this.useTool(new EraserTool(this.state.controller));
     }
@@ -433,6 +440,18 @@ export class App extends React.Component<AppProps, AppState>{
         });
     }
 
+    commandContrast(value: number){
+        if (this.state.selectedTool instanceof AdjustTool){
+            (this.state.selectedTool as AdjustTool).setContrast(value);
+        }
+    }
+
+    commandBrightness(value: number){
+        if (this.state.selectedTool instanceof AdjustTool){
+            (this.state.selectedTool as AdjustTool).setBrightness(value);
+        }
+    }
+
     commandSelectAll(){
         if (this.state.selectedTool instanceof SelectionTool){
             (this.state.selectedTool as SelectionTool).selectAll();
@@ -485,6 +504,17 @@ export class App extends React.Component<AppProps, AppState>{
                 <Expando title={`Color`}>
                     <ColorPicker colorPicked={color => this.colorPick(color) } />
                 </Expando>
+            );
+        }else if ( tool instanceof AdjustTool ){
+            return (
+                <>
+                    <Expando title={`Adjust`}>
+                        <div className="adjusters">
+                            <Range min={-200} max={200} value={0} onChange={value => this.commandBrightness(value)} />
+                            <Range min={-128} max={128} value={0} onChange={value => this.commandContrast(value)} />
+                        </div>
+                    </Expando>
+                </>
             );
         }
     }
@@ -544,6 +574,12 @@ export class App extends React.Component<AppProps, AppState>{
                 icon={`grid`} iconSize={50}
                 onClick={() => this.setState({showGrid: !this.state.showGrid})}
                 selected={this.state.showGrid}
+            />
+            <Separator/>
+            <Button
+                icon={`equalizer`} iconSize={50}
+                onClick={() => this.useAdjustments()}
+                selected={tool instanceof AdjustTool}
             />
         </>;
 
