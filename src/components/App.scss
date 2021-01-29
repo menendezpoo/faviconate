@@ -25,6 +25,10 @@ body {
 
   .ui-button{
     border-radius: 5px;
+  }
+
+  .toolbar .ui-button,
+  .expando > .head > .items .ui-button{
     padding: 0;
 
     &:focus{

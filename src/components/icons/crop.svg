@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group 14</title>
+    <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-773.000000, -621.000000)">
+            <g id="Group-14" transform="translate(773.000000, 621.000000)">
+                <g id="Group-3" fill="#8D8D8D" fill-rule="nonzero">
+                    <path d="M19.5,15 L16.5,15 C16.224,15 16,14.776 16,14.5 C16,14.224 16.224,14 16.5,14 L19.5,14 C19.776,14 20,14.224 20,14.5 C20,14.776 19.776,15 19.5,15 Z" id="Path"></path>
+                    <path d="M12.5,15 L5.5,15 C5.224,15 5,14.776 5,14.5 L5,7.5 C5,7.224 5.224,7 5.5,7 C5.776,7 6,7.224 6,7.5 L6,14 L12.5,14 C12.776,14 13,14.224 13,14.5 C13,14.776 12.776,15 12.5,15 Z" id="Path"></path>
+                    <path d="M5.5,4 C5.224,4 5,3.776 5,3.5 L5,0.5 C5,0.224 5.224,0 5.5,0 C5.776,0 6,0.224 6,0.5 L6,3.5 C6,3.776 5.776,4 5.5,4 Z" id="Path"></path>
+                    <path d="M14.5,20 C14.224,20 14,19.776 14,19.5 L14,6 L0.5,6 C0.224,6 0,5.776 0,5.5 C0,5.224 0.224,5 0.5,5 L14.5,5 C14.776,5 15,5.224 15,5.5 L15,19.5 C15,19.776 14.776,20 14.5,20 Z" id="Path"></path>
+                </g>
+                <rect id="Rectangle-Copy-10" fill="#D8D8D8" opacity="0" x="0" y="0" width="20" height="20"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

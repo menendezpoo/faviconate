@@ -198,6 +198,17 @@ export class SelectionTool implements IconEditorTool{
 
     }
 
+    cropToSelection(){
+
+        const sprite = this.editor.document.selectionSprite;
+
+        if (sprite){
+            this.editor.transact({icon: sprite});
+        }else{
+            throw new NoSelectionError();
+        }
+    }
+
     deactivate(){
         if (this.document.selectionRegion){
             this.clearSelection();

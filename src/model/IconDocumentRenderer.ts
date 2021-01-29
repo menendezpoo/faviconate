@@ -333,7 +333,7 @@ export class IconDocumentRenderer {
             this.bounds.width / this.document.icon.width,
             this.bounds.height / this.document.icon.height);
 
-        this.context.clearRect(...this.bounds.inflate(SAFE_CLEAR, SAFE_CLEAR).tuple);
+        this.context.clearRect(...this.plateBounds.inflate(SAFE_CLEAR, SAFE_CLEAR).tuple);
 
         this.drawPlate();
 

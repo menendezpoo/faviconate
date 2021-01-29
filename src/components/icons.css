@@ -4,7 +4,7 @@
 .ui-icon.icon-cut { background-image: url("icons/cut.svg"); }
 .ui-icon.icon-ellipsis { background-image: url("icons/ellipsis.svg"); }
 .ui-icon.icon-eraser { background-image: url("icons/eraser.svg"); }
-.ui-icon.icon-eyedrop { background-image: url("icons/eyedrop.svg"); }
+.ui-icon.icon-eyedropper { background-image: url("icons/eyedropper.svg"); }
 .ui-icon.icon-floppy { background-image: url("icons/floppy.svg"); }
 .ui-icon.icon-grid { background-image: url("icons/grid.svg"); }
 .ui-icon.icon-minus { background-image: url("icons/minus.svg"); }
@@ -15,3 +15,7 @@
 .ui-icon.icon-select { background-image: url("icons/select.svg"); }
 .ui-icon.icon-undo { background-image: url("icons/undo.svg"); }
 .ui-icon.icon-select { background-image: url("icons/select.svg"); }
+.ui-icon.icon-corners { background-image: url("icons/corners.svg"); }
+.ui-icon.icon-crop { background-image: url("icons/crop.svg"); }
+.ui-icon.icon-full-frame { background-image: url("icons/full-frame.svg"); }
+.ui-icon.icon-grid-crossed { background-image: url("icons/grid-crossed.svg"); }

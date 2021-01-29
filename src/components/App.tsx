@@ -20,6 +20,7 @@ import {FloodFillTool} from "../model/tools/FloodFillTool";
 import {darkModeOn} from "../hui/helpers/Utils";
 import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
+import {Label} from "../hui/items/Label";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -40,7 +41,6 @@ export interface AppProps{}
 interface IconPreview{
     id: number;
     data: string;
-    size: Size;
 }
 
 export interface AppState{
@@ -63,8 +63,7 @@ export class App extends React.Component<AppProps, AppState>{
         this.state = this.newDocumentState(DEFAULT_ICON);
         const icon = this.state.controller.editor.document.icon;
         const id = this.state.controller.id;
-        const size = this.state.controller.iconSize;
-        IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data, size}]}));
+        IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data}]}));
 
     }
 
@@ -157,11 +156,10 @@ export class App extends React.Component<AppProps, AppState>{
             controller =this.createController({icon: IconService.newIcon(DEFAULT_ICON.width, DEFAULT_ICON.height)});
             controllers = [controller];
             const selectedTool = new SelectionTool(controller)
-            const size = controller.iconSize;
             IconService.asBlobUrl(controller.editor.document.icon)
                 .then(data => {
                     this.setState({
-                        controllers, controller, selectedTool, previews: [{id: controller.id, data, size}]
+                        controllers, controller, selectedTool, previews: [{id: controller.id, data}]
                     })
                 });
 
@@ -348,8 +346,7 @@ export class App extends React.Component<AppProps, AppState>{
                 throw new Error();
             }
 
-            const size = c.iconSize;
-            this.setState({previews: [...previews, {id, data, size}]});
+            this.setState({previews: [...previews, {id, data}]});
         }
     }
 
@@ -436,9 +433,66 @@ export class App extends React.Component<AppProps, AppState>{
         });
     }
 
+    commandSelectAll(){
+        if (this.state.selectedTool instanceof SelectionTool){
+            (this.state.selectedTool as SelectionTool).selectAll();
+        }
+    }
+
+    commandClearSelection(){
+        if (this.state.selectedTool instanceof SelectionTool){
+            (this.state.selectedTool as SelectionTool).clearSelection();
+        }
+    }
+
+    commandDeleteSelection(){
+        if (this.state.selectedTool instanceof SelectionTool){
+            (this.state.selectedTool as SelectionTool).deleteSelection();
+        }
+    }
+
+    commandCrop(){
+        if (this.state.selectedTool instanceof SelectionTool){
+            (this.state.selectedTool as SelectionTool).cropToSelection();
+        }
+    }
+
+    toolComponent(): React.ReactNode{
+        const tool = this.state.selectedTool;
+
+        if (!tool){
+            return <></>;
+        }
+
+        const colorable = tool?.useColor;
+        const isEraser = tool instanceof EraserTool;
+        const doc = this.state.controller.editor.document;
+
+        if (tool instanceof SelectionTool){
+
+            const size = doc.selectionRegion ? `${doc.selectionRegion.width} x ${doc.selectionRegion.height}` : `Nothing Selected`;
+
+            return (
+                <Expando title={`Selection`} items={<Label text={size}/>}>
+                    <Button text={`Select All`} iconSize={20} icon={`full-frame`} onClick={() => this.commandSelectAll()}/>
+                    <Button text={`Clear Selection`} iconSize={20} icon={`corners`} onClick={() => this.commandClearSelection()}/>
+                    <Button text={`Delete Selection`}  iconSize={20} icon={`grid-crossed`} onClick={() => this.commandDeleteSelection()}/>
+                    <Button text={`Crop`} iconSize={20} icon={`crop`} onClick={() => this.commandCrop()}/>
+                </Expando>
+            );
+        }else if ( colorable && !isEraser ){
+            return (
+                <Expando title={`Color`}>
+                    <ColorPicker colorPicked={color => this.colorPick(color) } />
+                </Expando>
+            );
+        }
+    }
+
     render() {
 
         const controller = this.state.controller;
+        const controllers = this.state.controllers;
         const currentId = controller.id;
         const tool = this.state.selectedTool;
         const mainToolbarItems = <>
@@ -492,6 +546,19 @@ export class App extends React.Component<AppProps, AppState>{
                 selected={this.state.showGrid}
             />
         </>;
+
+        const sizeOf = (itemId: number): Size => {
+            const ctl = controllers.find(c => c.id === itemId);
+
+            if (ctl){
+                return ctl.iconSize;
+            }
+            return makeSz(0,0);
+        };
+
+        const sortedPreviews = this.state.previews
+            .sort((a, b) => -compareSize(sizeOf(a.id), sizeOf(b.id)));
+
         const sideBar = (
             <div className="editor-sidebar">
                 <Expando title={`Preview`}
@@ -509,21 +576,17 @@ export class App extends React.Component<AppProps, AppState>{
                         </>
                     )}
                 >
-                    {this.state.previews
-                        .sort((a, b) => compareSize(a.size, b.size) * -1)
+                    {sortedPreviews
                         .map((item) => (
                         <PreviewPanel
                             key={item.id}
                             data={item.data}
                             selected={item.id === currentId}
-                            size={item.size}
+                            size={sizeOf(item.id)}
                             onActivate={() => this.goToIcon(item.id)}/>
                     ))}
                 </Expando>
-                <Expando title={`Color`}>
-                    <ColorPicker colorPicked={color => this.colorPick(color) } />
-                </Expando>
-
+                {this.toolComponent()}
                 <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
                 <Button text={`ICO`} onClick={() => this.download('ico')} icon={`floppy`} iconSize={50}/>
             </div>

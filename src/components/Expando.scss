@@ -21,6 +21,12 @@
 
     > .items{
       display: flex;
+
+      .ui-label{
+        margin-right: $space;
+        opacity: 0.3;
+      }
+
     }
   }
 
@@ -29,6 +35,13 @@
     border-bottom-left-radius: $b-rad;
     border-bottom-right-radius: $b-rad;
     padding: $space;
+
+    > .children{
+      .ui-button{
+        display: block;
+      }
+    }
+
   }
 
 }
