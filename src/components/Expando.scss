@@ -1,0 +1,34 @@
+.expando{
+
+  $b-rad: 10px;
+  $space: 10px;
+
+  margin-bottom: $space;
+
+  > .head{
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 50px;
+    border-top-left-radius: $b-rad;
+    border-top-right-radius: $b-rad;
+
+    > .label{
+      margin-left: $space;
+    }
+
+    > .items{
+      display: flex;
+    }
+  }
+
+  > .body{
+    min-height: 20px;
+    border-bottom-left-radius: $b-rad;
+    border-bottom-right-radius: $b-rad;
+    padding: $space;
+  }
+
+}

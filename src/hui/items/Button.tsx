@@ -17,6 +17,7 @@ export interface ButtonProps extends ClickableProps{
     classTag?: string;
     disabled?: boolean;
     selected?: boolean;
+    useChevron?: boolean;
 }
 
 export interface ButtonState {
@@ -95,7 +96,7 @@ export class Button extends React.Component<ButtonProps, ButtonState>{
 
     render(){
         const rect = Rectangle.fromDOMRect(this.buttonRef.current?.getBoundingClientRect() || new DOMRect());
-        const chevron = () => <Icon name={"chevron-down"} size={8}/>;
+        const chevron = () => this.props.useChevron ? <Icon name={"chevron-down"} size={8}/> : undefined;
         const label = () => <Label {...this.props} />;
         const menu = () => (
             <MenuOverlay

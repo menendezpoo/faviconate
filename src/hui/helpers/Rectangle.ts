@@ -35,6 +35,10 @@ export function roundSz(size: Size): Size{
     return makeSz(Math.round(size.width), Math.round(size.height));
 }
 
+export function compareSize(a: Size, b: Size): number{
+    return (a.width * a.height) - (b.width * b.height);
+}
+
 export function slope(a: Point, b: Point): number{
     return (b.y - a.y) / (b.x - a.x);
 }

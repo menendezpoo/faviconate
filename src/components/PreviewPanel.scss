@@ -1,9 +1,57 @@
 .preview-panel{
 
-  border-left: 4px solid transparent;
+  $space: 10px;
+
+  display: flex;
+  align-items: center;
+  border-radius: 7px;
+
+  &:not(:last-child){
+    margin-bottom: $space;
+  }
+
+  &.level-1, &.level-2{
+    justify-content: space-between;
+    > .preview {
+      margin-right: $space;
+    }
+  }
+
+  &.level-3, &.level-4{
+    flex-direction: row;
+
+    > .preview{
+      margin-bottom: $space;
+    }
+  }
+
+  &.level-1{
+    > .preview { width: 64px; height: 64px; }
+  }
+
+  &.level-2{
+    > .preview { width: 128px; height: 128px;}
+  }
+
+  &.level-3{
+    > .preview { width: 192px; height: 192px;}
+  }
+
+  &.level-4{
+    > .preview { width: 256px; height: 256px;}
+  }
+
+  > .preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
 
   &.selected{
-    border-left-color: Highlight;
+    > .preview {
+      border-right: solid 1px transparent;
+    }
   }
 
 }

@@ -25,11 +25,16 @@ export interface PasteResult{
 
 export type DownloadFormat = 'png' | 'ico';
 
+function id(): number{
+    return Math.round(Math.random() * Number.MAX_SAFE_INTEGER - 10000) + 10000;
+}
+
 export class IconCanvasController implements CanvasViewController{
 
     showBackground = false;
     showGrid = false;
 
+    readonly id = id();
     readonly editor: IconEditor;
     private _tool: IconEditorTool | null = new PencilTool(this);
     private previewBounds: Rectangle = Rectangle.empty;
@@ -252,6 +257,10 @@ export class IconCanvasController implements CanvasViewController{
 
             renderer.render();
         }
+    }
+
+    get iconSize(): Size{
+        return makeSz(this.editor.document.icon.width, this.editor.document.icon.height);
     }
 
     get tool(): IconEditorTool | null{

@@ -10,7 +10,7 @@ body {
   overflow: auto;
   position: relative;
   overscroll-behavior: none;
-  font-family: 'San Francisco', 'Helvetica', sans-serif;
+  font-family: 'Mukta Mahee', 'San Francisco', 'Helvetica', sans-serif;
 }
 
 #app{
@@ -22,6 +22,15 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
+
+  .ui-button{
+    border-radius: 5px;
+    padding: 0;
+
+    &:focus{
+      outline: none;
+    }
+  }
 
   .editor-sidebar{
     margin: 0 10px;
@@ -46,17 +55,6 @@ body {
        .ui-button{ margin-bottom: 5px; }
     }
 
-  }
-
-  .toolbar.main-tools{
-    .ui-button{
-      border-radius: 5px;
-      padding: 0;
-
-      &:focus{
-        outline: none;
-      }
-    }
   }
 
   .ui-button{

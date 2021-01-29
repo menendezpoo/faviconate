@@ -1,6 +1,8 @@
 
-$button-face-hover-bg: #f0f0f0;
-$button-face-selected-bg: #f0f0f0;
+$color-strong: #00000019;
+$color-light: #000000d0;
+$button-face-hover-bg: $color-strong;
+$button-face-selected-bg: $color-strong;
 
 .ui-clickable.is-open{
   background-color: $button-face-hover-bg;
@@ -25,18 +27,35 @@ $button-face-selected-bg: #f0f0f0;
   }
 }
 
+.expando {
+  > .head{
+    color: #101010;
+    background-color: rgba(0,0,0,0.1)
+  }
+  > .body{ background-color: rgba(0,0,0,0.05) }
+}
+
+.preview-panel {
+  &.selected{
+    background-color: $color-strong;
+    > .preview{ border-right: solid 1px $color-light; }
+  }
+
+}
+
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
-
-  $button-face-hover-bg: #2c2c2c;
+  $color-strong: #ffffff19;
+  $color-light: #ffffff0d;
+  $button-face-hover-bg: $color-strong;
   $button-face-hover-fg: #828282;
-  $button-face-selected-bg: #2c2c2c;
+  $button-face-selected-bg: $color-strong;
   $button-face-selected-fg: #828282;
   $window-bg: #232328;
   $window-fg: #828282;
-  $window-border: #2c2c2c;
-  $separator: rgba(255, 255, 255, 0.13);
-  $text-box-bg: #2d2d2d;
+  $window-border: $color-light;
+  $separator: $color-strong;
+  $text-box-bg: $color-light;
 
   body{
     background: $window-bg;
@@ -84,6 +103,24 @@ $button-face-selected-bg: #f0f0f0;
       background: $text-box-bg;
       color: $window-fg;
     }
+  }
+
+  .expando {
+    > .head{
+      color: #efefef;
+      background-color: rgba(255, 255, 255, 0.1)
+    }
+    > .body{
+      background-color: rgba(255, 255, 255, 0.05)
+    }
+  }
+
+  .preview-panel {
+    &.selected{
+      background-color: $color-strong;
+      > .preview{ border-right: solid 1px $color-light; }
+    }
+
   }
 
 }

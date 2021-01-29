@@ -14,10 +14,12 @@ import {IconDocument, IconEditorTool} from "../model/IconEditor";
 import {SelectionTool} from "../model/tools/SelectionTool";
 import {IconDirectory, IconService} from "../model/IconService";
 import {MenuItem} from "../hui/items/MenuItem";
-import {makeSz, Size} from "../hui/helpers/Rectangle";
+import {compareSize, makeSz, Size} from "../hui/helpers/Rectangle";
 import {InvalidImageError} from "../model/errors";
 import {FloodFillTool} from "../model/tools/FloodFillTool";
 import {darkModeOn} from "../hui/helpers/Utils";
+import {Expando} from "./Expando";
+import {iconSz} from "../model/Icon";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -35,12 +37,17 @@ function changeFavicon(src: string) {
 
 export interface AppProps{}
 
+interface IconPreview{
+    id: number;
+    data: string;
+    size: Size;
+}
+
 export interface AppState{
     controller: IconCanvasController;
     controllers: IconCanvasController[];
-    previews: string[];
+    previews: IconPreview[];
     selectedTool: IconEditorTool | null;
-    currentIcon: number;
     undos: number;
     redos: number;
     showBackground: boolean;
@@ -55,7 +62,9 @@ export class App extends React.Component<AppProps, AppState>{
 
         this.state = this.newDocumentState(DEFAULT_ICON);
         const icon = this.state.controller.editor.document.icon;
-        IconService.asBlobUrl(icon).then(data => this.setState({previews: [data]}));
+        const id = this.state.controller.id;
+        const size = this.state.controller.iconSize;
+        IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data, size}]}));
 
     }
 
@@ -68,7 +77,6 @@ export class App extends React.Component<AppProps, AppState>{
             controller,
             selectedTool,
             controllers: [controller],
-            currentIcon: 0,
             previews: [],
             undos: 0,
             redos: 0,
@@ -100,18 +108,16 @@ export class App extends React.Component<AppProps, AppState>{
         const controller = this.createController(doc);
         const selectedTool = new SelectionTool(controller);
         const controllers = [...this.state.controllers, controller];
-        const currentIcon = controllers.length - 1;
 
         (selectedTool as SelectionTool).selectAll();
 
         IconService.asBlobUrl(icon).then(data => {
 
-            const previews = [...this.state.previews, data];
+            const previews = [...this.state.previews, {id: controller.id, data, size: iconSz(icon)}];
             this.setState({
                 controller,
                 controllers,
                 selectedTool,
-                currentIcon,
                 previews
             });
         })
@@ -124,27 +130,26 @@ export class App extends React.Component<AppProps, AppState>{
         }
 
         const controllers = dir.icons.map(icon => this.createController({icon}));
-        const currentIcon = 0;
         const controller = controllers[0];
+        const currentIcon = controller.id;
         const selectedTool = new SelectionTool(controller);
 
         Promise.all(controllers.map(c => IconService.asBlobUrl(c.editor.document.icon)))
-            .then(previews => {
+            .then(dataArr => {
                 this.setState({
                     controller,
                     controllers,
                     selectedTool,
-                    currentIcon,
-                    previews
+                    previews: dataArr.map((data, i) => ({id: controller.id, data, size: controllers[i].iconSize}))
                 });
             });
     }
 
     private removeIconEntry(){
 
-        let current = this.state.currentIcon;
-        let controllers = this.state.controllers.filter((item, i) => i !== current);
-        let previews = this.state.previews.filter((item, i) => i !== current);
+        const id = this.state.controller.id;
+        let controllers = this.state.controllers.filter((item) => item.id !== id);
+        let previews = this.state.previews.filter((item, i) => item.id !== id);
         let controller: IconCanvasController;
         let currentIcon = 0;
 
@@ -152,11 +157,11 @@ export class App extends React.Component<AppProps, AppState>{
             controller =this.createController({icon: IconService.newIcon(DEFAULT_ICON.width, DEFAULT_ICON.height)});
             controllers = [controller];
             const selectedTool = new SelectionTool(controller)
-
+            const size = controller.iconSize;
             IconService.asBlobUrl(controller.editor.document.icon)
                 .then(data => {
                     this.setState({
-                        controllers, controller, currentIcon, selectedTool, previews: [data]
+                        controllers, controller, selectedTool, previews: [{id: controller.id, data, size}]
                     })
                 });
 
@@ -165,7 +170,7 @@ export class App extends React.Component<AppProps, AppState>{
             controller = controllers[currentIcon];
 
             this.setState({
-                controllers, controller, currentIcon, previews, selectedTool: controller.tool
+                controllers, controller, previews, selectedTool: controller.tool
             });
         }
 
@@ -320,24 +325,45 @@ export class App extends React.Component<AppProps, AppState>{
 
         controller.editor.documentSubmitted = () => {
 
-            const previews = [...this.state.previews];
             const icon = this.state.controller.editor.document.icon;
+            const id = this.state.controller.id;
 
-            IconService.asBlobUrl(icon).then(data => {
-                previews[this.state.currentIcon] = data;
-                this.setState({previews});
-            });
+            IconService.asBlobUrl(icon).then(data => this.setPreviewData(id, data));
         };
 
         return controller;
     }
 
+    private setPreviewData(id: number, data: string){
+        const previews = this.state.previews;
+        const p = previews.find(p => p.id === id);
+
+        if(p){
+            p.data = data;
+            this.setState({previews});
+        }else{
+            const c = this.state.controllers.find(c => c.id === id);
+
+            if(!c){
+                throw new Error();
+            }
+
+            const size = c.iconSize;
+            this.setState({previews: [...previews, {id, data, size}]});
+        }
+    }
+
     private goToIcon(currentIcon: number){
 
-        const controller = this.state.controllers[currentIcon];
+        const controller = this.state.controllers.find(c => c.id === currentIcon);
+
+        if(!controller){
+            throw new Error();
+        }
+
         const selectedTool = controller.tool;
 
-        this.setState({controller, currentIcon, selectedTool});
+        this.setState({controller, selectedTool});
     }
 
     private download(format: DownloadFormat){
@@ -413,6 +439,7 @@ export class App extends React.Component<AppProps, AppState>{
     render() {
 
         const controller = this.state.controller;
+        const currentId = controller.id;
         const tool = this.state.selectedTool;
         const mainToolbarItems = <>
             <Button text={`faviconate`}>
@@ -467,31 +494,44 @@ export class App extends React.Component<AppProps, AppState>{
         </>;
         const sideBar = (
             <div className="editor-sidebar">
-                <Button text={`+`} onClick={() => this.newIconEntry(16)}>
-                    <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
-                    <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
-                    <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
-                    <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
-                    <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
-                </Button>
-                <Button text={`-`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
-                <div>
-                    {this.state.previews.map((item, index) => (
+                <Expando title={`Preview`}
+                    items={(
+                        <>
+                            <Button iconSize={50} icon={`plus`}>
+                                <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
+                                <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
+                                <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
+                                <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
+                                <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
+                            </Button>
+                            <Button iconSize={50} icon={`minus`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
+                            <Button iconSize={50} icon={`ellipsis`}/>
+                        </>
+                    )}
+                >
+                    {this.state.previews
+                        .sort((a, b) => compareSize(a.size, b.size) * -1)
+                        .map((item) => (
                         <PreviewPanel
-                            key={item}
-                            data={item}
-                            selected={index === this.state.currentIcon}
-                            onActivate={() => this.goToIcon(index)}/>
+                            key={item.id}
+                            data={item.data}
+                            selected={item.id === currentId}
+                            size={item.size}
+                            onActivate={() => this.goToIcon(item.id)}/>
                     ))}
-                </div>
-                <ColorPicker colorPicked={color => this.colorPick(color) } />
-                <Button text={`PNG`} onClick={() => this.download('png')}/>
-                <Button text={`ICO`} onClick={() => this.download('ico')}/>
+                </Expando>
+                <Expando title={`Color`}>
+                    <ColorPicker colorPicked={color => this.colorPick(color) } />
+                </Expando>
+
+                <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
+                <Button text={`ICO`} onClick={() => this.download('ico')} icon={`floppy`} iconSize={50}/>
             </div>
         );
 
-        if (this.state.previews[this.state.currentIcon]){
-            changeFavicon(this.state.previews[this.state.currentIcon]);
+        const preview = this.state.previews.find(p => p.id === currentId);
+        if (preview){
+            changeFavicon(preview.data);
         }
 
         controller.tool = tool;
