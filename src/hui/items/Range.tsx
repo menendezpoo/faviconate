@@ -95,7 +95,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
             this.pointingGestureStart(e.touches[0]);
         }
         e.preventDefault();
-        window.addEventListener('touchmove', this.touchMoveHandler);
+        window.addEventListener('touchmove', this.touchMoveHandler, {passive: false});
         window.addEventListener('touchend', this.touchEndHandler);
 
     }
