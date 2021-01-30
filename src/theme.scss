@@ -51,6 +51,15 @@ $button-face-selected-bg: $color-strong;
   }
 }
 
+.pal-swatch{
+  &:hover{
+    background-color: $color-light;
+  }
+  &.selected{
+    background-color: $color-strong;
+  }
+}
+
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   $color-strong: #ffffff19;
@@ -136,6 +145,15 @@ $button-face-selected-bg: $color-strong;
       .handle{
         background-color: $color-strong;
       }
+    }
+  }
+
+  .pal-swatch{
+    &:hover{
+      background-color: $color-light;
+    }
+    &.selected{
+      background-color: $color-strong;
     }
   }
 

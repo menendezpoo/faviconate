@@ -31,18 +31,29 @@ body {
   .toolbar .ui-button,
   .expando > .head > .items .ui-button{
     padding: 0;
-
     &:focus{
       outline: none;
     }
   }
 
-  .adjusters > .ui-range{
+  .pal-swatch{
+    display: inline-block;
+    padding: 5px;
+    border-radius: 4px;
+    margin-right: $space;
+    margin-bottom: $space;
 
+    > div {
+      border-radius: 10px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .adjusters > .ui-range{
     &:first-child{
       margin-bottom: $space;
     }
-
   }
 
   .editor-sidebar{
@@ -60,14 +71,12 @@ body {
         margin: 10px;
        .ui-button{ margin-right: 5px; }
     }
-
   }
   .side-left > .toolbar.main-tools {
      > .items.near{
         margin: 0 10px;
        .ui-button{ margin-bottom: 5px; }
     }
-
   }
 
   .ui-button{

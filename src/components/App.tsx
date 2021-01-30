@@ -23,7 +23,6 @@ import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
 import {Label} from "../hui/items/Label";
 import {AdjustTool} from "../model/tools/AdjustTool";
-import {log} from "util";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -328,7 +327,7 @@ export class App extends React.Component<AppProps, AppState>{
 
         const controller = new IconCanvasController(doc);
 
-        controller.editor.documentSubmitted = () => {
+        controller.editor.documentChanged = () => {
 
             const icon = this.state.controller.editor.document.icon;
             const id = this.state.controller.id;
@@ -458,6 +457,12 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
+    commandSetPalette(palette: Color[]){
+        if (this.state.selectedTool instanceof AdjustTool){
+            (this.state.selectedTool as AdjustTool).setPalette(palette);
+        }
+    }
+
     commandClearSelection(){
         if (this.state.selectedTool instanceof SelectionTool){
             (this.state.selectedTool as SelectionTool).clearSelection();
@@ -506,6 +511,23 @@ export class App extends React.Component<AppProps, AppState>{
                 </Expando>
             );
         }else if ( tool instanceof AdjustTool ){
+
+            const palette = (tool as AdjustTool).currentPalette;
+            const addBtn = (
+                <Button icon={`plus`} iconSize={50}/>
+            );
+            let palElem: React.ReactNode;
+
+            if (palette){
+                palElem = <>
+                    {palette.map(color => <div className="pal-swatch"><div style={{backgroundColor: color.hexRgb}}></div></div>)}
+                </>;
+            }else{
+                palElem = <Button
+                    text={`B & W`}
+                    onClick={() => this.commandSetPalette([Color.black, Color.white, Color.fromHex('808080')])}/>
+            }
+
             return (
                 <>
                     <Expando title={`Adjust`}>
@@ -513,6 +535,9 @@ export class App extends React.Component<AppProps, AppState>{
                             <Range min={-200} max={200} value={0} onChange={value => this.commandBrightness(value)} />
                             <Range min={-128} max={128} value={0} onChange={value => this.commandContrast(value)} />
                         </div>
+                    </Expando>
+                    <Expando title={`Palette`} items={addBtn}>
+                        {palElem}
                     </Expando>
                 </>
             );
@@ -603,6 +628,7 @@ export class App extends React.Component<AppProps, AppState>{
                             <Button iconSize={50} icon={`plus`}>
                                 <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
                                 <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
+                                <MenuItem text={`50 x 50`} onActivate={() => this.newIconEntry(50)}/>
                                 <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
                                 <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
                                 <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>

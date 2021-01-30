@@ -1,12 +1,15 @@
 import {IconDocument, IconEditorTool} from "../IconEditor";
 import {IconCanvasController} from "../IconCanvasController";
+import {Color} from "../../hui/helpers/Color";
+import {ImageAdjustService} from "../ImageAdjustService";
 
 export class AdjustTool implements IconEditorTool{
 
     original: IconDocument | null = null;
-
-    private lastBrightnessDelta: number = 0;
-    private lastContrastDelta: number = 0;
+    currentPalette: Color[] | null = null;
+    currentBrightness = 0;
+    currentContrast = 0;
+    currentKernel = 1;
 
     constructor(readonly controller: IconCanvasController){
         this.original = controller.editor.cloneDocument();
@@ -20,55 +23,57 @@ export class AdjustTool implements IconEditorTool{
         this.controller.editor.rollback();
     }
 
-    setContrast(delta: number, commit: boolean = false){
+    updateAdjustments(){
 
         if (!this.original){
             throw new Error();
         }
 
-        if (delta === this.lastContrastDelta){
-            return;
+        const doc = this.controller.editor.cloneDocument(this.original);
+        const icon = doc.icon;
+        const data = icon.data;
+
+        if (this.currentBrightness !== 0){
+            ImageAdjustService.brightness(data, this.currentBrightness);
         }
 
-        const doc = this.controller.editor.cloneDocument(this.original);
-        const data = doc.icon.data;
-        const factor = (259 * (delta + 255)) / (255 * (259 - delta));
-        const limit = 128;
+        if (this.currentContrast !== 0){
+            ImageAdjustService.contrast(data, this.currentContrast)
+        }
 
-        for(let i = 0; i < data.length; i+=4){
-            data[i] = Math.max(Math.min(factor * (data[i] - limit) + limit, 255), 0);
-            data[i + 1] = Math.max(Math.min(factor * (data[i + 1] - limit) + limit, 255), 0);
-            data[i + 2] = Math.max(Math.min(factor * (data[i + 2] - limit) + limit, 255), 0);
+        if (this.currentPalette){
+            ImageAdjustService.dither(data, icon.width, icon.height, this.currentPalette, this.currentKernel);
         }
 
         this.controller.editor.setDocument(doc);
-        this.lastContrastDelta = delta;
+    }
+
+    setContrast(delta: number, commit: boolean = false){
+
+        if (delta === this.currentContrast){
+            return;
+        }
+
+        this.currentContrast = delta;
+        this.updateAdjustments();
 
     }
 
     setBrightness(delta: number, commit: boolean = false){
 
-        if (!this.original){
-            throw new Error();
-        }
-
-        if (delta === this.lastBrightnessDelta){
+        if (delta === this.currentBrightness){
             return;
         }
 
-        console.log(`Setting brightness: ${delta}`);
+        this.currentBrightness = delta;
+        this.updateAdjustments();
 
-        const doc = this.controller.editor.cloneDocument(this.original);
-        const data = doc.icon.data;
+    }
 
-        for(let i = 0; i < data.length; i+=4){
-            data[i] = Math.max(Math.min(data[i] + delta, 255), 0);
-            data[i + 1] = Math.max(Math.min(data[i + 1] + delta, 255), 0);
-            data[i + 2] = Math.max(Math.min(data[i + 2] + delta, 255), 0);
-        }
+    setPalette(colors: Color[] | null){
 
-        this.controller.editor.setDocument(doc);
-        this.lastBrightnessDelta = delta;
+        this.currentPalette = colors;
+        this.updateAdjustments();
 
     }
 
