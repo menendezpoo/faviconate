@@ -12,11 +12,12 @@ export class AdjustTool implements IconEditorTool{
     currentKernel = 1;
 
     constructor(readonly controller: IconCanvasController){
-        this.original = controller.editor.cloneDocument();
+
     }
 
     activate(){
         this.controller.editor.begin();
+        this.original = this.controller.editor.cloneDocument();
     }
 
     deactivate(){

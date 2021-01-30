@@ -222,6 +222,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
             const max = this.props.max as number;
             const min = this.props.min as number;
             const v = value as number;
+            const length = max - min;
             let avail;
 
             if(this.props.direction === 'vertical') {
@@ -230,7 +231,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
                 avail = container.width - handle.width;
             }
 
-            const result = v * avail / (max-min);
+            const result = (v-min) * avail / (max-min);
 
             return result;
 
@@ -240,6 +241,8 @@ export class Range extends React.Component<SliderProps, SliderState>{
     private updateHandleForValue(rawValue: number | Size){
 
         const value = this.handleOffsetFromValue(rawValue);
+
+        console.log(`updateHandle: min: ${this.props.min} max: ${this.props.max} value: ${rawValue} left:${value}`);
 
         if (typeof value === 'number'){
             if (this.props.direction === 'vertical'){
