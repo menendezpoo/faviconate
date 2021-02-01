@@ -51,7 +51,7 @@ $button-face-selected-bg: $color-strong;
   }
 }
 
-.pal-swatch{
+.pal-swatch, .palette-preview{
   &:hover{
     background-color: $color-light;
   }
@@ -148,7 +148,7 @@ $button-face-selected-bg: $color-strong;
     }
   }
 
-  .pal-swatch{
+  .pal-swatch, .palette-preview{
     &:hover{
       background-color: $color-light;
     }

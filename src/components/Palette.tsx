@@ -46,13 +46,13 @@ export class Palette extends React.Component<PaletteProps, PaletteState>{
 
         if(pal && pal.length) {
             return (
-                <div className="palette">
+                <div className="ui-palette">
                     {pal.map(color => <div className="pal-swatch">{this.swatch(color)}</div>)}
                 </div>
             );
         }else{
             return (
-                <div className="palette">
+                <div className="ui-palette">
                     {Palette.gallery.map(p => this.palettePreview(p))}
                 </div>
             );

@@ -23,6 +23,7 @@ import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
 import {Label} from "../hui/items/Label";
 import {AdjustTool} from "../model/tools/AdjustTool";
+import {Palette} from "./Palette";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -516,17 +517,6 @@ export class App extends React.Component<AppProps, AppState>{
             const addBtn = (
                 <Button icon={`plus`} iconSize={50}/>
             );
-            let palElem: React.ReactNode;
-
-            if (palette){
-                palElem = <>
-                    {palette.map(color => <div className="pal-swatch"><div style={{backgroundColor: color.hexRgb}}></div></div>)}
-                </>;
-            }else{
-                palElem = <Button
-                    text={`B & W`}
-                    onClick={() => this.commandSetPalette([Color.black, Color.white, Color.fromHex('808080')])}/>
-            }
 
             return (
                 <>
@@ -537,7 +527,7 @@ export class App extends React.Component<AppProps, AppState>{
                         </div>
                     </Expando>
                     <Expando title={`Palette`} items={addBtn}>
-                        {palElem}
+                        <Palette palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
                     </Expando>
                 </>
             );
