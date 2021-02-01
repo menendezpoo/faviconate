@@ -242,7 +242,6 @@ export class Range extends React.Component<SliderProps, SliderState>{
 
         const value = this.handleOffsetFromValue(rawValue);
 
-        console.log(`updateHandle: min: ${this.props.min} max: ${this.props.max} value: ${rawValue} left:${value}`);
 
         if (typeof value === 'number'){
             if (this.props.direction === 'vertical'){

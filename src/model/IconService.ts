@@ -75,8 +75,6 @@ export class IconService{
             const pngBlob = await this.asBlobWithMime(icon, 'image/png');
             pngBlobs.push(pngBlob);
 
-            console.log(`PNG Blob: ${pngBlob.size}`);
-
             // ICONDIRENTRY
             composer.writeUint8Clamped(new Uint8ClampedArray([
                 icon.width === 256 ? 0 : icon.width,    // 1B Specifies image width in pixels. Can be any number between 0 and 255. Value 0 means image width is 256 pixels.
