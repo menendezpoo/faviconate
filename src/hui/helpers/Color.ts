@@ -103,9 +103,9 @@ export class Color{
         readonly b: number,     //  0 - 255
         readonly a: number = 1, //  0 - 1
     ) {
-        this.r = Math.max(Math.min(r, 255), 0);
-        this.g = Math.max(Math.min(g, 255), 0);
-        this.b = Math.max(Math.min(b, 255), 0);
+        this.r = Math.max(Math.min(Math.round(r), 255), 0);
+        this.g = Math.max(Math.min(Math.round(g), 255), 0);
+        this.b = Math.max(Math.min(Math.round(b), 255), 0);
         this.a = Math.max(Math.min(a, 1), 0);
     }
 

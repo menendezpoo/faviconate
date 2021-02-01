@@ -164,6 +164,7 @@ export class ImageAdjustService {
             return [data[i], data[i+1], data[i+2]];
         };
         const setPixel = (x: number, y: number, r: number, g: number, b: number) => {
+
             const i = width * 4 * y + x * 4;
             data[i] = r;
             data[i + 1] = g;
@@ -175,9 +176,10 @@ export class ImageAdjustService {
         let dir = serpentine ? -1 : 1;
 
         for (let y = 0; y < height; y++) {
+
             dir *= serpentine ? -1 : 1;
 
-            for (let x = (dir == 1 ? 0 : width - 1), xend = (dir == 1 ? width : 0); x !== xend; x += dir) {
+            for (let x = (dir == 1 ? 0 : width - 1), xEnd = (dir == 1 ? width : -1); x !== xEnd; x += dir) {
 
                 // Image pixel
                 const [r1, g1, b1] = getPixel(x, y);
@@ -193,19 +195,19 @@ export class ImageAdjustService {
                 let eb = b1 - b2;
 
                 for (let i = (dir == 1 ? 0 : kernel.length - 1), end = (dir == 1 ? kernel.length : 0); i !== end; i += dir) {
-                    let x1 = kernel[i][1] * dir;
-                    let y1 = kernel[i][2];
+                    let x1 = x + kernel[i][1] * dir;
+                    let y1 = y + kernel[i][2];
 
-                    if (x1 + x >= 0 && x1 + x < width && y1 + y >= 0 && y1 + y < height) {
+                    if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height) {
                         let d = kernel[i][0];
 
-                        const [r3, g3, b3] = getPixel(x + x1, y +  y1);
+                        const [r3, g3, b3] = getPixel(x1, y1);
 
                         let r4 = Math.max(0, Math.min(255, r3 + er * d));
                         let g4 = Math.max(0, Math.min(255, g3 + eg * d));
                         let b4 = Math.max(0, Math.min(255, b3 + eb * d));
 
-                        setPixel(x + x1, y + y1, r4, g4, b4);
+                        setPixel(x1, y1, r4, g4, b4);
                     }
                 }
             }
