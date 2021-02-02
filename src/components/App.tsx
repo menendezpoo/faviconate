@@ -23,7 +23,9 @@ import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
 import {Label} from "../hui/items/Label";
 import {AdjustTool} from "../model/tools/AdjustTool";
-import {Palette} from "./Palette";
+import {PaletteManager} from "./PaletteManager";
+import {Palette, PaletteService} from "../model/PaletteService";
+import {log} from "util";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -452,13 +454,38 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
+    commandResetPalette(){
+        if (this.state.selectedTool instanceof AdjustTool){
+            (this.state.selectedTool as AdjustTool).setPalette(null);
+        }
+    }
+
+    commandSavePalette(){
+        if (this.state.selectedTool instanceof AdjustTool){
+            const palette = (this.state.selectedTool as AdjustTool).currentPalette;
+
+            if (!palette){
+                throw new Error();
+            }
+
+            if (palette.unnamed){
+                palette.name = prompt('Name for the palette', palette.name) || 'Unnamed palette';
+            }
+
+            PaletteService.upsert(palette)
+                .then(p => this.commandSetPalette(p))
+                .catch(e => console.log(`Not saved: ${e}`));
+
+        }
+    }
+
     commandSelectAll(){
         if (this.state.selectedTool instanceof SelectionTool){
             (this.state.selectedTool as SelectionTool).selectAll();
         }
     }
 
-    commandSetPalette(palette: Color[]){
+    commandSetPalette(palette: Palette){
         if (this.state.selectedTool instanceof AdjustTool){
             (this.state.selectedTool as AdjustTool).setPalette(palette);
         }
@@ -514,9 +541,22 @@ export class App extends React.Component<AppProps, AppState>{
         }else if ( tool instanceof AdjustTool ){
 
             const palette = (tool as AdjustTool).currentPalette;
-            const addBtn = (
-                <Button icon={`plus`} iconSize={50}/>
-            );
+            let paletteItems = <></>;
+
+            if (palette && palette.unsaved){
+                paletteItems = (
+                    <>
+                        <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
+                        <Button icon={'floppy'} iconSize={50} onClick={() => this.commandSavePalette()}/>
+                    </>
+                );
+            }else if(palette){
+                paletteItems = (
+                    <>
+                        <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
+                    </>
+                );
+            }
 
             return (
                 <>
@@ -526,8 +566,8 @@ export class App extends React.Component<AppProps, AppState>{
                             <Range min={-128} max={128} value={0} onChange={value => this.commandContrast(value)} />
                         </div>
                     </Expando>
-                    <Expando title={`Palette`} items={addBtn}>
-                        <Palette palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
+                    <Expando title={`Palette`} items={paletteItems}>
+                        <PaletteManager palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
                     </Expando>
                 </>
             );

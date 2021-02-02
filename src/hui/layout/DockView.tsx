@@ -1,10 +1,10 @@
 import * as React from "react";
 import {CSSProperties, ReactNode} from "react";
+import {ClassNames} from "../helpers/hui";
 
 const DEFAULT_LENGTH = 300;
 
-export interface DockViewProps {
-    classNames?: string;
+export interface DockViewProps extends ClassNames {
     sideClassNames?: string;
     containerClassNames?: string;
     side?: 'left' | 'right' | 'top' | 'bottom';

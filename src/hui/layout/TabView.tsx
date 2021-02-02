@@ -27,7 +27,7 @@ export class TabView extends React.Component<TabViewProps>{
                 classNames={`ui-tab-view`}
                 sideClassNames={`tabs`}
                 itemsCenter={this.props.tabs.map(t => (
-                    <Button {...t} classTag={`tab`} selected={t.key === this.props.selected}/>
+                    <Button {...t} classNames={`tab`} selected={t.key === this.props.selected}/>
                 ))}
             >
                 {this.props.children}

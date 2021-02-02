@@ -2,11 +2,12 @@ import {IconDocument, IconEditorTool} from "../IconEditor";
 import {IconCanvasController} from "../IconCanvasController";
 import {Color} from "../../hui/helpers/Color";
 import {ImageAdjustService} from "../ImageAdjustService";
+import {Palette} from "../PaletteService";
 
 export class AdjustTool implements IconEditorTool{
 
     original: IconDocument | null = null;
-    currentPalette: Color[] | null = null;
+    currentPalette: Palette | null = null;
     currentBrightness = 0;
     currentContrast = 0;
     currentKernel = 1;
@@ -43,7 +44,7 @@ export class AdjustTool implements IconEditorTool{
         }
 
         if (this.currentPalette){
-            ImageAdjustService.dither(data, icon.width, icon.height, this.currentPalette, this.currentKernel);
+            ImageAdjustService.dither(data, icon.width, icon.height, this.currentPalette.colors.map(tuple => Color.fromTupleInt8(tuple)), this.currentKernel);
         }
 
         this.controller.editor.setDocument(doc);
@@ -71,9 +72,9 @@ export class AdjustTool implements IconEditorTool{
 
     }
 
-    setPalette(colors: Color[] | null){
+    setPalette(palette: Palette | null){
 
-        this.currentPalette = colors;
+        this.currentPalette = palette;
         this.updateAdjustments();
 
     }

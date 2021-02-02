@@ -1,10 +1,29 @@
 .ui-palette{
   $space:10px;
 
+  .palette-label{
+    opacity: 0.5;
+  }
+
+  > .palette-label{
+    margin-bottom: $space;
+  }
+
   .palette-preview{
-    display: flex;
+
+    cursor: pointer;
+    font-size: 0.8em;
     padding:$space;
     border-radius: 4px;
+    margin-bottom: 3px;
+
+    &:not(:last-child){
+      margin-bottom: $space;
+    }
+
+    .swatches{
+      display: flex;
+    }
 
     .swatch{
       width: 15px;
@@ -17,17 +36,26 @@
     }
   }
 
-  .pal-swatch{
-    display: inline-block;
-    padding: 5px;
-    border-radius: 4px;
-    margin-right: $space;
-    margin-bottom: $space;
+  .swatches{
+    > div:not(.label) {
+      display: inline-block;
+    }
 
-    > div {
-      border-radius: 10px;
-      width: 20px;
-      height: 20px;
+    .ui-clickable{
+      padding: $space;
+      margin-right: $space;
+      margin-bottom: $space;
+    }
+
+    .pal-swatch{
+
+      border-radius: 4px;
+
+      > div {
+        border-radius: 10px;
+        width: 20px;
+        height: 20px;
+      }
     }
   }
 }

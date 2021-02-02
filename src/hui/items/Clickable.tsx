@@ -1,11 +1,11 @@
 import * as React from "react";
-import {Label, LabelProps} from "./Label";
-import {Callable} from "../helpers/hui";
+import {Callable, ClassNames, cn} from "../helpers/hui";
 
-export interface ClickableProps extends LabelProps{
+export interface ClickableProps extends ClassNames{
     isSelected?: boolean;
     avoidHover?: boolean;
     onClick?: Callable;
+    children?: React.ReactNode;
 }
 
 interface ClickableState {
@@ -33,14 +33,19 @@ export class Clickable extends React.Component<ClickableProps, ClickableState>{
     }
 
     render(){
+        const classTags = cn(
+            `ui-clickable`,
+            {selected: this.props.isSelected || this.state.isHovered},
+            this.props.classNames
+        );
         return (
             <div
-                className={`ui-clickable ${this.props.isSelected || this.state.isHovered ? 'selected' : ''}`}
+                className={classTags}
                 onMouseEnter={this.mouseEnter}
                 onMouseLeave={this.mouseLeave}
                 onClick={this.props.onClick}
             >
-                <Label {...this.props} />
+                {this.props.children}
             </div>
         );
     }

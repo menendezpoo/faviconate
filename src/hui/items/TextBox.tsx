@@ -179,7 +179,7 @@ export class TextBox extends React.Component<TextBoxProps, TextBoxState>{
         const clearOn = clearButton === 'always' || (clearButton && !!this.state.value);
         const clear = <Button
             icon={clearOn ? `cross` : `empty`}
-            classTag={`clear`}
+            classNames={`clear`}
             face={`never`}
             iconSize={8}
             onClick={this.clear}

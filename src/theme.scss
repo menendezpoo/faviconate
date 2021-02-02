@@ -52,10 +52,8 @@ $button-face-selected-bg: $color-strong;
 }
 
 .pal-swatch, .palette-preview{
-  &:hover{
-    background-color: $color-light;
-  }
-  &.selected{
+  background-color: $color-light;
+  &.selected,&:hover{
     background-color: $color-strong;
   }
 }
@@ -149,10 +147,8 @@ $button-face-selected-bg: $color-strong;
   }
 
   .pal-swatch, .palette-preview{
-    &:hover{
-      background-color: $color-light;
-    }
-    &.selected{
+    background-color: $color-light;
+    &.selected,&:hover{
       background-color: $color-strong;
     }
   }

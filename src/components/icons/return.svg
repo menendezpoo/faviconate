@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="0 0 50 50" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group 16</title>
+    <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-855.000000, -437.000000)">
+            <g id="Group-16" transform="translate(855.000000, 437.000000)">
+                <g id="Path-2" transform="translate(16.000000, 20.000000)" fill="#8D8D8D" fill-rule="nonzero">
+                    <path d="M18.00025,0 C17.72425,0 17.50025,0.224 17.50025,0.5 L17.50025,4.5 C17.50025,4.776 17.27625,5 17.00025,5 L1.70725,5 L5.85325,0.854 C6.04825,0.659 6.04825,0.342 5.85325,0.147 C5.65825,-0.048 5.34125,-0.048 5.14625,0.147 L0.14625,5.147 C-0.04875,5.342 -0.04875,5.659 0.14625,5.854 L5.14625,10.854 C5.24425,10.952 5.37225,11 5.50025,11 C5.62825,11 5.75625,10.951 5.85425,10.854 C6.04925,10.659 6.04925,10.342 5.85425,10.147 L1.70825,6.001 L17.00125,6.001 C17.82825,6.001 18.50125,5.328 18.50125,4.501 L18.50125,0.501 C18.50125,0.225 18.27725,0.001 18.00125,0.001 L18.00025,0 Z" id="Path"></path>
+                </g>
+                <rect id="Rectangle-Copy-6" fill="#2C2C2C" opacity="0" x="0" y="0" width="50" height="50" rx="7"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

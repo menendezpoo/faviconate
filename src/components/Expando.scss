@@ -37,7 +37,7 @@
     padding: $space;
 
     > .children{
-      .ui-button{
+      > .ui-button{
         display: block;
       }
     }

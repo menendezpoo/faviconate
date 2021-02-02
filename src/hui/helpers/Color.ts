@@ -89,6 +89,10 @@ export class Color{
         return new Color(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
     }
 
+    static fromTupleInt8(t: [number,  number, number, number]): Color{
+        return new Color(t[0], t[1], t[2], t[3]);
+    }
+
     static get transparent(): Color{
         return new Color(0, 0, 0, 0);
     }

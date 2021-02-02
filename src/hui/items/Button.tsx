@@ -1,21 +1,18 @@
 import * as React from "react";
 import {ClickableProps} from "./Clickable";
-import {Label} from "./Label";
+import {Label, LabelProps} from "./Label";
 import {Icon} from "./Icon";
 import {KeyboardEvent, RefObject} from "react";
 import {MenuOverlay} from "../overlays/MenuOverlay";
-import {Callable} from "../helpers/hui";
+import {Callable, Disable} from "../helpers/hui";
 import {FocusStackHandler} from "../helpers/FocusStackHandler";
 import {ClickDismiss} from "../helpers/ClickDismiss";
 import {Rectangle} from "../helpers/Rectangle";
 
-export interface ButtonProps extends ClickableProps{
+export interface ButtonProps extends ClickableProps, LabelProps, Disable{
     children?: React.ReactNode;
-    onClick?: Callable;
     split?: boolean;
     face?: "hover" | "always" | "never";
-    classTag?: string;
-    disabled?: boolean;
     selected?: boolean;
     useChevron?: boolean;
 }
@@ -110,7 +107,7 @@ export class Button extends React.Component<ButtonProps, ButtonState>{
 
         const tags = [
                 `face-${this.props.face || 'hover'}`,
-                 this.props.classTag,
+                 this.props.classNames,
                  this.props.disabled ? 'disabled' : null,
                  this.props.selected ? 'selected' : null,
             ]
@@ -123,7 +120,7 @@ export class Button extends React.Component<ButtonProps, ButtonState>{
             if(this.props.split) {
                 if(this.state.dropDownVisible) {
                     return (
-                        <div className={`ui-button-wrap split `}>
+                        <div className={`ui-button-wrap split`}>
                             <div {...tabProp}
                                  ref={this.buttonRef}
                                  className={`ui-clickable ui-button is-open ${tags}`}
