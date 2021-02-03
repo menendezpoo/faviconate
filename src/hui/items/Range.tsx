@@ -43,6 +43,13 @@ export class Range extends React.Component<SliderProps, SliderState>{
         };
     }
 
+    private clearWindowHandlers(){
+        window.removeEventListener('mousemove', this.mouseMoveHandler);
+        window.removeEventListener('mouseup', this.mouseUpHandler);
+        window.removeEventListener('touchmove', this.touchMoveHandler);
+        window.removeEventListener('touchend', this.touchEndHandler);
+    }
+
     private valueFromRects(): number | Size{
 
         const {container, handle} = this.boundingRects();
@@ -107,8 +114,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
 
     private mouseUp(e: MouseEvent){
         this.pointingGestureEnd(e);
-        window.removeEventListener('mousemove', this.mouseMoveHandler);
-        window.removeEventListener('mouseup', this.mouseUpHandler);
+        this.clearWindowHandlers();
     }
 
     private touchMove(e: TouchEvent){
@@ -134,8 +140,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
             this.pointingGestureEnd(e.touches[0]);
             e.preventDefault();
         }
-        window.removeEventListener('touchmove', this.touchMoveHandler);
-        window.removeEventListener('touchend', this.touchEndHandler);
+        this.clearWindowHandlers();
     }
 
     private pointingGestureStart(e: GestureData){

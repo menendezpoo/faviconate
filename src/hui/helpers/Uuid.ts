@@ -34,10 +34,12 @@ export class Uuid{
 
         this.stringValue = '';
 
-        const pad = (value: string): string => value.length < 2 ? '0' + value : value;
-
         for(let i = 0; i < value.length; i++){
-            this.stringValue += pad(value[i].toString(16));
+            const hex = value[i].toString(16);
+            this.stringValue += hex.length < 2 ? '0' + hex : hex;
+            if(i % 2 == 1 && i > 1 && i < 10){
+                this.stringValue += '-';
+            }
         }
     }
 
