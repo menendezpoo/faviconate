@@ -33,8 +33,8 @@ export class PreviewPanel extends React.Component<PreviewPanelProps>{
                 onClick={() => this.onActivate()}
                 className={`preview-panel ${this.props.selected ? 'selected' : ''} level-${level}`}>
                 <div className="preview"><img src={this.props.data} alt=""/></div>
-                <div className="label">{size.width} x {size.height}</div>
-                <Button icon={`ellipsis`} iconSize={50}/>
+                <div className="label size-label">{size.width} x {size.height}</div>
+                <Button classNames={`ellipsis`} icon={`ellipsis`} iconSize={50}/>
             </div>
         );
     }

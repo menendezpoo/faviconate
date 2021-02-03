@@ -2,6 +2,7 @@
 
   $space: 10px;
 
+  position: relative;
   display: flex;
   align-items: center;
   border-radius: 7px;
@@ -18,10 +19,21 @@
   }
 
   &.level-3, &.level-4{
-    flex-direction: row;
+    flex-direction: column;
 
     > .preview{
       margin-bottom: $space;
+    }
+
+    .size-label{
+      margin: $space 0;
+    }
+
+    .ui-button.ellipsis{
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      padding:0;
     }
   }
 
