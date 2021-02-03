@@ -47,7 +47,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
     private clearWindowHandlers(){
         window.removeEventListener('mousemove', this.mouseMoveHandler);
         window.removeEventListener('mouseup', this.mouseUpHandler);
-        window.removeEventListener('touchmove', this.touchMoveHandler);
+        window.removeEventListener('touchmove', this.touchMoveHandler, {capture: true});
         window.removeEventListener('touchend', this.touchEndHandler);
     }
 

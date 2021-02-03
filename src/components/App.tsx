@@ -688,7 +688,7 @@ export class App extends React.Component<AppProps, AppState>{
                 {this.toolComponent()}
                 <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
                 <Button text={`ICO`} onClick={() => this.download('ico')} icon={`floppy`} iconSize={50}/>
-                <div id="cue" className="cue">0.1</div>
+                <div id="cue" className="cue">0.1.1</div>
             </div>
         );
 
