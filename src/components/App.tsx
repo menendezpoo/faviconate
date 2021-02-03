@@ -25,7 +25,6 @@ import {Label} from "../hui/items/Label";
 import {AdjustTool} from "../model/tools/AdjustTool";
 import {PaletteManager} from "./PaletteManager";
 import {Palette, PaletteService} from "../model/PaletteService";
-import {log} from "util";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -39,6 +38,14 @@ function changeFavicon(src: string) {
         document.head.removeChild(oldLink);
     }
     document.head.appendChild(link);
+}
+
+export function cue(m: string){
+    const e = document.getElementById('cue');
+
+    if (e){
+        e.innerHTML = m + '<br>' + e.innerHTML;
+    }
 }
 
 export interface AppProps{}
@@ -681,7 +688,7 @@ export class App extends React.Component<AppProps, AppState>{
                 {this.toolComponent()}
                 <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
                 <Button text={`ICO`} onClick={() => this.download('ico')} icon={`floppy`} iconSize={50}/>
-                <div className="cue">TouchEnd</div>
+                <div id="cue" className="cue">0.1</div>
             </div>
         );
 

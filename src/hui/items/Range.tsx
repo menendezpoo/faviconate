@@ -2,6 +2,7 @@
 import * as React from "react";
 import {makePt, makeSz, Point, Rectangle, Size} from "../helpers/Rectangle";
 import {CSSProperties, RefObject} from "react";
+import {cue} from "../../components/App";
 
 export interface SliderProps{
     min: number | Size;
@@ -115,6 +116,7 @@ export class Range extends React.Component<SliderProps, SliderState>{
     private mouseUp(e: MouseEvent){
         this.pointingGestureEnd(e);
         this.clearWindowHandlers();
+        cue(`MouseUp`);
     }
 
     private touchMove(e: TouchEvent){
@@ -141,6 +143,8 @@ export class Range extends React.Component<SliderProps, SliderState>{
             e.preventDefault();
         }
         this.clearWindowHandlers();
+        cue(`TouchEnded`);
+
     }
 
     private pointingGestureStart(e: GestureData){
