@@ -24,6 +24,7 @@ body {
   right: 0;
   bottom: 0;
 
+
   .ui-button{
     border-radius: 5px;
   }
@@ -76,6 +77,13 @@ body {
     font-size: 0.7em;
     opacity: 0.5;
     font-family: monospace;
+  }
+  .cta.ui-button{
+    border-radius: 30px;
+    display: block;
+    background-color: #3175ef;
+    color: white;
+    text-align: center;
   }
 
 }

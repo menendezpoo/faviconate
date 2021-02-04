@@ -585,7 +585,7 @@ export class App extends React.Component<AppProps, AppState>{
                     <Expando title={`Palette`} items={paletteItems}>
                         <PaletteManager palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
                     </Expando>
-                    <Button text={`Apply`} onClick={() => this.commandApplyAdjustments()}/>
+                    <Button classNames={`cta`} text={`Apply`} onClick={() => this.commandApplyAdjustments()}/>
                 </>
             );
         }
