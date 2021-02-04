@@ -4,6 +4,14 @@ import {Color} from "../../hui/helpers/Color";
 import {ImageAdjustService} from "../ImageAdjustService";
 import {Palette} from "../PaletteService";
 
+export interface AdjustProperties{
+    original: IconDocument | null;
+    palette: Palette | null;
+    brightness: number;
+    contrast: number;
+    kernel: number;
+}
+
 export class AdjustTool implements IconEditorTool{
 
     original: IconDocument | null = null;
