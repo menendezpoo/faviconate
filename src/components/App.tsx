@@ -449,6 +449,10 @@ export class App extends React.Component<AppProps, AppState>{
         });
     }
 
+    commandApplyAdjustments(){
+        throw new Error('Implement');
+    }
+
     commandContrast(value: number){
         if (this.state.selectedTool instanceof AdjustTool){
             (this.state.selectedTool as AdjustTool).setContrast(value);
@@ -576,6 +580,7 @@ export class App extends React.Component<AppProps, AppState>{
                     <Expando title={`Palette`} items={paletteItems}>
                         <PaletteManager palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
                     </Expando>
+                    <Button text={`Apply`} onClick={() => this.commandApplyAdjustments()}/>
                 </>
             );
         }
