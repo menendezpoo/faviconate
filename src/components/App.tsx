@@ -337,13 +337,16 @@ export class App extends React.Component<AppProps, AppState>{
 
         const controller = new IconCanvasController(doc);
 
-        controller.editor.documentChanged = () => {
-
+        const docChanged = () => {
             const icon = this.state.controller.editor.document.icon;
             const id = this.state.controller.id;
 
             IconService.asBlobUrl(icon).then(data => this.setPreviewData(id, data));
-        };
+        }
+
+        controller.editor.documentSubmitted = () => docChanged();
+
+        controller.editor.documentChanged = () => docChanged();
 
         return controller;
     }
@@ -450,7 +453,9 @@ export class App extends React.Component<AppProps, AppState>{
     }
 
     commandApplyAdjustments(){
-        throw new Error('Implement');
+        if (this.state.selectedTool instanceof AdjustTool){
+            (this.state.selectedTool as AdjustTool).apply();
+        }
     }
 
     commandContrast(value: number){

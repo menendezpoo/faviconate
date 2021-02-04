@@ -12,9 +12,7 @@ export class AdjustTool implements IconEditorTool{
     currentContrast = 0;
     currentKernel = 1;
 
-    constructor(readonly controller: IconCanvasController){
-
-    }
+    constructor(readonly controller: IconCanvasController){}
 
     activate(){
         this.controller.editor.begin();
@@ -23,6 +21,15 @@ export class AdjustTool implements IconEditorTool{
 
     deactivate(){
         this.controller.editor.rollback();
+    }
+
+    apply(){
+        this.controller.editor.commit();
+        this.currentPalette = null;
+        this.currentBrightness = 0;
+        this.currentContrast = 0;
+        this.currentKernel = 0;
+        this.controller.editor.begin();
     }
 
     updateAdjustments(){
