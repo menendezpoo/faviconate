@@ -22,13 +22,11 @@ export class PaletteService{
                 const obj = JSON.parse(value);
 
                 if(!obj){
-                    console.log(`No palettes loaded`);
                     return [];
 
                 }else if(!(obj instanceof Array)){
                     return Promise.reject(new Error());
                 }else{
-                    console.log(`Actual palettes loaded`);
                     return obj as Palette[];
                 }
 
@@ -60,7 +58,6 @@ export class PaletteService{
 
         try{
             window.localStorage.setItem(PALETTES_STORAGE_KEY, JSON.stringify(all));
-            console.log(`Saved items loaded`);
             return palette;
         }catch(e){
             return Promise.reject(e);

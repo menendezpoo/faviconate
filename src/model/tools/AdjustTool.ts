@@ -5,20 +5,17 @@ import {ImageAdjustService} from "../ImageAdjustService";
 import {Palette} from "../PaletteService";
 
 export interface AdjustProperties{
-    original: IconDocument | null;
-    palette: Palette | null;
-    brightness: number;
-    contrast: number;
-    kernel: number;
+    palette?: Palette;
+    brightness?: number;
+    contrast?: number;
+    kernel?: number;
 }
 
 export class AdjustTool implements IconEditorTool{
 
     original: IconDocument | null = null;
-    currentPalette: Palette | null = null;
-    currentBrightness = 0;
-    currentContrast = 0;
-    currentKernel = 1;
+
+    private lastProps?: AdjustProperties;
 
     constructor(readonly controller: IconCanvasController){}
 
@@ -33,65 +30,56 @@ export class AdjustTool implements IconEditorTool{
 
     apply(){
         this.controller.editor.commit();
-        this.currentPalette = null;
-        this.currentBrightness = 0;
-        this.currentContrast = 0;
-        this.currentKernel = 0;
+        this.original = this.controller.editor.cloneDocument();
         this.controller.editor.begin();
     }
 
-    updateAdjustments(){
+    updateAdjustments(props: AdjustProperties): boolean{
 
         if (!this.original){
-            throw new Error();
+            return false;
+        }
+
+        let changed = false;
+
+        if(this.lastProps) {
+            for(let name in props){
+                if((props as any)[name] !== (this.lastProps as any)[name]) {
+                    changed = true;
+                    break;
+                }
+            }
+        }else{
+            changed = true;
+        }
+
+        if(!changed){
+            return false;
         }
 
         const doc = this.controller.editor.cloneDocument(this.original);
         const icon = doc.icon;
         const data = icon.data;
+        const {palette, contrast, brightness, kernel} = props;
 
-        if (this.currentBrightness !== 0){
-            ImageAdjustService.brightness(data, this.currentBrightness);
+
+        if (typeof brightness === "number" && brightness !== 0){
+            ImageAdjustService.brightness(data, brightness);
         }
 
-        if (this.currentContrast !== 0){
-            ImageAdjustService.contrast(data, this.currentContrast)
+        if ( typeof contrast === "number" && contrast !== 0){
+            ImageAdjustService.contrast(data, contrast);
         }
 
-        if (this.currentPalette){
-            ImageAdjustService.dither(data, icon.width, icon.height, this.currentPalette.colors.map(tuple => Color.fromTupleInt8(tuple)), this.currentKernel);
+        if (palette){
+            ImageAdjustService.dither(data, icon.width, icon.height, palette.colors.map(tuple => Color.fromTupleInt8(tuple)), kernel || 0);
         }
 
         this.controller.editor.setDocument(doc);
-    }
 
-    setContrast(delta: number, commit: boolean = false){
+        this.lastProps = props;
 
-        if (delta === this.currentContrast){
-            return;
-        }
-
-        this.currentContrast = delta;
-        this.updateAdjustments();
-
-    }
-
-    setBrightness(delta: number, commit: boolean = false){
-
-        if (delta === this.currentBrightness){
-            return;
-        }
-
-        this.currentBrightness = delta;
-        this.updateAdjustments();
-
-    }
-
-    setPalette(palette: Palette | null){
-
-        this.currentPalette = palette;
-        this.updateAdjustments();
-
+        return true;
     }
 
 }

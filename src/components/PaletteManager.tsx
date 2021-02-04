@@ -57,7 +57,7 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
 
     private palettePreview(p: Palette): React.ReactNode{
         return (
-            <div className="palette-preview" onClick={() => this.setPalette(p)}>
+            <div key={p.id} className="palette-preview" onClick={() => this.setPalette(p)}>
                 <div className="palette-label">{p.name}</div>
                 <div className="swatches">
                     {p.colors.map(tuple => this.swatch(Color.fromTupleInt8(tuple)))}

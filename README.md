@@ -3,6 +3,7 @@
 ## Queue
 
  - [ ] Apply button on Adjust Tool
+ - [ ] Don't refreshPalette every componentDidUpdate (constantly loads from storage)
  - [ ] Add Kernel range for palette dithering
  - [ ] Review Studio
  - [ ] Save Recent icons in LocalStorage

@@ -22,7 +22,7 @@ import {darkModeOn} from "../hui/helpers/Utils";
 import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
 import {Label} from "../hui/items/Label";
-import {AdjustTool} from "../model/tools/AdjustTool";
+import {AdjustProperties, AdjustTool} from "../model/tools/AdjustTool";
 import {PaletteManager} from "./PaletteManager";
 import {Palette, PaletteService} from "../model/PaletteService";
 
@@ -65,6 +65,7 @@ export interface AppState{
     showBackground: boolean;
     showGrid: boolean;
     colorA: Color;
+    adjustState?: AdjustProperties;
 }
 
 export class App extends React.Component<AppProps, AppState>{
@@ -458,27 +459,31 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
-    commandContrast(value: number){
+    commandContrast(contrast: number){
         if (this.state.selectedTool instanceof AdjustTool){
-            (this.state.selectedTool as AdjustTool).setContrast(value);
+            this.setState({adjustState: {...this.state.adjustState, contrast}});
+            // (this.state.selectedTool as AdjustTool).setContrast(value);
         }
     }
 
-    commandBrightness(value: number){
+    commandBrightness(brightness: number){
         if (this.state.selectedTool instanceof AdjustTool){
-            (this.state.selectedTool as AdjustTool).setBrightness(value);
+            this.setState({adjustState: {...this.state.adjustState, brightness}});
+            // (this.state.selectedTool as AdjustTool).setBrightness(value);
         }
     }
 
     commandResetPalette(){
         if (this.state.selectedTool instanceof AdjustTool){
-            (this.state.selectedTool as AdjustTool).setPalette(null);
+            this.setState({adjustState: {...this.state.adjustState, palette: undefined}});
+            // (this.state.selectedTool as AdjustTool).setPalette(null);
         }
     }
 
     commandSavePalette(){
-        if (this.state.selectedTool instanceof AdjustTool){
-            const palette = (this.state.selectedTool as AdjustTool).currentPalette;
+        if (this.state.adjustState?.palette){
+
+            const palette = this.state.adjustState.palette;
 
             if (!palette){
                 throw new Error();
@@ -503,7 +508,8 @@ export class App extends React.Component<AppProps, AppState>{
 
     commandSetPalette(palette: Palette){
         if (this.state.selectedTool instanceof AdjustTool){
-            (this.state.selectedTool as AdjustTool).setPalette(palette);
+            this.setState({adjustState: {...this.state.adjustState, palette}});
+            // (this.state.selectedTool as AdjustTool).setPalette(palette);
         }
     }
 
@@ -556,8 +562,11 @@ export class App extends React.Component<AppProps, AppState>{
             );
         }else if ( tool instanceof AdjustTool ){
 
-            const palette = (tool as AdjustTool).currentPalette;
+            const props = this.state.adjustState || {};
+            const palette = props?.palette;
             let paletteItems = <></>;
+
+            tool.updateAdjustments(props);
 
             if (palette && palette.unsaved){
                 paletteItems = (
@@ -578,8 +587,8 @@ export class App extends React.Component<AppProps, AppState>{
                 <>
                     <Expando title={`Adjust`}>
                         <div className="adjusters">
-                            <Range min={-200} max={200} value={0} onChange={value => this.commandBrightness(value)} />
-                            <Range min={-128} max={128} value={0} onChange={value => this.commandContrast(value)} />
+                            <Range min={-200} max={200} value={props.brightness || 0} onChange={value => this.commandBrightness(value)} />
+                            <Range min={-128} max={128} value={props.contrast || 0} onChange={value => this.commandContrast(value)} />
                         </div>
                     </Expando>
                     <Expando title={`Palette`} items={paletteItems}>
