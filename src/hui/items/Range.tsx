@@ -116,7 +116,6 @@ export class Range extends React.Component<SliderProps, SliderState>{
     private mouseUp(e: MouseEvent){
         this.pointingGestureEnd(e);
         this.clearWindowHandlers();
-        cue(`MouseUp`);
     }
 
     private touchMove(e: TouchEvent){
@@ -143,7 +142,6 @@ export class Range extends React.Component<SliderProps, SliderState>{
             e.preventDefault();
         }
         this.clearWindowHandlers();
-        cue(`TouchEnded`);
 
     }
 
