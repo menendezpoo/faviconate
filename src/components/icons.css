@@ -1,9 +1,12 @@
 .ui-icon.icon-bucket { background-image: url("icons/bucket.svg"); }
+.ui-icon.icon-circle-check { background-image: url("icons/circle-check.svg"); }
 .ui-icon.icon-checker { background-image: url("icons/checker.svg"); }
 .ui-icon.icon-copy { background-image: url("icons/copy.svg"); }
 .ui-icon.icon-cut { background-image: url("icons/cut.svg"); }
+.ui-icon.icon-dismiss { background-image: url("icons/dismiss.svg"); }
 .ui-icon.icon-ellipsis { background-image: url("icons/ellipsis.svg"); }
 .ui-icon.icon-eraser { background-image: url("icons/eraser.svg"); }
+.ui-icon.icon-eye { background-image: url("icons/eye.svg"); }
 .ui-icon.icon-eyedropper { background-image: url("icons/eyedropper.svg"); }
 .ui-icon.icon-equalizer { background-image: url("icons/equalizer.svg"); }
 .ui-icon.icon-floppy { background-image: url("icons/floppy.svg"); }

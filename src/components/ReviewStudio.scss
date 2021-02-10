@@ -1,0 +1,65 @@
+
+$spacing: 10px;
+$large-font: 20px;
+
+.review-studio{
+
+  > .ui-dock-view{
+    margin: 10px;
+  }
+
+  .container-panel.main-panel{
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+
+    > .content {
+
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+
+      > .row {
+        width: 270px;
+        text-align: center;
+
+        &:not(:last-child){
+          margin-bottom: 50px;
+        }
+
+        > .caption {
+          font-size: $large-font;
+          margin: 10px 0;
+        }
+
+        .corner-grid{
+          > .row{
+            display: flex;
+            justify-content: center;
+
+            &:not(:last-child){
+              margin-bottom: $spacing;
+            }
+          }
+          .corner{
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            cursor: pointer;
+
+            &:not(:last-child){
+              margin-right: $spacing;
+            }
+          }
+        }
+
+        .ui-button.cta{
+          font-size: $large-font;
+          padding: 15px 60px;
+          border-radius: 50px;
+        }
+      }
+    }
+  }
+}

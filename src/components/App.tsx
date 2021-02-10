@@ -25,6 +25,8 @@ import {Label} from "../hui/items/Label";
 import {AdjustProperties, AdjustTool} from "../model/tools/AdjustTool";
 import {PaletteManager} from "./PaletteManager";
 import {Palette, PaletteService} from "../model/PaletteService";
+import * as ReactDOM from "react-dom";
+import {ReviewStudio} from "./ReviewStudio";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -480,6 +482,13 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
+    commandReview(){
+        ReactDOM.render(
+            <ReviewStudio />,
+            document.getElementById(`root-dialog`)
+        );
+    }
+
     commandSavePalette(){
         if (this.state.adjustState?.palette){
 
@@ -662,6 +671,11 @@ export class App extends React.Component<AppProps, AppState>{
                 onClick={() => this.useAdjustments()}
                 selected={tool instanceof AdjustTool}
             />
+            <Button
+                icon={`eye`} iconSize={50}
+                onClick={() => this.commandReview()}
+            />
+
         </>;
 
         const sizeOf = (itemId: number): Size => {

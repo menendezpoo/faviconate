@@ -1,8 +1,12 @@
-
 $color-strong: #0000000a;
 $color-light: #000000c8;
 $button-face-hover-bg: $color-strong;
 $button-face-selected-bg: $color-strong;
+$window-bg: #fff;
+$window-fg: #555;
+$cta-bg: #0052A8;
+$cta-bg-hot: #2780de;
+$cta-fg: #fff;
 
 .ui-clickable.is-open{
   background-color: $button-face-hover-bg;
@@ -25,6 +29,15 @@ $button-face-selected-bg: $color-strong;
   &:focus{
     box-shadow: 0 0 10px 0 rgba(5,148,255,0.51);
   }
+
+  &.cta{
+    background-color: $cta-bg;
+    color: $cta-fg;
+
+    :hover{
+      background-color: $cta-bg-hot;
+    }
+  }
 }
 
 .expando {
@@ -42,12 +55,10 @@ $button-face-selected-bg: $color-strong;
   }
 }
 
-.adjusters{
-  .ui-range{
-    background: $color-light;
-    .handle{
-      background-color: $color-strong;
-    }
+.ui-range{
+  background: $color-light;
+  .handle{
+    background-color: $color-strong;
   }
 }
 
@@ -55,6 +66,28 @@ $button-face-selected-bg: $color-strong;
   background-color: $color-light;
   &.selected,&:hover{
     background-color: $color-strong;
+  }
+}
+
+#root-dialog .modal{
+  background-color: $window-bg;
+}
+
+.container-panel{
+  background-color: $color-light;
+
+  > .marker { background-color: $color-light; }
+}
+
+.review-studio .corner-grid .corner {
+  border: solid 1px $window-fg;
+
+  &:not(.selected):hover{
+    background-color: $color-strong;
+  }
+
+  &.selected{
+    background-color: $cta-bg;
   }
 }
 
@@ -137,12 +170,10 @@ $button-face-selected-bg: $color-strong;
     }
   }
 
-  .adjusters{
-    .ui-range{
-      background: $color-light;
-      .handle{
-        background-color: $color-strong;
-      }
+  .ui-range{
+    background: $color-light;
+    .handle{
+      background-color: $color-strong;
     }
   }
 
@@ -150,6 +181,27 @@ $button-face-selected-bg: $color-strong;
     background-color: $color-light;
     &.selected,&:hover{
       background-color: $color-strong;
+    }
+  }
+
+  #root-dialog .modal{
+    background-color: $window-bg;
+  }
+
+  .container-panel{
+    background-color: $color-light;
+    > .marker { background-color: $color-light; }
+  }
+
+  .review-studio .corner-grid .corner {
+    border: solid 1px $window-fg;
+
+    &:not(.selected):hover{
+      background-color: $color-strong;
+    }
+
+    &.selected{
+      background-color: $cta-bg;
     }
   }
 

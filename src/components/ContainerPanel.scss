@@ -1,0 +1,21 @@
+$radius: 10px;
+
+.container-panel{
+  border-radius: $radius;
+
+  > .marker { position: absolute; }
+  > .marker.n, > .marker.s { height: 1px; left:0; right: 0; }
+  > .marker.e, > .marker.w { width: 1px; top:0; bottom:0; }
+  > .marker.n { top: $radius }
+  > .marker.s { bottom: $radius }
+  > .marker.w { left: $radius }
+  > .marker.e { right: $radius }
+  > .content {
+    position: absolute;
+    top: $radius;
+    left: $radius;
+    right: $radius;
+    bottom: $radius;
+  }
+
+}
