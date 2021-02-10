@@ -10,9 +10,19 @@ export interface ReviewStudioProps{
 
 }
 
-interface ReviewStudioState{}
+interface ReviewStudioState{
+    sampleSize: number;
+}
 
 export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudioState>{
+
+    constructor(props: ReviewStudioProps) {
+        super(props);
+
+        this.state = {
+            sampleSize: 3,
+        }
+    }
 
     render() {
 
@@ -35,8 +45,8 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
                         <ContainerPanel classNames={`main-panel`}>
                             <div className={`row sample-size`}>
                                 <div className="caption">Sample Size</div>
-                                <Range min={1} max={10}/>
-                                <div className="value">0 x 0</div>
+                                <Range min={1} max={10} round={true} value={this.state.sampleSize} onChange={sampleSize => this.setState({sampleSize})}/>
+                                <div className="value">{this.state.sampleSize} X {this.state.sampleSize}</div>
                             </div>
                             <div className="row corner">
                                 <div className="caption">Corner to Start</div>

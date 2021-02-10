@@ -2,7 +2,6 @@
 import * as React from "react";
 import {makePt, makeSz, Point, Rectangle, Size} from "../helpers/Rectangle";
 import {CSSProperties, RefObject} from "react";
-import {cue} from "../../components/App";
 
 export interface SliderProps{
     min: number | Size;
@@ -12,6 +11,7 @@ export interface SliderProps{
     containerStyle?: CSSProperties;
     handleStyle?: CSSProperties;
     direction?: 'horizontal' | 'vertical' | '2d';
+    round?: boolean;
 }
 
 export interface SliderState{
@@ -200,11 +200,24 @@ export class Range extends React.Component<SliderProps, SliderState>{
 
         if (this.props.onChange){
             const value = this.valueFromRects();
+
             if (this.props.direction === '2d'){
                 const v2d = value as Size;
-                this.props.onChange(v2d.width, v2d.height);
+                if (this.props.round){
+                    this.props.onChange(Math.round(v2d.width), Math.round(v2d.height));
+                }else{
+                    this.props.onChange(v2d.width, v2d.height);
+                }
+
             }else{
-                this.props.onChange(value as number);
+
+                if(this.props.round){
+                    this.props.onChange(Math.round(value as number));
+                }else{
+                    this.props.onChange(value as number);
+                }
+
+
             }
         }
     }
