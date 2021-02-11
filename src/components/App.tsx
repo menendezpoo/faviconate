@@ -484,7 +484,7 @@ export class App extends React.Component<AppProps, AppState>{
 
     commandReview(){
         ReactDOM.render(
-            <ReviewStudio />,
+            <ReviewStudio icon={this.state.controller.editor.document.icon} />,
             document.getElementById(`root-dialog`)
         );
     }

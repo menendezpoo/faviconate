@@ -34,8 +34,9 @@ $cta-fg: #fff;
     background-color: $cta-bg;
     color: $cta-fg;
 
-    :hover{
-      background-color: $cta-bg-hot;
+    &:hover{
+      background-color: $cta-bg-hot !important;
+      color: $cta-fg !important;
     }
   }
 }
