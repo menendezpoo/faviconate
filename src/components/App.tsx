@@ -81,6 +81,8 @@ export class App extends React.Component<AppProps, AppState>{
         const id = this.state.controller.id;
         IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data}]}));
 
+        return;
+        // TODO restore not working due to setIcons error
         DocumentService.restoreIcons().then(icons => {
 
             if (icons && icons.length > 0){
@@ -150,6 +152,9 @@ export class App extends React.Component<AppProps, AppState>{
 
     private setIcons(dir: IconDirectory){
 
+        console.log(`Set icons`)
+        console.log(dir);
+
         if (dir.icons.length == 0){
             throw new InvalidImageError();
         }
@@ -157,16 +162,23 @@ export class App extends React.Component<AppProps, AppState>{
         const controllers = dir.icons.map(icon => this.createController({icon}));
         const controller = controllers[0];
         const selectedTool = new SelectionTool(controller);
+        const previews = controllers.map(c => {
+            return {
+                id: c.id, data: '', size: c.iconSize
+            };
+        });
 
-        Promise.all(controllers.map(c => IconService.asBlobUrl(c.editor.document.icon)))
-            .then(dataArr => {
-                this.setState({
-                    controller,
-                    controllers,
-                    selectedTool,
-                    previews: dataArr.map((data, i) => ({id: controller.id, data, size: controllers[i].iconSize}))
-                });
-            });
+        console.log(previews);
+
+        this.setState({
+            controller,
+            controllers,
+            selectedTool,
+            previews,
+        });
+
+        // TODO: update previews
+
     }
 
     private removeIconEntry(){
@@ -186,7 +198,7 @@ export class App extends React.Component<AppProps, AppState>{
                     this.setState({
                         controllers, controller, selectedTool, previews: [{id: controller.id, data}]
                     });
-                    this.persist();
+
                 });
 
         }else{
@@ -197,9 +209,10 @@ export class App extends React.Component<AppProps, AppState>{
                 controllers, controller, previews, selectedTool: controller.tool
             });
 
-            this.persist();
+
         }
 
+        this.persist();
 
     }
 
@@ -363,7 +376,6 @@ export class App extends React.Component<AppProps, AppState>{
         }
 
         controller.editor.documentSubmitted = () => docChanged();
-
         controller.editor.documentChanged = () => docChanged();
 
         return controller;
