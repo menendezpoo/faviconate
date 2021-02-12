@@ -246,6 +246,10 @@ export class Rectangle{
         return [this.left, this.top, this.width, this.height];
     }
 
+    get tupleLTRB(): [number, number, number, number]{
+        return [this.left, this.top, this.right, this.bottom];
+    }
+
     get northEast(): Point{
         return {x: this.right, y: this.top};
     }

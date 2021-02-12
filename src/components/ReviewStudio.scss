@@ -62,4 +62,18 @@ $large-font: 20px;
       }
     }
   }
+
+  .review-studio-sidebar{
+    position: relative;
+    margin-left: 10px;
+
+    .container-panel.preview{
+      height: 220px;
+
+      .content{
+        display: flex;
+        justify-content: center;
+      }
+    }
+  }
 }

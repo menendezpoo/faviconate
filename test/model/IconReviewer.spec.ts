@@ -15,7 +15,7 @@ describe("model/IconReviewer", function (){
             model: "rgba"
         };
 
-        const r = new IconReviewer(icon);
+        const r = new IconReviewer(icon, makeSz(1, 1), 'nw');
 
         r.tintRegion(Rectangle.fromSize(makeSz(1, 1)), new Color(0, 0, 0, 0.9));
 

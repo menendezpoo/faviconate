@@ -216,7 +216,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
 
         const satImg = createSaturationPattern(hue, 10);
         const hueHandleStyle = {background: Color.fromHsv(hue, 1, 1).hexRgb};
-        const hueContainerStyle = {backgroundImage: `url(${ColorPicker.hueBar})`};
+        const hueContainerStyle = {backgroundImage: `url(${ColorPicker.hueBar})`, backgroundSize: 'contain'};
         const satContainerStyle = {backgroundImage: `url(${satImg})`};
         const alphaContainerStyle = {backgroundImage: `url(${ColorPicker.bgPattern})`};
         const swatchBgStyle = {backgroundImage: `url(${ColorPicker.bgPattern})`};
