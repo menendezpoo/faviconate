@@ -27,6 +27,7 @@ import {PaletteManager} from "./PaletteManager";
 import {Palette, PaletteService} from "../model/PaletteService";
 import * as ReactDOM from "react-dom";
 import {ReviewStudio} from "./ReviewStudio";
+import {DocumentService} from "../model/DocumentService";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -79,6 +80,14 @@ export class App extends React.Component<AppProps, AppState>{
         const icon = this.state.controller.editor.document.icon;
         const id = this.state.controller.id;
         IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data}]}));
+
+        DocumentService.restoreIcons().then(icons => {
+
+            if (icons && icons.length > 0){
+                this.setIcons({icons});
+            }
+
+        });
 
     }
 
@@ -134,6 +143,8 @@ export class App extends React.Component<AppProps, AppState>{
                 selectedTool,
                 previews
             });
+
+            this.persist();
         })
     }
 
@@ -145,7 +156,6 @@ export class App extends React.Component<AppProps, AppState>{
 
         const controllers = dir.icons.map(icon => this.createController({icon}));
         const controller = controllers[0];
-        const currentIcon = controller.id;
         const selectedTool = new SelectionTool(controller);
 
         Promise.all(controllers.map(c => IconService.asBlobUrl(c.editor.document.icon)))
@@ -175,7 +185,8 @@ export class App extends React.Component<AppProps, AppState>{
                 .then(data => {
                     this.setState({
                         controllers, controller, selectedTool, previews: [{id: controller.id, data}]
-                    })
+                    });
+                    this.persist();
                 });
 
         }else{
@@ -185,6 +196,8 @@ export class App extends React.Component<AppProps, AppState>{
             this.setState({
                 controllers, controller, previews, selectedTool: controller.tool
             });
+
+            this.persist();
         }
 
 
@@ -345,6 +358,8 @@ export class App extends React.Component<AppProps, AppState>{
             const id = this.state.controller.id;
 
             IconService.asBlobUrl(icon).then(data => this.setPreviewData(id, data));
+
+            this.persist();
         }
 
         controller.editor.documentSubmitted = () => docChanged();
@@ -352,6 +367,12 @@ export class App extends React.Component<AppProps, AppState>{
         controller.editor.documentChanged = () => docChanged();
 
         return controller;
+    }
+
+    private persist(){
+        DocumentService.saveIcons(this.state.controllers.map(c => c.editor.document.icon))
+            .then(() => console.log('Saved'))
+            .catch(() => console.log('Error saving'));
     }
 
     private setPreviewData(id: number, data: string){
