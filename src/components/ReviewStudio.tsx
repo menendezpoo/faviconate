@@ -57,7 +57,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
         const {sampleSize} = this.state;
 
         this.reviewer = new IconReviewer(icon, makeSz(sampleSize, sampleSize), startCorner);
-        this.updateIcon();
+        this.updateCanvasesGraphics();
     }
 
     private setSampleSize(sampleSize: number){
@@ -67,10 +67,10 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
         const {startCorner} = this.state;
 
         this.reviewer = new IconReviewer(icon, makeSz(sampleSize, sampleSize), startCorner);
-        this.updateIcon();
+        this.updateCanvasesGraphics();
     }
 
-    private updateIcon(){
+    private updateCanvasesGraphics(){
         if (this.previewCanvas.current){
 
             const sourceCanvas = IconService.asCanvas(this.reviewer.current);
@@ -87,47 +87,79 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
             }else{
                 throw new GraphicsMemoryError();
             }
-
-            if (this.reviewCanvas.current){
-
-                const reviewSource = this.reviewer.reviewImage();
-                const reviewCx = this.reviewCanvas.current.getContext('2d');
-
-                if(reviewCx){
-                    reviewCx.clearRect(0,0, this.reviewSize.width, this.reviewSize.height);
-                    reviewCx.imageSmoothingEnabled = false;
-                    reviewCx.drawImage(reviewSource, 0, 0, this.reviewSize.width, this.reviewSize.height);
-
-                    console.log(`Updated review ${this.reviewSize.width} x ${this.reviewSize.height}`);
-                }else{
-                    throw new GraphicsMemoryError();
-                }
-
-            }else{
-                console.log(`No current`)
-            }
         }
+
+        this.drawReviewCanvas();
+    }
+
+    private drawReviewCanvas(){
+        if (!this.reviewCanvas.current){
+            return;
+        }
+
+        const reviewSource = this.reviewer.reviewImage();
+        const reviewCx = this.reviewCanvas.current.getContext('2d');
+
+        if (!reviewCx){
+            throw new GraphicsMemoryError();
+        }
+
+        const graphicSize = makeSz(reviewSource.width, reviewSource.height);
+        const contentBounds = Rectangle.fromSize(scaleToContain(this.reviewSize, graphicSize)).centerAt(Rectangle.fromSize(this.reviewSize).center);
+
+
+        reviewCx.clearRect(0,0, this.reviewSize.width, this.reviewSize.height);
+        reviewCx.imageSmoothingEnabled = false;
+        reviewCx.drawImage(reviewSource, ...contentBounds.tuple);
+
+        const pixelSize = makeSz(contentBounds.width / reviewSource.width, contentBounds.height / reviewSource.height);
+        const sample = this.state.sampleSize;
+        const focusRegion = new Rectangle(contentBounds.left + pixelSize.width * sample,
+            contentBounds.top + pixelSize.height * sample, pixelSize.width * sample, pixelSize.height * sample);
+
+        reviewCx.beginPath();
+
+        // N
+        reviewCx.moveTo(contentBounds.left, focusRegion.top);
+        reviewCx.lineTo(contentBounds.right, focusRegion.top);
+
+        // S
+        reviewCx.moveTo(contentBounds.left, focusRegion.bottom);
+        reviewCx.lineTo(contentBounds.right, focusRegion.bottom);
+
+        // W
+        reviewCx.moveTo(focusRegion.left, contentBounds.top);
+        reviewCx.lineTo(focusRegion.left, contentBounds.bottom);
+
+        // E
+        reviewCx.moveTo(focusRegion.right, contentBounds.top);
+        reviewCx.lineTo(focusRegion.right, contentBounds.bottom);
+
+        reviewCx.setLineDash([5, 5]);
+        reviewCx.strokeStyle = 'lime';
+        reviewCx.stroke();
+
     }
 
     componentDidMount() {
-        this.updateIcon();
+        this.updateCanvasesGraphics();
 
         window.addEventListener('keydown', e => {
             if (e.key === 'ArrowLeft'){
                 this.reviewer.move('w');
-                this.updateIcon();
+                this.updateCanvasesGraphics();
 
             }else if(e.key == 'ArrowRight'){
                 this.reviewer.move('e');
-                this.updateIcon();
+                this.updateCanvasesGraphics();
 
             }else if(e.key == 'ArrowUp'){
                 this.reviewer.move('n');
-                this.updateIcon();
+                this.updateCanvasesGraphics();
 
             }else if(e.key == 'ArrowDown'){
                 this.reviewer.move('s');
-                this.updateIcon();
+                this.updateCanvasesGraphics();
 
             }
         });
@@ -139,7 +171,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
             this.reviewSize = r.size;
             this.reviewCanvas.current.width = r.width;
             this.reviewCanvas.current.height = r.height;
-            this.updateIcon();
+            this.updateCanvasesGraphics();
         }
     }
 
