@@ -81,8 +81,6 @@ export class App extends React.Component<AppProps, AppState>{
         const id = this.state.controller.id;
         IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data}]}));
 
-        return;
-        // TODO restore not working due to setIcons error
         DocumentService.restoreIcons().then(icons => {
 
             if (icons && icons.length > 0){
@@ -162,22 +160,20 @@ export class App extends React.Component<AppProps, AppState>{
         const controllers = dir.icons.map(icon => this.createController({icon}));
         const controller = controllers[0];
         const selectedTool = new SelectionTool(controller);
-        const previews = controllers.map(c => {
-            return {
-                id: c.id, data: '', size: c.iconSize
-            };
-        });
 
-        console.log(previews);
-
-        this.setState({
+        Promise.all(
+            controllers.map(async c => {
+                return {
+                    id: c.id,
+                    data: await IconService.asBlobUrl(c.editor.document.icon)
+                }
+            })
+        ).then(previews => this.setState({
             controller,
             controllers,
             selectedTool,
             previews,
-        });
-
-        // TODO: update previews
+        }));
 
     }
 
