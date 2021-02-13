@@ -8,11 +8,12 @@ import {ContainerPanel} from "./ContainerPanel";
 import {cn} from "../hui/helpers/hui";
 import {Icon} from "../model/Icon";
 import {RefObject} from "react";
-import {makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
+import {makePt, makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
 import {IconReviewer, StartCorner} from "../model/IconReviewer";
 import {IconService} from "../model/IconService";
 import {MemoryError} from "../model/errors";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
+import {MarchingAnts} from "../model/MarchingAnts";
 
 const MAX_PREVIEW = 200;
 const DEF_SIZE = 3;
@@ -117,27 +118,36 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
         const focusRegion = new Rectangle(contentBounds.left + pixelSize.width * sample,
             contentBounds.top + pixelSize.height * sample, pixelSize.width * sample, pixelSize.height * sample);
 
-        reviewCx.beginPath();
-
         // N
-        reviewCx.moveTo(contentBounds.left, focusRegion.top);
-        reviewCx.lineTo(contentBounds.right, focusRegion.top);
+        const na = makePt(contentBounds.left, focusRegion.top);
+        const nb = makePt(contentBounds.right, focusRegion.top);
 
         // S
-        reviewCx.moveTo(contentBounds.left, focusRegion.bottom);
-        reviewCx.lineTo(contentBounds.right, focusRegion.bottom);
+        const sa = makePt(contentBounds.left, focusRegion.bottom);
+        const sb = makePt(contentBounds.right, focusRegion.bottom);
 
         // W
-        reviewCx.moveTo(focusRegion.left, contentBounds.top);
-        reviewCx.lineTo(focusRegion.left, contentBounds.bottom);
+        const wa = makePt(focusRegion.left, contentBounds.top);
+        const wb = makePt(focusRegion.left, contentBounds.bottom);
 
         // E
-        reviewCx.moveTo(focusRegion.right, contentBounds.top);
-        reviewCx.lineTo(focusRegion.right, contentBounds.bottom);
+        const ea = makePt(focusRegion.right, contentBounds.top);
+        const eb = makePt(focusRegion.right, contentBounds.bottom);
 
-        reviewCx.setLineDash([5, 5]);
-        reviewCx.strokeStyle = 'lime';
-        reviewCx.stroke();
+
+        MarchingAnts.line(reviewCx, na, nb);
+        MarchingAnts.line(reviewCx, sa, sb);
+        MarchingAnts.line(reviewCx, wa, wb);
+        MarchingAnts.line(reviewCx, ea, eb);
+
+        // reviewCx.beginPath();
+        // reviewCx.moveTo(wa.x, wa.y);
+        // reviewCx.lineTo(wb.x, wb.y);
+        // reviewCx.moveTo(ea.x, ea.y);
+        // reviewCx.lineTo(eb.x, eb.y);
+        // reviewCx.strokeStyle = 'lime';
+        // reviewCx.stroke();
+
 
     }
 
