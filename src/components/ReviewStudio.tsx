@@ -72,25 +72,66 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
     }
 
     private updateCanvasesGraphics(){
-        if (this.previewCanvas.current){
+        this.drawPreviewCanvas();
+        this.drawReviewCanvas();
+    }
 
-            const sourceCanvas = IconService.asCanvas(this.reviewer.current);
+    private marchingAntsMarker(cx: CanvasRenderingContext2D, contentBounds: Rectangle, focusRegion: Rectangle){
+        // N
+        const na = makePt(contentBounds.left, focusRegion.top);
+        const nb = makePt(contentBounds.right, focusRegion.top);
 
-            const w = this.previewSize.width;
-            const h = this.previewSize.height;
+        // S
+        const sa = makePt(contentBounds.left, focusRegion.bottom);
+        const sb = makePt(contentBounds.right, focusRegion.bottom);
 
-            const destCx = this.previewCanvas.current.getContext('2d');
+        // W
+        const wa = makePt(focusRegion.left, contentBounds.top);
+        const wb = makePt(focusRegion.left, contentBounds.bottom);
 
-            if (destCx){
-                destCx.clearRect(0, 0, w, h);
-                destCx.imageSmoothingEnabled = false;
-                destCx.drawImage(sourceCanvas, 0,0, w, h);
-            }else{
-                throw new GraphicsMemoryError();
-            }
+        // E
+        const ea = makePt(focusRegion.right, contentBounds.top);
+        const eb = makePt(focusRegion.right, contentBounds.bottom);
+
+
+        MarchingAnts.line(cx, na, nb);
+        MarchingAnts.line(cx, sa, sb);
+        MarchingAnts.line(cx, wa, wb);
+        MarchingAnts.line(cx, ea, eb);
+    }
+
+    private drawPreviewCanvas(){
+        if (!this.previewCanvas.current){
+            return;
         }
 
-        this.drawReviewCanvas();
+        const sourceCanvas = IconService.asCanvas(this.reviewer.current);
+
+        const srcW = sourceCanvas.width;
+        const srcH = sourceCanvas.height;
+        const w = this.previewSize.width;
+        const h = this.previewSize.height;
+
+        const destCx = this.previewCanvas.current.getContext('2d');
+
+        if (!destCx){
+            throw new GraphicsMemoryError();
+        }
+
+        destCx.clearRect(0, 0, w, h);
+        destCx.imageSmoothingEnabled = false;
+        destCx.drawImage(sourceCanvas, 0,0, w, h);
+
+        const sampleW = this.reviewer.sample.width;
+        const sampleH = this.reviewer.sample.height;
+        const contentBounds = new Rectangle(0, 0, w, h);
+        const pixelSize = makeSz(w/srcW, h/srcH);
+        const focusSize = makeSz(sampleW * pixelSize.width, sampleH * pixelSize.height);
+        const focusLocation = makePt(pixelSize.width * this.reviewer.currentHotspot.left, pixelSize.height * this.reviewer.currentHotspot.top);
+        const focusRegion = Rectangle.fromPoint(focusLocation).withSize(focusSize);
+
+        this.marchingAntsMarker(destCx, contentBounds, focusRegion);
+
     }
 
     private drawReviewCanvas(){
@@ -118,36 +159,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
         const focusRegion = new Rectangle(contentBounds.left + pixelSize.width * sample,
             contentBounds.top + pixelSize.height * sample, pixelSize.width * sample, pixelSize.height * sample);
 
-        // N
-        const na = makePt(contentBounds.left, focusRegion.top);
-        const nb = makePt(contentBounds.right, focusRegion.top);
-
-        // S
-        const sa = makePt(contentBounds.left, focusRegion.bottom);
-        const sb = makePt(contentBounds.right, focusRegion.bottom);
-
-        // W
-        const wa = makePt(focusRegion.left, contentBounds.top);
-        const wb = makePt(focusRegion.left, contentBounds.bottom);
-
-        // E
-        const ea = makePt(focusRegion.right, contentBounds.top);
-        const eb = makePt(focusRegion.right, contentBounds.bottom);
-
-
-        MarchingAnts.line(reviewCx, na, nb);
-        MarchingAnts.line(reviewCx, sa, sb);
-        MarchingAnts.line(reviewCx, wa, wb);
-        MarchingAnts.line(reviewCx, ea, eb);
-
-        // reviewCx.beginPath();
-        // reviewCx.moveTo(wa.x, wa.y);
-        // reviewCx.lineTo(wb.x, wb.y);
-        // reviewCx.moveTo(ea.x, ea.y);
-        // reviewCx.lineTo(eb.x, eb.y);
-        // reviewCx.strokeStyle = 'lime';
-        // reviewCx.stroke();
-
+        this.marchingAntsMarker(reviewCx, contentBounds, focusRegion);
 
     }
 

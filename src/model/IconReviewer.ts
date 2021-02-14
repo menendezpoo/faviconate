@@ -182,4 +182,8 @@ export class IconReviewer{
         return canvas;
     }
 
+    get currentHotspot(): Rectangle{
+        return this.hotspot;
+    }
+
 }
