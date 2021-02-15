@@ -4,6 +4,7 @@ import {Button} from "../hui/items/Button";
 import {Clickable} from "../hui/items/Clickable";
 import {ColorPicker} from "../hui/items/ColorPicker";
 import {Palette, PaletteService} from "../model/PaletteService";
+import {App} from "./App";
 
 export interface PaletteProps{
     palette?: Palette;
@@ -77,12 +78,7 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         this.setState({addMode: true});
     }
 
-    private addSelectedColor(){
-
-        if(!this.state.colorToAdd || !this.props.palette){
-            throw new Error();
-        }
-
+    private addColor(color: Color){
         const palette: Palette = this.props.palette!;
 
         if (palette.native){
@@ -95,10 +91,21 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
 
         this.setPalette({
             ...palette,
-            colors: [...palette.colors, this.state.colorToAdd.tupleInt8]
+            colors: [...palette.colors, color.tupleInt8]
         });
 
         this.dismissAddColor();
+    }
+
+    private addSelectedColor(){
+
+        if(!this.state.colorToAdd || !this.props.palette){
+            throw new Error();
+        }
+
+        const color = this.state.colorToAdd;
+
+        this.addColor(color);
     }
 
     private dismissAddColor(){

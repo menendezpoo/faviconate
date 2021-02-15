@@ -14,6 +14,7 @@ import {SelectionTool} from "./tools/SelectionTool";
 import {Icon} from "./Icon";
 import {ClipboardEmptyError, ClipboardService} from "./ClipboardService";
 import {NoSelectionError} from "./errors";
+import {Color} from "../hui/helpers/Color";
 
 const MIME_PNG = "image/png";
 
@@ -40,6 +41,8 @@ export class IconCanvasController implements CanvasViewController{
     private previewBounds: Rectangle = Rectangle.empty;
     private previewPixelSize: number = 0;
 
+    private _colorPicker?: (color: Color) => void;
+
     constructor(document?: IconDocument) {
 
         if (document){
@@ -50,6 +53,10 @@ export class IconCanvasController implements CanvasViewController{
             });
         }
 
+    }
+
+    colorPicker(picker: (color: Color) => void){
+        this._colorPicker = picker;
     }
 
     async copy(): Promise<void>{
@@ -202,6 +209,15 @@ export class IconCanvasController implements CanvasViewController{
     }
 
     pointingGestureStart(e: PointingEvent): PointingEventResult | void {
+
+        if (this._colorPicker){
+            const i = this.pointToData(e.point);
+            const data = this.editor.document.icon.data;
+            const color = Color.fromTupleInt8([data[i], data[i+1], data[i+2], data[i+3] ]);
+            this._colorPicker(color);
+            this._colorPicker = undefined;
+        }
+
         if (this.tool?.pointingGestureStart){
             return this.tool.pointingGestureStart(e);
         }

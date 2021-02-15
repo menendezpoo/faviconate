@@ -3,6 +3,7 @@ import {IconCanvasController} from "../IconCanvasController";
 import {Color} from "../../hui/helpers/Color";
 import {ImageAdjustService} from "../ImageAdjustService";
 import {Palette} from "../PaletteService";
+import {PointingEvent, PointingEventResult} from "../../components/CanvasView";
 
 export interface AdjustProperties{
     palette?: Palette;

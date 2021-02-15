@@ -73,6 +73,8 @@ export interface AppState{
 
 export class App extends React.Component<AppProps, AppState>{
 
+    static activeController: IconCanvasController;
+
     constructor(props: AppProps) {
         super(props);
 
@@ -567,6 +569,10 @@ export class App extends React.Component<AppProps, AppState>{
         if (this.state.selectedTool instanceof SelectionTool){
             (this.state.selectedTool as SelectionTool).cropToSelection();
         }
+    }
+
+    componentDidUpdate(prevProps: Readonly<AppProps>, prevState: Readonly<AppState>, snapshot?: any) {
+        App.activeController = this.state.controller;
     }
 
     toolComponent(): React.ReactNode{
