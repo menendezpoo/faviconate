@@ -32,8 +32,9 @@
 
   > .body{
     min-height: 20px;
-    border-bottom-left-radius: $b-rad;
-    border-bottom-right-radius: $b-rad;
+    border-radius: $b-rad;
+    //border-bottom-left-radius: $b-rad;
+    //border-bottom-right-radius: $b-rad;
     padding: $space;
 
     > .children{
