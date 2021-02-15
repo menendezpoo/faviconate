@@ -28,6 +28,8 @@ import {Palette, PaletteService} from "../model/PaletteService";
 import * as ReactDOM from "react-dom";
 import {ReviewStudio} from "./ReviewStudio";
 import {DocumentService} from "../model/DocumentService";
+import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
+import {PaletteExpando} from "./PaletteExpando";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -311,6 +313,10 @@ export class App extends React.Component<AppProps, AppState>{
         this.useTool(new FloodFillTool(this.state.controller));
     }
 
+    private usePaletteComposer(){
+        this.useTool(new PaletteComposerTool(this.state.controller));
+    }
+
     private usePen(){
         this.useTool(new PencilTool(this.state.controller));
     }
@@ -495,21 +501,18 @@ export class App extends React.Component<AppProps, AppState>{
     commandContrast(contrast: number){
         if (this.state.selectedTool instanceof AdjustTool){
             this.setState({adjustState: {...this.state.adjustState, contrast}});
-            // (this.state.selectedTool as AdjustTool).setContrast(value);
         }
     }
 
     commandBrightness(brightness: number){
         if (this.state.selectedTool instanceof AdjustTool){
             this.setState({adjustState: {...this.state.adjustState, brightness}});
-            // (this.state.selectedTool as AdjustTool).setBrightness(value);
         }
     }
 
     commandResetPalette(){
         if (this.state.selectedTool instanceof AdjustTool){
             this.setState({adjustState: {...this.state.adjustState, palette: undefined}});
-            // (this.state.selectedTool as AdjustTool).setPalette(null);
         }
     }
 
@@ -549,7 +552,6 @@ export class App extends React.Component<AppProps, AppState>{
     commandSetPalette(palette: Palette){
         if (this.state.selectedTool instanceof AdjustTool){
             this.setState({adjustState: {...this.state.adjustState, palette}});
-            // (this.state.selectedTool as AdjustTool).setPalette(palette);
         }
     }
 
@@ -575,6 +577,33 @@ export class App extends React.Component<AppProps, AppState>{
         App.activeController = this.state.controller;
     }
 
+    paletteExpandoComponent(): React.ReactNode{
+        const props = this.state.adjustState || {};
+        const palette = props?.palette;
+        let paletteItems = <></>;
+
+        if (palette && palette.unsaved){
+            paletteItems = (
+                <>
+                    <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
+                    <Button icon={'floppy'} iconSize={50} onClick={() => this.commandSavePalette()}/>
+                </>
+            );
+        }else if(palette){
+            paletteItems = (
+                <>
+                    <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
+                </>
+            );
+        }
+
+        return (
+            <Expando title={`Palette`} items={paletteItems}>
+                <PaletteManager palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
+            </Expando>
+        );
+    }
+
     toolComponent(): React.ReactNode{
         const tool = this.state.selectedTool;
 
@@ -598,34 +627,20 @@ export class App extends React.Component<AppProps, AppState>{
                     <Button text={`Crop`} iconSize={20} icon={`crop`} onClick={() => this.commandCrop()}/>
                 </Expando>
             );
-        }else if ( colorable && !isEraser ){
+        }else if ( colorable && !isEraser ) {
             return (
                 <Expando title={`Color`}>
-                    <ColorPicker colorPicked={color => this.colorPick(color) } />
+                    <ColorPicker colorPicked={color => this.colorPick(color)}/>
                 </Expando>
             );
+        }else if ( tool instanceof PaletteComposerTool){
+            return <PaletteExpando/>;
+
         }else if ( tool instanceof AdjustTool ){
 
             const props = this.state.adjustState || {};
-            const palette = props?.palette;
-            let paletteItems = <></>;
 
             tool.updateAdjustments(props);
-
-            if (palette && palette.unsaved){
-                paletteItems = (
-                    <>
-                        <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
-                        <Button icon={'floppy'} iconSize={50} onClick={() => this.commandSavePalette()}/>
-                    </>
-                );
-            }else if(palette){
-                paletteItems = (
-                    <>
-                        <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
-                    </>
-                );
-            }
 
             return (
                 <>
@@ -635,9 +650,7 @@ export class App extends React.Component<AppProps, AppState>{
                             <Range min={-128} max={128} value={props.contrast || 0} onChange={value => this.commandContrast(value)} />
                         </div>
                     </Expando>
-                    <Expando title={`Palette`} items={paletteItems}>
-                        <PaletteManager palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
-                    </Expando>
+                    {this.paletteExpandoComponent()}
                     <Button classNames={`cta`} text={`Apply`} onClick={() => this.commandApplyAdjustments()}/>
                 </>
             );
@@ -702,10 +715,16 @@ export class App extends React.Component<AppProps, AppState>{
             />
             <Separator/>
             <Button
+                icon={`palette`} iconSize={50}
+                onClick={() => this.usePaletteComposer()}
+                selected={tool instanceof PaletteComposerTool}
+            />
+            <Button
                 icon={`equalizer`} iconSize={50}
                 onClick={() => this.useAdjustments()}
                 selected={tool instanceof AdjustTool}
             />
+            <Separator/>
             <Button
                 icon={`eye`} iconSize={50}
                 onClick={() => this.commandReview()}

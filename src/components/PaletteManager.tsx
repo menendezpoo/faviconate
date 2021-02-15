@@ -121,6 +121,13 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         });
     }
 
+    private startEyedropper(){
+        App.activeController.colorPicker(colorToAdd => {
+            console.log(`Got Color ${colorToAdd.cssRgba}`);
+            this.setState({colorToAdd});
+        });
+    }
+
     componentDidMount() {
         this.refreshPalette();
     }
@@ -135,7 +142,8 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         if(this.state.addMode){
             return (
                 <div className={`ui-palette`}>
-                    <ColorPicker colorPicked={colorToAdd => this.setState({colorToAdd})}/>
+                    <ColorPicker color={this.state.colorToAdd} colorPicked={colorToAdd => this.setState({colorToAdd})}/>
+                    <Button icon={'eyedropper'} onClick={() => this.startEyedropper()}/>
                     <Button text={'Cancel'} onClick={() => this.dismissAddColor()}/>
                     <Button text={'Add Color'} onClick={() => this.addSelectedColor()}/>
                 </div>

@@ -10,7 +10,7 @@ const BG_COLOR_A = [0, 0, 0, 0];
 const BG_COLOR_B = [127, 127, 127, 127];
 
 export interface ColorPickerProps{
-
+    color?: Color;
     colorPicked: (color: Color) => any;
 }
 
