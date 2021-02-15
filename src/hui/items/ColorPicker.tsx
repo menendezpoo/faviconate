@@ -95,7 +95,7 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
         super(props);
 
         this.state = {
-            currentColor: Color.black,
+            currentColor: props.color || Color.black,
             selectedHue: -1,
         }
 
@@ -191,6 +191,18 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
                 this.focus = null;
             });
         });
+    }
+
+    componentDidUpdate(prevProps: Readonly<ColorPickerProps>, prevState: Readonly<ColorPickerState>, snapshot?: any) {
+        const prev = prevProps.color;
+        const cur = this.props.color;
+        if (
+            (cur && !prev) ||
+            (cur && prev && !cur.equals(prev))
+        ){
+            // Selected color was updated from outside
+            this.setState({currentColor: cur});
+        }
     }
 
     syncInputValues(){
