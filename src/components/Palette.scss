@@ -23,12 +23,14 @@
 
     .swatches{
       display: flex;
+      overflow: hidden;
     }
 
     .swatch{
       width: 15px;
       height: 15px;
       border-radius: 7px;
+      flex-shrink: 0;
 
       &:not(:last-child){
         margin-right: $space;

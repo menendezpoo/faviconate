@@ -30,6 +30,7 @@ import {ReviewStudio} from "./ReviewStudio";
 import {DocumentService} from "../model/DocumentService";
 import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {PaletteExpando} from "./PaletteExpando";
+import {ColorUsageExpando} from "./ColorUsageExpando";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -634,7 +635,12 @@ export class App extends React.Component<AppProps, AppState>{
                 </Expando>
             );
         }else if ( tool instanceof PaletteComposerTool){
-            return <PaletteExpando/>;
+            return (
+                <>
+                    <PaletteExpando/>
+                    <ColorUsageExpando data={this.state.controller.editor.document.icon.data}/>
+                </>
+            );
 
         }else if ( tool instanceof AdjustTool ){
 
@@ -752,7 +758,7 @@ export class App extends React.Component<AppProps, AppState>{
                             <Button iconSize={50} icon={`plus`}>
                                 <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
                                 <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
-                                <MenuItem text={`50 x 50`} onActivate={() => this.newIconEntry(50)}/>
+                                <MenuItem text={`48 x 48`} onActivate={() => this.newIconEntry(48)}/>
                                 <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
                                 <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
                                 <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
