@@ -3,6 +3,7 @@ import {makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
 import {MemoryError} from "./errors";
 import {darkModeOn} from "../hui/helpers/Utils";
+import {MarchingAnts} from "./MarchingAnts";
 
 const dark = darkModeOn();
 const GRID_OUT = Color.fromHex(dark ? 'fff' : '000').withAlpha(0.05);
@@ -133,41 +134,6 @@ export class IconDocumentRenderer {
         }
     }
 
-    private rectStroke(r: Rectangle, color: Color){
-        this.context.strokeStyle = color.cssRgba;
-        this.context.strokeRect(...r.tuple);
-    }
-
-    private rectFill(r: Rectangle, color: Color){
-        this.context.fillStyle = color.cssRgba;
-        this.context.fillRect(...r.tuple);
-    }
-
-    private renderPixels_Deprecated(pixelSize: Size){
-
-        const data = this.document.icon.data;
-        let x = this.bounds.left;
-        let y = this.bounds.top;
-        let drawn = 0;
-
-
-        for(let i = 0; i < data.length; i += 4){
-            const color = new Color(data[i], data[i + 1], data[i + 2], data[i + 3] / 255);
-            const r = new Rectangle(x, y, pixelSize.width, pixelSize.height);
-            this.rectFill(r, color);
-
-            drawn++;
-            x += pixelSize.width;
-
-            if ((drawn % this.document.icon.width) === 0){
-                y += pixelSize.height;
-                x = this.bounds.left;
-            }
-
-        }
-
-    }
-
     private renderPixels(pixelSize: Size){
         const {canvas, cx} = IconDocumentRenderer.getPixelsBuffer(makeSz(this.document.icon.width, this.document.icon.height));
 
@@ -256,69 +222,9 @@ export class IconDocumentRenderer {
             }
         }
 
-        // this.context.strokeStyle = '#000';
-        // this.context.strokeRect(...selBounds.tuple);
+        MarchingAnts.rectangle(this.context, selBounds, Color.black, Color.white, IconDocumentRenderer.clockReminder);
 
-        const fives = new Array(Math.round(selBounds.width / 5)).fill(5);
-
-        const segmentedRect = (r: Rectangle) => {
-            // Drawing the rect like this prevents weird behavior
-            // of the segmented pattern
-            this.context.beginPath();
-            this.context.moveTo(r.left, r.top);
-            this.context.lineTo(r.right, r.top);
-            this.context.moveTo(r.right, r.bottom);
-            this.context.lineTo(r.left, r.bottom);
-            this.context.stroke();
-
-            this.context.beginPath();
-            this.context.moveTo(r.right, r.top);
-            this.context.lineTo(r.right, r.bottom);
-            this.context.moveTo(r.left, r.bottom);
-            this.context.lineTo(r.left, r.top);
-            this.context.stroke();
-        }
-
-        // =00000====
-        // ==00000===
-        // ===00000==
-        // ====00000=
-        // =====00000
-
-        const lineWidthBuffer = this.context.lineWidth;
-        this.context.lineWidth = 1.5;
-
-        switch(IconDocumentRenderer.clockReminder){
-            case 0: this.context.setLineDash([1, ...fives]); break;
-            case 1: this.context.setLineDash([2, ...fives]); break;
-            case 2: this.context.setLineDash([3, ...fives]); break;
-            case 3: this.context.setLineDash([4, ...fives]); break;
-            case 4: this.context.setLineDash([5, 5]); break;
-            case 5: this.context.setLineDash([0, 1,...fives]); break;
-            case 6: this.context.setLineDash([0,2,...fives]); break;
-            case 7: this.context.setLineDash([0,3,...fives]); break;
-            case 8: this.context.setLineDash([0,4,...fives]); break;
-        }
-        this.context.strokeStyle = '#fff';
-
-        segmentedRect(selBounds);
-
-        switch(IconDocumentRenderer.clockReminder){
-            case 0: this.context.setLineDash([0, 1, ...fives]); break;
-            case 1: this.context.setLineDash([0, 2, ...fives]); break;
-            case 2: this.context.setLineDash([0, 3, ...fives]); break;
-            case 3: this.context.setLineDash([0, 4, ...fives]); break;
-            case 4: this.context.setLineDash([0, 5, ...fives]); break;
-            case 5: this.context.setLineDash([1,...fives]); break;
-            case 6: this.context.setLineDash([2,...fives]); break;
-            case 7: this.context.setLineDash([3,...fives]); break;
-            case 8: this.context.setLineDash([4,...fives]); break;
-        }
-        this.context.strokeStyle = '#000';
-        segmentedRect(selBounds);
-
-        this.context.setLineDash([]);
-        this.context.lineWidth = lineWidthBuffer;
+        return;
 
     }
 

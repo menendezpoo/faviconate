@@ -1,4 +1,4 @@
-import {distance, Point} from "../hui/helpers/Rectangle";
+import {distance, Point, Rectangle} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
 
 export class MarchingAnts{
@@ -50,6 +50,20 @@ export class MarchingAnts{
 
         cx.setLineDash([]);
         cx.lineWidth = lineWidthBuffer;
+    }
+
+    static rectangle(cx: CanvasRenderingContext2D, r: Rectangle, color1 = Color.black, color2  = Color.white, step: number = 0){
+        const lines: [Point, Point][] = [
+            [r.northWest, r.northEast],
+            [r.northEast, r.southEast],
+            [r.southEast, r.southWest],
+            [r.southWest, r.northWest],
+        ];
+
+        for(const [a, b] of lines){
+            this.line(cx, a, b, color1, color2, step);
+        }
+
     }
 
 }
