@@ -13,8 +13,9 @@ import {IconReviewer, StartCorner} from "../model/IconReviewer";
 import {IconService} from "../model/IconService";
 import {MemoryError} from "../model/errors";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
-import {MarchingAnts} from "../model/MarchingAnts";
+import {MarchingAnts} from "../rendering/MarchingAnts";
 import {ColorUsageExpando} from "./ColorUsageExpando";
+import {marchingAntsMarker, ReviewRenderer} from "../rendering/ReviewRenderer";
 
 const MAX_PREVIEW = 200;
 const DEF_SIZE = 3;
@@ -73,45 +74,15 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
     }
 
     private updateCanvasesGraphics(){
-        this.drawPreviewCanvas();
-        this.drawReviewCanvas();
+        const renderer = new ReviewRenderer(this.reviewer);
+        this.drawPreviewCanvas(renderer);
+        this.drawReviewCanvas(renderer);
     }
 
-    private marchingAntsMarker(cx: CanvasRenderingContext2D, contentBounds: Rectangle, focusRegion: Rectangle){
-        // N
-        const na = makePt(contentBounds.left, focusRegion.top);
-        const nb = makePt(contentBounds.right, focusRegion.top);
-
-        // S
-        const sa = makePt(contentBounds.left, focusRegion.bottom);
-        const sb = makePt(contentBounds.right, focusRegion.bottom);
-
-        // W
-        const wa = makePt(focusRegion.left, contentBounds.top);
-        const wb = makePt(focusRegion.left, contentBounds.bottom);
-
-        // E
-        const ea = makePt(focusRegion.right, contentBounds.top);
-        const eb = makePt(focusRegion.right, contentBounds.bottom);
-
-
-        MarchingAnts.line(cx, na, nb);
-        MarchingAnts.line(cx, sa, sb);
-        MarchingAnts.line(cx, wa, wb);
-        MarchingAnts.line(cx, ea, eb);
-    }
-
-    private drawPreviewCanvas(){
+    private drawPreviewCanvas(renderer: ReviewRenderer){
         if (!this.previewCanvas.current){
             return;
         }
-
-        const sourceCanvas = IconService.asCanvas(this.reviewer.current);
-
-        const srcW = sourceCanvas.width;
-        const srcH = sourceCanvas.height;
-        const w = this.previewSize.width;
-        const h = this.previewSize.height;
 
         const destCx = this.previewCanvas.current.getContext('2d');
 
@@ -119,48 +90,23 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
             throw new GraphicsMemoryError();
         }
 
-        destCx.clearRect(0, 0, w, h);
-        destCx.imageSmoothingEnabled = false;
-        destCx.drawImage(sourceCanvas, 0,0, w, h);
-
-        const sampleW = this.reviewer.sample.width;
-        const sampleH = this.reviewer.sample.height;
-        const contentBounds = new Rectangle(0, 0, w, h);
-        const pixelSize = makeSz(w/srcW, h/srcH);
-        const focusSize = makeSz(sampleW * pixelSize.width, sampleH * pixelSize.height);
-        const focusLocation = makePt(pixelSize.width * this.reviewer.currentHotspot.left, pixelSize.height * this.reviewer.currentHotspot.top);
-        const focusRegion = Rectangle.fromPoint(focusLocation).withSize(focusSize);
-
-        this.marchingAntsMarker(destCx, contentBounds, focusRegion);
+        renderer.renderPreview(destCx, this.previewSize);
 
     }
 
-    private drawReviewCanvas(){
+    private drawReviewCanvas(renderer: ReviewRenderer){
+
         if (!this.reviewCanvas.current){
             return;
         }
 
-        const reviewSource = this.reviewer.reviewImage();
-        const reviewCx = this.reviewCanvas.current.getContext('2d');
+        const context = this.reviewCanvas.current.getContext('2d');
 
-        if (!reviewCx){
+        if (!context){
             throw new GraphicsMemoryError();
         }
 
-        const graphicSize = makeSz(reviewSource.width, reviewSource.height);
-        const contentBounds = Rectangle.fromSize(scaleToContain(this.reviewSize, graphicSize)).centerAt(Rectangle.fromSize(this.reviewSize).center);
-
-
-        reviewCx.clearRect(0,0, this.reviewSize.width, this.reviewSize.height);
-        reviewCx.imageSmoothingEnabled = false;
-        reviewCx.drawImage(reviewSource, ...contentBounds.tuple);
-
-        const pixelSize = makeSz(contentBounds.width / reviewSource.width, contentBounds.height / reviewSource.height);
-        const sample = this.state.sampleSize;
-        const focusRegion = new Rectangle(contentBounds.left + pixelSize.width * sample,
-            contentBounds.top + pixelSize.height * sample, pixelSize.width * sample, pixelSize.height * sample);
-
-        this.marchingAntsMarker(reviewCx, contentBounds, focusRegion);
+        renderer.renderReview(context, this.reviewSize);
 
     }
 

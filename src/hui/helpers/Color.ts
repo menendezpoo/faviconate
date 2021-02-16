@@ -200,6 +200,10 @@ export class Color{
             this.a === 0);
     }
 
+    get relativeLuminance(): number{
+        return 0.2126 * (this.r / 255) + 0.7152 * (this.g / 255) + 0.0722 * (this.b / 255);
+    }
+
     get tupleInt8(): [number, number, number, number]{
         return [this.r, this.g, this.b, Math.round(this.a * 255)];
     }

@@ -8,7 +8,7 @@ import {
 import {IconDocument, IconEditor, IconEditorTool} from "./IconEditor";
 import {PencilTool} from "./tools/PencilTool";
 import {IconService} from "./IconService";
-import {IconDocumentRenderer} from "./IconDocumentRenderer";
+import {IconDocumentRenderer} from "../rendering/IconDocumentRenderer";
 import {makePt, makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {SelectionTool} from "./tools/SelectionTool";
 import {Icon} from "./Icon";

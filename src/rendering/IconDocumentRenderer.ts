@@ -1,7 +1,7 @@
-import {IconDocument} from "./IconEditor";
+import {IconDocument} from "../model/IconEditor";
 import {makeSz, Point, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {Color} from "../hui/helpers/Color";
-import {MemoryError} from "./errors";
+import {MemoryError} from "../model/errors";
 import {darkModeOn} from "../hui/helpers/Utils";
 import {MarchingAnts} from "./MarchingAnts";
 
