@@ -74,7 +74,10 @@ export class ColorUsageExpando extends React.Component<ColorUsageExpandoProps, C
 
     }
 
+
     render() {
+        this.buildReport();
+
         return (
             <Expando title={`Usage`}>
                 <div className="color-usage-report">

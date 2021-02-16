@@ -14,6 +14,7 @@ import {IconService} from "../model/IconService";
 import {MemoryError} from "../model/errors";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
 import {MarchingAnts} from "../model/MarchingAnts";
+import {ColorUsageExpando} from "./ColorUsageExpando";
 
 const MAX_PREVIEW = 200;
 const DEF_SIZE = 3;
@@ -170,18 +171,22 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
             if (e.key === 'ArrowLeft'){
                 this.reviewer.move('w');
                 this.updateCanvasesGraphics();
+                this.forceUpdate();
 
             }else if(e.key == 'ArrowRight'){
                 this.reviewer.move('e');
                 this.updateCanvasesGraphics();
+                this.forceUpdate();
 
             }else if(e.key == 'ArrowUp'){
                 this.reviewer.move('n');
                 this.updateCanvasesGraphics();
+                this.forceUpdate();
 
             }else if(e.key == 'ArrowDown'){
                 this.reviewer.move('s');
                 this.updateCanvasesGraphics();
+                this.forceUpdate();
 
             }
         });
@@ -221,6 +226,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
                         height={this.previewSize.height}
                         ref={this.previewCanvas}/>
                 </ContainerPanel>
+                <ColorUsageExpando data={this.reviewer.sampleSprite}/>
             </div>
         );
 

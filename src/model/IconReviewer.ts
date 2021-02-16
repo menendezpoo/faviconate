@@ -12,6 +12,7 @@ const VISITED = new Color(0, 255, 0, 0.7);
 export class IconReviewer{
 
     readonly current: Icon;
+    readonly sampleSprite: Uint8ClampedArray;
 
     private hotspot: Rectangle;
 
@@ -40,6 +41,8 @@ export class IconReviewer{
 
         }
 
+        this.sampleSprite = new Uint8ClampedArray(sample.width * sample.height * 4);
+
         this.tintRegion(new Rectangle(0,0,original.width, original.height), UNVISITED);
         this.tintRegion(this.hotspot, Color.transparent);
     }
@@ -47,6 +50,7 @@ export class IconReviewer{
     tintRegion(region: Rectangle, color: Color){
 
         const index = (x: number, y: number) => y * this.original.width * 4 + x * 4;
+        let counter = 0;
 
         for(let y = region.top; y < region.bottom; y++){
 
@@ -73,11 +77,17 @@ export class IconReviewer{
                 const rG = sG * sA + dG * (1 - sA);
                 const rB = sB * sA + dB * (1 - sA);
                 const rA = dA + sA * (1 - dA);
+                const rA8 = Math.round(rA * 255);
 
                 this.current.data[sIndex] = rR;
                 this.current.data[sIndex + 1] = rG;
                 this.current.data[sIndex + 2] = rB;
-                this.current.data[sIndex + 3] = rA * 255;
+                this.current.data[sIndex + 3] = rA8;
+
+                this.sampleSprite[counter++] = rR;
+                this.sampleSprite[counter++] = rG;
+                this.sampleSprite[counter++] = rB;
+                this.sampleSprite[counter++] = rA8;
             }
         }
 
