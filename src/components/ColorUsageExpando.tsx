@@ -71,9 +71,7 @@ export class ColorUsageExpando extends React.Component<ColorUsageExpandoProps, C
         console.log(warnings);
         console.log(report);
 
-
     }
-
 
     render() {
         this.buildReport();
@@ -91,7 +89,7 @@ export class ColorUsageExpando extends React.Component<ColorUsageExpandoProps, C
                             return (
                                 <div className="entry color">
                                     <div className="swatch" style={{backgroundColor: entry.color.cssRgba}}/>
-                                    <Label text={String(entry.count)}/>
+                                    <div><span className="lighter">{entry.color.hexRgb}</span> {entry.count}</div>
                                 </div>
                             );
                         }
