@@ -36,7 +36,7 @@ export class ReviewRenderer{
 
     private drawCode(cx: CanvasRenderingContext2D, color: Color, region: Rectangle){
 
-        const txt = color.hexRgb.toUpperCase();
+        const txt = color.isTransparent ? 'Nothing' :  color.hexRgb.toUpperCase();
         const measure = cx.measureText(txt);
         const txtSize = makeSz(measure.width, measure.actualBoundingBoxDescent);
         const txtBounds = Rectangle.fromSize(txtSize).centerAt(region.center)
@@ -62,6 +62,7 @@ export class ReviewRenderer{
                     region.top + row * pixel.height,
                     pixel.width, pixel.height
                 );
+
                 this.drawCode(cx, color, pixelBounds);
             }
         }

@@ -1,7 +1,6 @@
 import {Icon} from "./Icon";
 import {Color} from "../hui/helpers/Color";
 import {BasicCardinalPoint, Rectangle, Size} from "../hui/helpers/Rectangle";
-import {MemoryError} from "./errors";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
 
 export type StartCorner = 'ne' | 'nw' | 'se' | 'sw';
@@ -45,12 +44,47 @@ export class IconReviewer{
 
         this.tintRegion(new Rectangle(0,0,original.width, original.height), UNVISITED);
         this.tintRegion(this.hotspot, Color.transparent);
+        this.updateSampleSprite();
+    }
+
+    private updateSampleSprite(){
+
+        const index = (x: number, y: number, w: number) => y * w * 4 + x * 4;
+
+        // Clean sampleSprite
+        this.sampleSprite.forEach((v, i) => this.sampleSprite[i] = 0);
+
+
+        for(let y = 0; y < this.sample.height; y++){
+
+            for(let x = 0; x < this.sample.height; x++){
+
+                const imgX = this.hotspot.left + x;
+                const imgY = this.hotspot.top + y;
+
+                if (
+                    imgX < 0 ||
+                    imgY < 0 ||
+                    imgX >= this.original.width ||
+                    imgY >= this.original.height
+                ) { continue; }
+
+                const sampleIndex = index(x, y, this.sample.width);
+                const imgIndex = index(imgX, imgY, this.original.width);
+
+                this.sampleSprite[sampleIndex] = this.original.data[imgIndex];
+                this.sampleSprite[sampleIndex + 1] = this.original.data[imgIndex + 1];
+                this.sampleSprite[sampleIndex + 2] = this.original.data[imgIndex + 2];
+                this.sampleSprite[sampleIndex + 3] = this.original.data[imgIndex + 3];
+
+            }
+        }
+
     }
 
     tintRegion(region: Rectangle, color: Color){
 
         const index = (x: number, y: number) => y * this.original.width * 4 + x * 4;
-        let counter = 0;
 
         for(let y = region.top; y < region.bottom; y++){
 
@@ -73,9 +107,9 @@ export class IconReviewer{
                 const [sR, sG, sB] = color.tupleInt8;
                 const sA = color.a;
 
-                const rR = sR * sA + dR * (1 - sA);
-                const rG = sG * sA + dG * (1 - sA);
-                const rB = sB * sA + dB * (1 - sA);
+                const rR = Math.round(sR * sA + dR * (1 - sA));
+                const rG = Math.round(sG * sA + dG * (1 - sA));
+                const rB = Math.round(sB * sA + dB * (1 - sA));
                 const rA = dA + sA * (1 - dA);
                 const rA8 = Math.round(rA * 255);
 
@@ -83,11 +117,6 @@ export class IconReviewer{
                 this.current.data[sIndex + 1] = rG;
                 this.current.data[sIndex + 2] = rB;
                 this.current.data[sIndex + 3] = rA8;
-
-                this.sampleSprite[counter++] = rR;
-                this.sampleSprite[counter++] = rG;
-                this.sampleSprite[counter++] = rB;
-                this.sampleSprite[counter++] = rA8;
             }
         }
 
@@ -114,6 +143,8 @@ export class IconReviewer{
 
         this.tintRegion(this.hotspot, Color.transparent);
 
+        this.updateSampleSprite();
+
     }
 
     reviewImage(): HTMLCanvasElement{
@@ -125,28 +156,6 @@ export class IconReviewer{
 
         canvas.width = superSample.width;
         canvas.height = superSample.height;
-
-        let [imgX, imgY, imgR, imgB] = superSample.tupleLTRB;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        if (imgX < 0){
-            offsetX = Math.abs(imgX);
-            imgX = 0;
-        }
-
-        if(imgY < 0){
-            offsetY = Math.abs(imgY);
-            imgY = 0;
-        }
-
-        if(imgR > current.width){
-            imgR = current.width;
-        }
-
-        if(imgB > current.height){
-            imgB = current.height;
-        }
 
         const cx = canvas.getContext('2d');
 
