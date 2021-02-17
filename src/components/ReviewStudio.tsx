@@ -8,7 +8,7 @@ import {ContainerPanel} from "./ContainerPanel";
 import {cn} from "../hui/helpers/hui";
 import {Icon} from "../model/Icon";
 import {RefObject} from "react";
-import {makePt, makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
+import {BasicCardinalPoint, makePt, makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
 import {IconReviewer, StartCorner} from "../model/IconReviewer";
 import {IconService} from "../model/IconService";
 import {MemoryError} from "../model/errors";
@@ -16,6 +16,7 @@ import {GraphicsMemoryError} from "../hui/helpers/errors";
 import {MarchingAnts} from "../rendering/MarchingAnts";
 import {ColorUsageExpando} from "./ColorUsageExpando";
 import {marchingAntsMarker, ReviewRenderer} from "../rendering/ReviewRenderer";
+import {Expando} from "./Expando";
 
 const MAX_PREVIEW = 200;
 const DEF_SIZE = 3;
@@ -110,29 +111,27 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
 
     }
 
+    private navigate(p: BasicCardinalPoint){
+        this.reviewer.move(p);
+        this.updateCanvasesGraphics();
+        this.forceUpdate();
+    }
+
     componentDidMount() {
         this.updateCanvasesGraphics();
 
         window.addEventListener('keydown', e => {
             if (e.key === 'ArrowLeft'){
-                this.reviewer.move('w');
-                this.updateCanvasesGraphics();
-                this.forceUpdate();
+                this.navigate('w');
 
             }else if(e.key == 'ArrowRight'){
-                this.reviewer.move('e');
-                this.updateCanvasesGraphics();
-                this.forceUpdate();
+                this.navigate('e');
 
             }else if(e.key == 'ArrowUp'){
-                this.reviewer.move('n');
-                this.updateCanvasesGraphics();
-                this.forceUpdate();
+                this.navigate('n');
 
             }else if(e.key == 'ArrowDown'){
-                this.reviewer.move('s');
-                this.updateCanvasesGraphics();
-                this.forceUpdate();
+                this.navigate('s');
 
             }
         });
@@ -172,6 +171,25 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
                         height={this.previewSize.height}
                         ref={this.previewCanvas}/>
                 </ContainerPanel>
+                <Expando title={`Navigate`}>
+                    <div className="key-navigation">
+                        <div className="row">
+                            <div className={`nothing`}/>
+                            <Button icon={`circle-arrow-up`} iconSize={50} onClick={() => this.navigate('n')}/>
+                            <div className={`nothing`}/>
+                        </div>
+                        <div className="row">
+                            <Button icon={`circle-arrow-left`} iconSize={50} onClick={() => this.navigate('w')}/>
+                            <div className={`nothing`}/>
+                            <Button icon={`circle-arrow-right`} iconSize={50} onClick={() => this.navigate('e')}/>
+                        </div>
+                        <div className="row">
+                            <div className={`nothing`}/>
+                            <Button icon={`circle-arrow-down`} iconSize={50} onClick={() => this.navigate('s')}/>
+                            <div className={`nothing`}/>
+                        </div>
+                    </div>
+                </Expando>
                 <ColorUsageExpando data={this.reviewer.sampleSprite}/>
             </div>
         );

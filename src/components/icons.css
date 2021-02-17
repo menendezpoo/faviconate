@@ -1,5 +1,9 @@
 .ui-icon.icon-bucket { background-image: url("icons/bucket.svg"); }
 .ui-icon.icon-circle-check { background-image: url("icons/circle-check.svg"); }
+.ui-icon.icon-circle-arrow-up { background-image: url("icons/circle-arrow-up.svg"); }
+.ui-icon.icon-circle-arrow-down { background-image: url("icons/circle-arrow-down.svg"); }
+.ui-icon.icon-circle-arrow-left { background-image: url("icons/circle-arrow-left.svg"); }
+.ui-icon.icon-circle-arrow-right { background-image: url("icons/circle-arrow-right.svg"); }
 .ui-icon.icon-checker { background-image: url("icons/checker.svg"); }
 .ui-icon.icon-copy { background-image: url("icons/copy.svg"); }
 .ui-icon.icon-cut { background-image: url("icons/cut.svg"); }
