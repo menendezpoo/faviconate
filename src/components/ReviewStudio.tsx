@@ -5,17 +5,14 @@ import {Button} from "../hui/items/Button";
 import {Range} from "../hui/items/Range";
 import {DockView} from "../hui/layout/DockView";
 import {ContainerPanel} from "./ContainerPanel";
-import {cn} from "../hui/helpers/hui";
+import {Callable, cn} from "../hui/helpers/hui";
 import {Icon} from "../model/Icon";
 import {RefObject} from "react";
-import {BasicCardinalPoint, makePt, makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
+import {BasicCardinalPoint, makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
 import {IconReviewer, StartCorner} from "../model/IconReviewer";
-import {IconService} from "../model/IconService";
-import {MemoryError} from "../model/errors";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
-import {MarchingAnts} from "../rendering/MarchingAnts";
 import {ColorUsageExpando} from "./ColorUsageExpando";
-import {marchingAntsMarker, ReviewRenderer} from "../rendering/ReviewRenderer";
+import {ReviewRenderer} from "../rendering/ReviewRenderer";
 import {Expando} from "./Expando";
 
 const MAX_PREVIEW = 200;
@@ -24,12 +21,14 @@ const DEF_CORNER = 'nw';
 
 export interface ReviewStudioProps{
     icon: Icon;
+    onCloseRequested?: Callable;
 }
 
 interface ReviewStudioState{
     sampleSize: number;
     startCorner: StartCorner;
     mode: 'setup' | 'review';
+
 }
 
 export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudioState>{
@@ -52,6 +51,12 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
 
         this.previewSize = scaleToContain(makeSz(MAX_PREVIEW, MAX_PREVIEW), makeSz(props.icon.width, props.icon.height));
         this.reviewer = new IconReviewer(props.icon, makeSz(DEF_SIZE, DEF_SIZE), DEF_CORNER);
+    }
+
+    private dismiss(){
+        if (this.props.onCloseRequested){
+            this.props.onCloseRequested();
+        }
     }
 
     private setStartCorner(startCorner: StartCorner){
@@ -133,6 +138,9 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
             }else if(e.key == 'ArrowDown'){
                 this.navigate('s');
 
+            }else if(e.key == 'Escape'){
+                this.dismiss();
+
             }
         });
     }
@@ -159,7 +167,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
 
         const topItemsFar = (
             <>
-                <Button icon={`dismiss`} iconSize={20}/>
+                <Button icon={`dismiss`} iconSize={20} onClick={() => this.dismiss()}/>
             </>
         );
 

@@ -518,8 +518,13 @@ export class App extends React.Component<AppProps, AppState>{
     }
 
     commandReview(){
+
+        const dismiss = () => {
+            ReactDOM.unmountComponentAtNode(document.getElementById(`root-dialog`)!);
+        };
+
         ReactDOM.render(
-            <ReviewStudio icon={this.state.controller.editor.document.icon} />,
+            <ReviewStudio icon={this.state.controller.editor.document.icon} onCloseRequested={dismiss}/>,
             document.getElementById(`root-dialog`)
         );
     }
