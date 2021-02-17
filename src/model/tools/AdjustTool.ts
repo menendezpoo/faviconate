@@ -3,13 +3,13 @@ import {IconCanvasController} from "../IconCanvasController";
 import {Color} from "../../hui/helpers/Color";
 import {ImageAdjustService} from "../ImageAdjustService";
 import {Palette} from "../PaletteService";
-import {PointingEvent, PointingEventResult} from "../../components/CanvasView";
 
 export interface AdjustProperties{
     palette?: Palette;
     brightness?: number;
     contrast?: number;
     kernel?: number;
+    serpentine?: boolean;
 }
 
 export class AdjustTool implements IconEditorTool{
@@ -61,7 +61,7 @@ export class AdjustTool implements IconEditorTool{
         const doc = this.controller.editor.cloneDocument(this.original);
         const icon = doc.icon;
         const data = icon.data;
-        const {palette, contrast, brightness, kernel} = props;
+        const {palette, contrast, brightness, kernel, serpentine} = props;
 
 
         if (typeof brightness === "number" && brightness !== 0){
@@ -73,7 +73,7 @@ export class AdjustTool implements IconEditorTool{
         }
 
         if (palette){
-            ImageAdjustService.dither(data, icon.width, icon.height, palette.colors.map(tuple => Color.fromTupleInt8(tuple)), kernel || 0);
+            ImageAdjustService.dither(data, icon.width, icon.height, palette.colors.map(tuple => Color.fromTupleInt8(tuple)), kernel || 0, !!serpentine);
         }
 
         this.controller.editor.setDocument(doc);

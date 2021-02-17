@@ -30,7 +30,7 @@ import {ReviewStudio} from "./ReviewStudio";
 import {DocumentService} from "../model/DocumentService";
 import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {PaletteExpando} from "./PaletteExpando";
-import {ColorUsageExpando} from "./ColorUsageExpando";
+import {ColorUsageReport} from "./ColorUsageReport";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -511,6 +511,18 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
+    commandDitheringKernel(kernel: number){
+        if (this.state.selectedTool instanceof AdjustTool){
+            this.setState({adjustState: {...this.state.adjustState, kernel}});
+        }
+    }
+
+    commandDitheringSerpentine(serpentine: boolean){
+        if (this.state.selectedTool instanceof AdjustTool){
+            this.setState({adjustState: {...this.state.adjustState, serpentine}});
+        }
+    }
+
     commandResetPalette(){
         if (this.state.selectedTool instanceof AdjustTool){
             this.setState({adjustState: {...this.state.adjustState, palette: undefined}});
@@ -583,33 +595,6 @@ export class App extends React.Component<AppProps, AppState>{
         App.activeController = this.state.controller;
     }
 
-    paletteExpandoComponent(): React.ReactNode{
-        const props = this.state.adjustState || {};
-        const palette = props?.palette;
-        let paletteItems = <></>;
-
-        if (palette && palette.unsaved){
-            paletteItems = (
-                <>
-                    <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
-                    <Button icon={'floppy'} iconSize={50} onClick={() => this.commandSavePalette()}/>
-                </>
-            );
-        }else if(palette){
-            paletteItems = (
-                <>
-                    <Button icon={'return'} iconSize={50} onClick={() => this.commandResetPalette()}/>
-                </>
-            );
-        }
-
-        return (
-            <Expando title={`Palette`} items={paletteItems}>
-                <PaletteManager palette={palette || undefined} paletteChanged={p => this.commandSetPalette(p)}/>
-            </Expando>
-        );
-    }
-
     toolComponent(): React.ReactNode{
         const tool = this.state.selectedTool;
 
@@ -642,8 +627,14 @@ export class App extends React.Component<AppProps, AppState>{
         }else if ( tool instanceof PaletteComposerTool){
             return (
                 <>
-                    <PaletteExpando/>
-                    <ColorUsageExpando data={this.state.controller.editor.document.icon.data}/>
+                    <Expando title={`Color Replace`}>
+                        {/* TODO: Implement color replace */}
+                    </Expando>
+                    <PaletteExpando title={`Palette Library`}/>
+                    <Expando title={`Color Usage`}>
+                        <ColorUsageReport data={this.state.controller.editor.document.icon.data}/>
+                    </Expando>
+
                 </>
             );
 
@@ -661,7 +652,15 @@ export class App extends React.Component<AppProps, AppState>{
                             <Range min={-128} max={128} value={props.contrast || 0} onChange={value => this.commandContrast(value)} />
                         </div>
                     </Expando>
-                    {this.paletteExpandoComponent()}
+                    <PaletteExpando
+                        title={props.palette ? `Palette` : `Apply Palette`}
+                        onPaletteChanged={p => this.commandSetPalette(p)}
+                        onPaletteReset={() => this.commandResetPalette()}
+                    />
+                    <Expando title={`Dithering`}>
+                        <Range min={0} max={8} round={true} value={props.kernel || 0} onChange={value => this.commandDitheringKernel(value)} />
+                        <Button selected={!!props.serpentine} text={`Serpentine: ` + (props.serpentine ? 'yes' : 'no')} onClick={() => this.commandDitheringSerpentine(!props.serpentine)} />
+                    </Expando>
                     <Button classNames={`cta`} text={`Apply`} onClick={() => this.commandApplyAdjustments()}/>
                 </>
             );

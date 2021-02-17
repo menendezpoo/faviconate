@@ -3,9 +3,12 @@ import {Button} from "../hui/items/Button";
 import {Expando} from "./Expando";
 import {PaletteManager} from "./PaletteManager";
 import {Palette, PaletteService} from "../model/PaletteService";
+import {Callable} from "../hui/helpers/hui";
 
 export interface PaletteExpandoProps{
-
+    title?: string;
+    onPaletteChanged?: (p: Palette) => void;
+    onPaletteReset?: Callable;
 }
 
 interface PaletteExpandoState{
@@ -21,10 +24,18 @@ export class PaletteExpando extends React.Component<PaletteExpandoProps, Palette
 
     private resetPalette(){
         this.setState({palette: undefined});
+
+        if(this.props.onPaletteReset){
+            this.props.onPaletteReset();
+        }
     }
 
     private setPalette(palette: Palette){
         this.setState({palette});
+
+        if (this.props.onPaletteChanged){
+            this.props.onPaletteChanged(palette);
+        }
     }
 
     private savePalette(){
@@ -66,7 +77,7 @@ export class PaletteExpando extends React.Component<PaletteExpandoProps, Palette
         }
 
         return (
-            <Expando title={`Palette`} items={paletteItems}>
+            <Expando title={this.props.title || `Palette`} items={paletteItems}>
                 <PaletteManager palette={palette || undefined} paletteChanged={p => this.setPalette(p)}/>
             </Expando>
         );

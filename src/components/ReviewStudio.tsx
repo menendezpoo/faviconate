@@ -11,7 +11,7 @@ import {RefObject} from "react";
 import {BasicCardinalPoint, makeSz, Rectangle, scaleToContain, Size} from "../hui/helpers/Rectangle";
 import {IconReviewer, StartCorner} from "../model/IconReviewer";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
-import {ColorUsageExpando} from "./ColorUsageExpando";
+import {ColorUsageReport} from "./ColorUsageReport";
 import {ReviewRenderer} from "../rendering/ReviewRenderer";
 import {Expando} from "./Expando";
 
@@ -198,7 +198,10 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
                         </div>
                     </div>
                 </Expando>
-                <ColorUsageExpando data={this.reviewer.sampleSprite}/>
+                <Expando title={`Colors`}>
+                    <ColorUsageReport data={this.reviewer.sampleSprite}/>
+                </Expando>
+
             </div>
         );
 

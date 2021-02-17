@@ -1,9 +1,8 @@
 import * as React from "react";
 import {Expando} from "./Expando";
 import {Color} from "../hui/helpers/Color";
-import {Label} from "../hui/items/Label";
 
-const MAX_SWATCHES = 100;
+const MAX_SWATCHES = 50;
 
 export interface ColorUsageExpandoProps{
     data: Uint8ClampedArray;
@@ -22,7 +21,7 @@ interface UsageEntryMessage{
     message: string;
 }
 
-export class ColorUsageExpando extends React.Component<ColorUsageExpandoProps, ColorUsageExpandoState>{
+export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, ColorUsageExpandoState>{
 
     private report: UsageEntry[] = [];
 
@@ -66,36 +65,29 @@ export class ColorUsageExpando extends React.Component<ColorUsageExpandoProps, C
 
         this.report = report;
 
-        console.log(data);
-        console.log(map);
-        console.log(warnings);
-        console.log(report);
-
     }
 
     render() {
         this.buildReport();
 
         return (
-            <Expando title={`Usage`}>
-                <div className="color-usage-report">
-                    {this.report.map(entry => {
+            <div className="color-usage-report">
+                {this.report.map(entry => {
 
-                        if ('message' in entry){
-                            return (
-                                <div className="entry message">{entry.message}</div>
-                            );
-                        }else{
-                            return (
-                                <div className="entry color">
-                                    <div className="swatch" style={{backgroundColor: entry.color.cssRgba}}/>
-                                    <div><span className="lighter">{entry.color.hexRgb}</span> {entry.count}</div>
-                                </div>
-                            );
-                        }
-                        })}
-                </div>
-            </Expando>
+                    if ('message' in entry){
+                        return (
+                            <div className="entry message">{entry.message}</div>
+                        );
+                    }else{
+                        return (
+                            <div className="entry color">
+                                <div className="swatch" style={{backgroundColor: entry.color.cssRgba}}/>
+                                <div><span className="lighter">{entry.color.hexRgb}</span> {entry.count}</div>
+                            </div>
+                        );
+                    }
+                    })}
+            </div>
         );
     }
 
