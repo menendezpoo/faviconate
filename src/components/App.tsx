@@ -378,10 +378,12 @@ export class App extends React.Component<AppProps, AppState>{
 
             IconService.asBlobUrl(icon).then(data => this.setPreviewData(id, data));
 
-            this.persist();
         }
 
-        controller.editor.documentSubmitted = () => docChanged();
+        controller.editor.documentSubmitted = () => {
+            docChanged();
+            this.persist();
+        }
         controller.editor.documentChanged = () => docChanged();
 
         return controller;
