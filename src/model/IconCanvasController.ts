@@ -26,6 +26,8 @@ export interface PasteResult{
 
 export type DownloadFormat = 'png' | 'ico';
 
+export type ColorPickCallback = (color: Color | null, colorHover?: Color) => void;
+
 function id(): number{
     return Math.round(Math.random() * Number.MAX_SAFE_INTEGER - 10000) + 10000;
 }
@@ -41,7 +43,7 @@ export class IconCanvasController implements CanvasViewController{
     private previewBounds: Rectangle = Rectangle.empty;
     private previewPixelSize: number = 0;
 
-    private _colorPicker?: (color: Color) => void;
+    private _colorPicker?: ColorPickCallback;
 
     constructor(document?: IconDocument) {
 
@@ -55,7 +57,18 @@ export class IconCanvasController implements CanvasViewController{
 
     }
 
-    colorPicker(picker: (color: Color) => void){
+    colorFromPoint(p: Point): Color | null{
+        const i = this.pointToData(p);
+
+        if (i < 0 ){
+            return null;
+        }
+
+        const data = this.editor.document.icon.data;
+        return Color.fromTupleInt8([data[i], data[i+1], data[i+2], data[i+3] ]);
+    }
+
+    colorPicker(picker: ColorPickCallback | undefined){
         this._colorPicker = picker;
     }
 
@@ -211,11 +224,14 @@ export class IconCanvasController implements CanvasViewController{
     pointingGestureStart(e: PointingEvent): PointingEventResult | void {
 
         if (this._colorPicker){
-            const i = this.pointToData(e.point);
-            const data = this.editor.document.icon.data;
-            const color = Color.fromTupleInt8([data[i], data[i+1], data[i+2], data[i+3] ]);
-            this._colorPicker(color);
-            this._colorPicker = undefined;
+            const color = this.colorFromPoint(e.point);
+
+            if (color){
+                this._colorPicker(color);
+                this._colorPicker = undefined;
+            }
+
+            return;
         }
 
         if (this.tool?.pointingGestureStart){
@@ -224,6 +240,17 @@ export class IconCanvasController implements CanvasViewController{
     }
 
     pointingGestureMove(e: PointingEvent): PointingEventResult | void {
+
+        if (this._colorPicker){
+            const color = this.colorFromPoint(e.point);
+
+            if (color){
+                this._colorPicker(null, color);
+            }
+
+            return;
+        }
+
         if (this.tool?.pointingGestureMove){
             return this.tool.pointingGestureMove(e);
         }

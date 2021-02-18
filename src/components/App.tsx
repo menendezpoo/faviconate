@@ -31,6 +31,7 @@ import {DocumentService} from "../model/DocumentService";
 import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {PaletteExpando} from "./PaletteExpando";
 import {ColorUsageReport} from "./ColorUsageReport";
+import {ColorReplacer} from "./ColorReplacer";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -625,10 +626,17 @@ export class App extends React.Component<AppProps, AppState>{
                 </Expando>
             );
         }else if ( tool instanceof PaletteComposerTool){
+
             return (
                 <>
                     <Expando title={`Color Replace`}>
-                        {/* TODO: Implement color replace */}
+                        <ColorReplacer
+                            onStart={() => tool.colorReplaceStart()}
+                            onCancel={() => tool.colorReplaceCancel()}
+                            onOldColorPicked={c => tool.colorReplaceSelectOld(c)}
+                            onColorPreview={c => tool.colorReplaceSelectNew(c)}
+                            onColorSelected={c => tool.colorReplaceConfirm(c)}
+                        />
                     </Expando>
                     <PaletteExpando title={`Palette Library`}/>
                     <Expando title={`Color Usage`}>

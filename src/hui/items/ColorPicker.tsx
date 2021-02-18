@@ -94,9 +94,11 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
     constructor(props: ColorPickerProps) {
         super(props);
 
+        const color = props.color || Color.black;
+
         this.state = {
-            currentColor: props.color || Color.black,
-            selectedHue: -1,
+            currentColor: color,
+            selectedHue: color.hsv[0],
         }
 
     }
@@ -136,7 +138,10 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
 
     private updateColor(color: Color, selectedHue?: number){
 
-        this.setState({currentColor: color, selectedHue: typeof selectedHue === "number" ? selectedHue : color.hsv[0]});
+        this.setState({
+            currentColor: color,
+            selectedHue: typeof selectedHue === "number" ? selectedHue : color.hsv[0]
+        });
 
         if (this.props.colorPicked){
             this.props.colorPicked(color);
@@ -201,7 +206,10 @@ export class ColorPicker extends React.Component<ColorPickerProps, ColorPickerSt
             (cur && prev && !cur.equals(prev))
         ){
             // Selected color was updated from outside
-            this.setState({currentColor: cur});
+            this.setState({
+                selectedHue: cur.hsv[0],
+                currentColor: cur,
+            });
         }
     }
 

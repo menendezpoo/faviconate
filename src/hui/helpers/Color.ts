@@ -90,7 +90,11 @@ export class Color{
     }
 
     static fromTupleInt8(t: [number,  number, number, number]): Color{
-        return new Color(t[0], t[1], t[2], t[3]);
+        return new Color(t[0], t[1], t[2], t[3]/255);
+    }
+
+    static fromInt8Array(data: Uint8ClampedArray, offset: number = 0): Color{
+        return this.fromTupleInt8([ data[offset], data[offset + 1], data[offset + 2], data[offset + 3] ]);
     }
 
     static get transparent(): Color{
@@ -115,6 +119,22 @@ export class Color{
 
     equals(c: Color): boolean{
         return c.r === this.r && c.g === this.g && c.b === this.b && c.a === this.a;
+    }
+
+    copyToUint8(array: Uint8ClampedArray, offset: number){
+        const [r, g, b, a] = this.tupleInt8;
+        array[offset] = r;
+        array[offset + 1] = g;
+        array[offset + 2] = b;
+        array[offset + 3] = a;
+    }
+
+    toString(): string{
+        if (this.a != 1){
+            return this.hexRgba;
+        }
+
+        return this.hexRgb;
     }
 
     withAlpha(alpha: number){

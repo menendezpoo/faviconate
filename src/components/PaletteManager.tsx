@@ -123,8 +123,12 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
 
     private startEyedropper(){
         App.activeController.colorPicker(colorToAdd => {
-            console.log(`Got Color ${colorToAdd.cssRgba}`);
-            this.setState({colorToAdd});
+
+            if(colorToAdd){
+                console.log(`Got Color ${colorToAdd.cssRgba}`);
+                this.setState({colorToAdd});
+            }
+
         });
     }
 
