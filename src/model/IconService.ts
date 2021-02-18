@@ -12,6 +12,23 @@ export interface IconDirectory{
     icons: Icon[];
 }
 
+export function compositeColor(background: Color, foreground: Color): Color{
+    const dR = background.r;
+    const dG = background.g;
+    const dB = background.b;
+    const dA = background.a;
+
+    const [sR, sG, sB] = foreground.tupleInt8;
+    const sA = foreground.a;
+
+    const rR = Math.round(sR * sA + dR * (1 - sA));
+    const rG = Math.round(sG * sA + dG * (1 - sA));
+    const rB = Math.round(sB * sA + dB * (1 - sA));
+    const rA = dA + sA * (1 - dA);
+
+    return new Color(rR, rG, rB, rA);
+}
+
 export class IconService{
 
     static clone(icon: Icon): Icon{
@@ -260,29 +277,18 @@ export class IconService{
         }
 
         const buffer = this.clone(base);
-        const sourceOver = (s: number, d: number, sA: number) => d + s * (255 - sA);
-        const blend = sourceOver;
 
         for (let y = 0; y < region.height; y++){
             for(let x = 0; x < region.width; x++){
-                const baseIndex = this.pixelToData(makePt(region.left + x, region.top + y), base);
+                const bufferIndex = this.pixelToData(makePt(region.left + x, region.top + y), base);
                 const spriteIndex = this.pixelToData(makePt(x + spriteOffset.x, y + spriteOffset.y), sprite);
-                const baseR = buffer.data[baseIndex];
-                const baseG = buffer.data[baseIndex + 1];
-                const baseB = buffer.data[baseIndex + 2];
-                const baseA = buffer.data[baseIndex + 3];
-                const spR = sprite.data[spriteIndex];
-                const spG = sprite.data[spriteIndex + 1];
-                const spB = sprite.data[spriteIndex + 2];
-                const spA = sprite.data[spriteIndex + 3];
 
-                buffer.data[baseIndex] = blend(baseR, spR, spA);
-                buffer.data[baseIndex + 1] = blend(baseG, spG, spA);
-                buffer.data[baseIndex + 2] = blend(baseB, spB, spA);
-                buffer.data[baseIndex + 3] = Math.max(baseA, spA);
+                const bufferColor = Color.fromInt8Array(buffer.data, bufferIndex);
+                const spriteColor = Color.fromInt8Array(sprite.data, spriteIndex);
+                const newColor = compositeColor(bufferColor, spriteColor);
 
-                // Hack note: this is not good alpha compositing
-                // In the future this should be better.
+                newColor.copyToUint8(buffer.data, bufferIndex);
+
             }
         }
 

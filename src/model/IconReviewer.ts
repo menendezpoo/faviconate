@@ -2,6 +2,7 @@ import {Icon} from "./Icon";
 import {Color} from "../hui/helpers/Color";
 import {BasicCardinalPoint, Rectangle, Size} from "../hui/helpers/Rectangle";
 import {GraphicsMemoryError} from "../hui/helpers/errors";
+import {compositeColor} from "./IconService";
 
 export type StartCorner = 'ne' | 'nw' | 'se' | 'sw';
 
@@ -99,24 +100,29 @@ export class IconReviewer{
                 }
 
                 const sIndex = index(x, y);
-                const dR = this.original.data[sIndex];
-                const dG = this.original.data[sIndex + 1];
-                const dB = this.original.data[sIndex + 2];
-                const dA = this.original.data[sIndex + 3] / 255;
+                const originalColor = Color.fromInt8Array(this.original.data, sIndex);
+                const newColor = compositeColor(originalColor, color);
 
-                const [sR, sG, sB] = color.tupleInt8;
-                const sA = color.a;
+                newColor.copyToUint8(this.current.data, sIndex);
 
-                const rR = Math.round(sR * sA + dR * (1 - sA));
-                const rG = Math.round(sG * sA + dG * (1 - sA));
-                const rB = Math.round(sB * sA + dB * (1 - sA));
-                const rA = dA + sA * (1 - dA);
-                const rA8 = Math.round(rA * 255);
-
-                this.current.data[sIndex] = rR;
-                this.current.data[sIndex + 1] = rG;
-                this.current.data[sIndex + 2] = rB;
-                this.current.data[sIndex + 3] = rA8;
+                // const dR = this.original.data[sIndex];
+                // const dG = this.original.data[sIndex + 1];
+                // const dB = this.original.data[sIndex + 2];
+                // const dA = this.original.data[sIndex + 3] / 255;
+                //
+                // const [sR, sG, sB] = color.tupleInt8;
+                // const sA = color.a;
+                //
+                // const rR = Math.round(sR * sA + dR * (1 - sA));
+                // const rG = Math.round(sG * sA + dG * (1 - sA));
+                // const rB = Math.round(sB * sA + dB * (1 - sA));
+                // const rA = dA + sA * (1 - dA);
+                // const rA8 = Math.round(rA * 255);
+                //
+                // this.current.data[sIndex] = rR;
+                // this.current.data[sIndex + 1] = rG;
+                // this.current.data[sIndex + 2] = rB;
+                // this.current.data[sIndex + 3] = rA8;
             }
         }
 

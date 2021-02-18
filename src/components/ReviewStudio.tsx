@@ -128,21 +128,26 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
         window.addEventListener('keydown', e => {
             if (e.key === 'ArrowLeft'){
                 this.navigate('w');
+                e.stopPropagation();
 
             }else if(e.key == 'ArrowRight'){
                 this.navigate('e');
+                e.stopPropagation();
 
             }else if(e.key == 'ArrowUp'){
                 this.navigate('n');
+                e.stopPropagation();
 
             }else if(e.key == 'ArrowDown'){
                 this.navigate('s');
+                e.stopPropagation();
 
             }else if(e.key == 'Escape'){
                 this.dismiss();
+                e.stopPropagation();
 
             }
-        });
+        }, true);
     }
 
     componentDidUpdate(prevProps: Readonly<ReviewStudioProps>, prevState: Readonly<ReviewStudioState>, snapshot?: any) {
