@@ -6,6 +6,8 @@ import {Icon} from "../Icon";
 import {IconService} from "../IconService";
 import {NoSelectionError} from "../errors";
 
+export type SelectionDragMode = 'sprite' | 'area';
+
 export class SelectionTool implements IconEditorTool{
 
     private selecting = false;
@@ -14,6 +16,8 @@ export class SelectionTool implements IconEditorTool{
     private startPixel = makePt(0,0);
 
     readonly editor: IconEditor;
+
+    _dragMode: SelectionDragMode = 'sprite';
 
     constructor(readonly controller: IconCanvasController) {
         this.editor = controller.editor;
@@ -56,19 +60,13 @@ export class SelectionTool implements IconEditorTool{
         this.editor.setDocument(newDoc);
     }
 
-    private selectionEnded(){
+    private selectionDragEnded(){
 
-        if (!this.document.selectionRegion || this.document.selectionRegion.isEmpty){
+        if (!this.document.selectionRegion){
             return;
         }
 
-        const {buffer, sprite} = this.clipOutSelection();
-
-        this.editor.setDocument({
-            ...this.editor.cloneDocument(),
-            selectionBuffer: buffer,
-            selectionSprite: sprite,
-        });
+        this.selectRegion(this.document.selectionRegion, false);
 
         this.selecting = false;
     }
@@ -91,23 +89,21 @@ export class SelectionTool implements IconEditorTool{
     private moveSelection(x: number, y: number){
 
         if(
-            !this.document.selectionRegion ||
-            !this.document.selectionSprite ||
-            !this.document.selectionBuffer
+            !this.document.selectionRegion
         ){
             throw new NoSelectionError();
         }
 
         const base = this.document.icon;
-        const buffer: Icon = this.document.selectionBuffer;
-        const sprite: Icon = this.document.selectionSprite;
+        const spriteW = this.document.selectionSprite?.width || this.document.selectionRegion.width;
+        const spriteH = this.document.selectionSprite?.height || this.document.selectionRegion.height;
 
-        x = Math.max(-sprite.width, x);
+        x = Math.max(-spriteW, x);
         x = Math.min(base.width, x);
-        y = Math.max(-sprite.height, y);
+        y = Math.max(-spriteH, y);
         y = Math.min(base.height, y);
 
-        const region = new Rectangle(x, y, sprite.width, sprite.height);
+        const region = new Rectangle(x, y, spriteW, spriteH);
         const offset = makePt(
             region.left < 0 ? Math.abs(region.left) : 0,
             region.top < 0 ? Math.abs(region.top) : 0
@@ -118,12 +114,33 @@ export class SelectionTool implements IconEditorTool{
             region.right > base.width ? base.width : region.right,
             region.bottom > base.height ? base.height : region.bottom
         );
-        const icon = IconService.blend(buffer, sprite, selectionRegion, offset);
-        const newDoc: IconDocument = {
-            ...this.editor.cloneDocument(),
-            selectionRegion,
-            icon
-        };
+
+        let newDoc: IconDocument;
+
+        if (this.dragMode === 'sprite'){
+            if (
+                !this.document.selectionSprite ||
+                !this.document.selectionBuffer
+            ){
+                throw new NoSelectionError();
+            }
+
+            const {selectionBuffer, selectionSprite} = this.document;
+
+            newDoc = {
+                ...this.editor.cloneDocument(),
+                selectionRegion,
+                icon: IconService.blend(selectionBuffer, selectionSprite, selectionRegion, offset)
+            };
+
+        }else{
+            newDoc = {
+                ...this.editor.cloneDocument(),
+                selectionRegion,
+                selectionBuffer: undefined,
+                selectionSprite: undefined
+            }
+        }
 
         if (this.editor.currentTransaction){
             this.editor.setDocument(newDoc);
@@ -166,20 +183,29 @@ export class SelectionTool implements IconEditorTool{
         );
     }
 
-    selectRegion(selectionRegion: Rectangle){
-        const icon = this.document.icon;
-        const doc: IconDocument = {
+    selectRegion(selectionRegion: Rectangle, transact = true){
+
+        let doc: IconDocument = {
             ...this.editor.cloneDocument(),
-            selectionRegion: Rectangle.fromSize(makeSz(icon.width, icon.height))
+            selectionRegion
         };
 
-        const {buffer, sprite} = this.clipOutSelection(doc);
+        if (this.dragMode === 'sprite'){
+            const {buffer, sprite} = this.clipOutSelection(doc);
 
-        this.editor.transact({
-            ...doc,
-            selectionBuffer: buffer,
-            selectionSprite: sprite,
-        });
+            doc = {
+                ...doc,
+                selectionBuffer: buffer,
+                selectionSprite: sprite,
+            };
+        }
+
+        if(transact){
+            this.editor.transact(doc);
+        }else{
+            this.editor.setDocument(doc);
+        }
+
     }
 
     selectAll(){
@@ -252,7 +278,7 @@ export class SelectionTool implements IconEditorTool{
         const p = this.controller.pointToPixel(e.point);
 
         if (this.selecting){
-            this.selectionEnded();
+            this.selectionDragEnded();
         }
 
         if (this.dragging){
@@ -316,6 +342,26 @@ export class SelectionTool implements IconEditorTool{
 
     get document(): IconDocument{
         return this.editor.document;
+    }
+
+    get dragMode(): SelectionDragMode{
+        return this._dragMode;
+    }
+
+    set dragMode(mode: SelectionDragMode){
+
+        const changed = mode !== this._dragMode;
+
+        if(!changed){
+            return;
+        }
+
+        this._dragMode = mode;
+
+        if (this.document.selectionRegion){
+            this.selectRegion(this.document.selectionRegion);
+        }
+
     }
 
 }

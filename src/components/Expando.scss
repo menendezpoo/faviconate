@@ -33,13 +33,19 @@
   > .body{
     min-height: 20px;
     border-radius: $b-rad;
-    //border-bottom-left-radius: $b-rad;
-    //border-bottom-right-radius: $b-rad;
     padding: $space;
 
     > .children{
       > .ui-button{
         display: block;
+      }
+
+      > .ui-item-group{
+        display: flex;
+        > .ui-button {
+          flex: 1 1 0;
+          border-radius: 0 !important;
+        }
       }
     }
 

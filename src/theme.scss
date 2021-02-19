@@ -1,5 +1,6 @@
 $color-strong: #0000000a;
 $color-light: #000000c8;
+$color-lighter: #000000e2;
 $button-face-hover-bg: $color-strong;
 $button-face-selected-bg: $color-strong;
 $window-bg: #fff;
@@ -44,9 +45,21 @@ $cta-fg: #fff;
 .expando {
   > .head{
     color: #101010;
-    //background-color: rgba(0,0,0,0.1);
   }
-  > .body{ background-color: rgba(0,0,0,0.05) }
+  > .body{
+    background-color: rgba(0, 0, 0, 0.05);
+
+    > .children{
+      > .ui-item-group{
+        border: solid 1px $color-light;
+        .ui-button{
+          &.selected:not(.disabled){
+            background-color: $color-light;
+          }
+        }
+      }
+    }
+  }
 }
 
 .preview-panel {
@@ -157,10 +170,20 @@ $cta-fg: #fff;
   .expando {
     > .head{
       color: #efefef;
-      //background-color: rgba(255, 255, 255, 0.1)
     }
     > .body{
-      background-color: rgba(255, 255, 255, 0.05)
+      background-color: rgba(255, 255, 255, 0.05);
+
+      > .children{
+        > .ui-item-group{
+          border: solid 1px $color-light;
+          .ui-button{
+            &.selected:not(.disabled){
+              background-color: $color-light;
+            }
+          }
+        }
+      }
     }
   }
 

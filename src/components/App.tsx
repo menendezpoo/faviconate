@@ -12,7 +12,7 @@ import {Color} from "../hui/helpers/Color";
 import {ColorPicker} from "../hui/items/ColorPicker";
 import {PreviewPanel} from "./PreviewPanel";
 import {IconDocument, IconEditorTool} from "../model/IconEditor";
-import {SelectionTool} from "../model/tools/SelectionTool";
+import {SelectionDragMode, SelectionTool} from "../model/tools/SelectionTool";
 import {IconDirectory, IconService} from "../model/IconService";
 import {MenuItem} from "../hui/items/MenuItem";
 import {compareSize, makeSz, Size} from "../hui/helpers/Rectangle";
@@ -23,7 +23,6 @@ import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
 import {Label} from "../hui/items/Label";
 import {AdjustProperties, AdjustTool} from "../model/tools/AdjustTool";
-import {PaletteManager} from "./PaletteManager";
 import {Palette, PaletteService} from "../model/PaletteService";
 import * as ReactDOM from "react-dom";
 import {ReviewStudio} from "./ReviewStudio";
@@ -32,6 +31,7 @@ import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {PaletteExpando} from "./PaletteExpando";
 import {ColorUsageReport} from "./ColorUsageReport";
 import {ColorReplacer} from "./ColorReplacer";
+import {ItemGroup} from "../hui/items/ItemGroup";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -67,6 +67,7 @@ export interface AppState{
     controllers: IconCanvasController[];
     previews: IconPreview[];
     selectedTool: IconEditorTool | null;
+    selectionMove?: SelectionDragMode;
     undos: number;
     redos: number;
     showBackground: boolean;
@@ -570,6 +571,13 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
+    commandSelectionMove(selectionMove: SelectionDragMode){
+        if (this.state.selectedTool instanceof SelectionTool){
+            (this.state.selectedTool as SelectionTool).dragMode= selectionMove;
+            this.setState({selectionMove});
+        }
+    }
+
     commandSetPalette(palette: Palette){
         if (this.state.selectedTool instanceof AdjustTool){
             this.setState({adjustState: {...this.state.adjustState, palette}});
@@ -600,6 +608,7 @@ export class App extends React.Component<AppProps, AppState>{
 
     toolComponent(): React.ReactNode{
         const tool = this.state.selectedTool;
+        const {selectionMove} = this.state;
 
         if (!tool){
             return <></>;
@@ -615,6 +624,10 @@ export class App extends React.Component<AppProps, AppState>{
 
             return (
                 <Expando title={`Selection`} items={<Label text={size}/>}>
+                    <ItemGroup selectedIndex={selectionMove === 'area' ? 1 : 0}>
+                        <Button text={`Move Sprite`} onClick={() => this.commandSelectionMove('sprite')}/>
+                        <Button text={`Move Selection`} onClick={() => this.commandSelectionMove('area')}/>
+                    </ItemGroup>
                     <Button text={`Select All`} iconSize={20} icon={`full-frame`} onClick={() => this.commandSelectAll()}/>
                     <Button text={`Clear Selection`} iconSize={20} icon={`corners`} onClick={() => this.commandClearSelection()}/>
                     <Button text={`Delete Selection`}  iconSize={20} icon={`grid-crossed`} onClick={() => this.commandDeleteSelection()}/>
