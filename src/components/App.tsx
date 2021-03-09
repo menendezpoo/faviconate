@@ -32,6 +32,7 @@ import {PaletteExpando} from "./PaletteExpando";
 import {ColorUsageReport} from "./ColorUsageReport";
 import {ColorReplacer} from "./ColorReplacer";
 import {ItemGroup} from "../hui/items/ItemGroup";
+import {CanvasEditor, ToolCommand} from "./CanvasEditor";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -691,13 +692,10 @@ export class App extends React.Component<AppProps, AppState>{
         }
     }
 
-    render() {
-
+    private getMainToolbarItems(){
         const controller = this.state.controller;
-        const controllers = this.state.controllers;
-        const currentId = controller.id;
-        const tool = this.state.selectedTool;
-        const mainToolbarItems = <>
+        return (
+            <>
             <Button text={`faviconate`}>
                 <MenuItem text={`New 16x16 Icon`} onActivate={() => this.newDocument(16)}/>
                 <MenuItem text={`New 32x32 Icon`} onActivate={() => this.newDocument(32)}/>
@@ -714,28 +712,6 @@ export class App extends React.Component<AppProps, AppState>{
             <Button icon={`cut`} iconSize={50} onClick={() => this.cut()}/>
             <Button icon={`copy`} iconSize={50} onClick={() => this.copy()}/>
             <Button icon={`paste`} iconSize={50} onClick={() => this.paste()}/>
-        </>;
-        const toolToolbarItems = <>
-            <Button
-                icon={`select`} iconSize={50}
-                onClick={() => this.useSelection()}
-                selected={tool instanceof SelectionTool}
-            />
-            <Separator/>
-            <Button
-                icon={`pencil`} iconSize={50}
-                onClick={() => this.usePen()}
-                selected={tool instanceof PencilTool && !(tool instanceof EraserTool)}
-            />
-            <Button
-                icon={`bucket`} iconSize={50}
-                onClick={() => this.useFlood()}
-                selected={tool instanceof FloodFillTool}
-            />
-            <Button
-                icon={`eraser`} iconSize={50}
-                onClick={() => this.useEraser()}
-                selected={tool instanceof EraserTool}/>
             <Separator/>
             <Button
                 icon={`checker`} iconSize={50}
@@ -748,23 +724,16 @@ export class App extends React.Component<AppProps, AppState>{
                 selected={this.state.showGrid}
             />
             <Separator/>
-            <Button
-                icon={`palette`} iconSize={50}
-                onClick={() => this.usePaletteComposer()}
-                selected={tool instanceof PaletteComposerTool}
-            />
-            <Button
-                icon={`equalizer`} iconSize={50}
-                onClick={() => this.useAdjustments()}
-                selected={tool instanceof AdjustTool}
-            />
-            <Separator/>
-            <Button
-                icon={`eye`} iconSize={50}
-                onClick={() => this.commandReview()}
-            />
+            <Button icon={`eye`} iconSize={50} onClick={() => this.commandReview()} />
 
-        </>;
+        </>);
+    }
+
+    private getSideBar(){
+
+        const controller = this.state.controller;
+        const controllers = this.state.controllers;
+        const currentId = controller.id;
 
         const sizeOf = (itemId: number): Size => {
             const ctl = controllers.find(c => c.id === itemId);
@@ -778,33 +747,33 @@ export class App extends React.Component<AppProps, AppState>{
         const sortedPreviews = this.state.previews
             .sort((a, b) => -compareSize(sizeOf(a.id), sizeOf(b.id)));
 
-        const sideBar = (
+        return (
             <div className="editor-sidebar">
                 <Expando title={`Preview`}
-                    items={(
-                        <>
-                            <Button iconSize={50} icon={`plus`}>
-                                <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
-                                <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
-                                <MenuItem text={`48 x 48`} onActivate={() => this.newIconEntry(48)}/>
-                                <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
-                                <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
-                                <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
-                            </Button>
-                            <Button iconSize={50} icon={`minus`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
-                            <Button iconSize={50} icon={`ellipsis`}/>
-                        </>
-                    )}
+                         items={(
+                             <>
+                                 <Button iconSize={50} icon={`plus`}>
+                                     <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
+                                     <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
+                                     <MenuItem text={`48 x 48`} onActivate={() => this.newIconEntry(48)}/>
+                                     <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
+                                     <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
+                                     <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
+                                 </Button>
+                                 <Button iconSize={50} icon={`minus`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
+                                 <Button iconSize={50} icon={`ellipsis`}/>
+                             </>
+                         )}
                 >
                     {sortedPreviews
                         .map((item) => (
-                        <PreviewPanel
-                            key={item.id}
-                            data={item.data}
-                            selected={item.id === currentId}
-                            size={sizeOf(item.id)}
-                            onActivate={() => this.goToIcon(item.id)}/>
-                    ))}
+                            <PreviewPanel
+                                key={item.id}
+                                data={item.data}
+                                selected={item.id === currentId}
+                                size={sizeOf(item.id)}
+                                onActivate={() => this.goToIcon(item.id)}/>
+                        ))}
                 </Expando>
                 {this.toolComponent()}
                 <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
@@ -812,8 +781,29 @@ export class App extends React.Component<AppProps, AppState>{
                 <div id="cue" className="cue">0.1.3</div>
             </div>
         );
+    }
+
+    private canvasCommand(c: ToolCommand){
+        switch (c){
+            case "DITHER": this.useAdjustments(); return;
+            case "ERASER": this.useEraser(); return;
+            case "FLOOD": this.useFlood(); return;
+            case "PALETTE_COMPOSER": this.usePaletteComposer(); return;
+            case "PEN": this.usePen(); return;
+            case "SELECTION": this.useSelection(); return;
+        }
+    }
+
+    render() {
+
+        const controller = this.state.controller;
+        const currentId = controller.id;
+        const tool = this.state.selectedTool;
+        const mainToolbarItems = this.getMainToolbarItems();
+        const sideBar = this.getSideBar();
 
         const preview = this.state.previews.find(p => p.id === currentId);
+
         if (preview){
             changeFavicon(preview.data);
         }
@@ -833,9 +823,11 @@ export class App extends React.Component<AppProps, AppState>{
             >
             <ToolbarView sideClassNames={`main-tools`} length={70} items={mainToolbarItems}>
                 <DockView side={`right`} sideView={sideBar}>
-                    <ToolbarView sideClassNames={`main-tools`} length={70} classNames={`canvas-main`} side={`left`} items={toolToolbarItems}>
-                        <CanvasView controller={controller} />
-                    </ToolbarView>
+                    <CanvasEditor
+                        controller={controller}
+                        tool={tool}
+                        onCommand={c => this.canvasCommand(c)}
+                    />
                 </DockView>
             </ToolbarView>
             </div>

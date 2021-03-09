@@ -3,7 +3,7 @@ import {Expando} from "./Expando";
 import {Color} from "../hui/helpers/Color";
 import {Palette} from "../model/PaletteService";
 
-const MAX_SWATCHES = 50;
+const MAX_SWATCHES = 100;
 
 export interface ColorUsageExpandoProps{
     data: Uint8ClampedArray;
