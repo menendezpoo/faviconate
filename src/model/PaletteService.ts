@@ -1,16 +1,35 @@
-import {Color} from "../hui/helpers/Color";
 import {uuid} from "../hui/helpers/Uuid";
 
+const VER = "1";
+
+export interface PaletteColor{
+    name: string;
+    hex: string;
+}
+
 export interface Palette{
+    version?:string;
     id?: string;
     name: string;
     native?: boolean;
     unsaved?: boolean;
     unnamed?: boolean;
-    colors: [number, number, number, number][];
+    colors: PaletteColor[];
 }
 
 const PALETTES_STORAGE_KEY = 'palettes-v1';
+
+function validateVersion(arr: any[]): Palette[]{
+    const r: Palette[] = [];
+
+    for(const obj of arr){
+        if (obj.version === VER){
+            r.push(obj as Palette);
+        }
+    }
+
+    return r;
+}
 
 export class PaletteService{
 
@@ -27,7 +46,7 @@ export class PaletteService{
                 }else if(!(obj instanceof Array)){
                     return Promise.reject(new Error());
                 }else{
-                    return obj as Palette[];
+                    return validateVersion(obj);
                 }
 
             }else{
@@ -45,7 +64,7 @@ export class PaletteService{
             palette.id = uuid();
         }
 
-        palette = {...palette, unsaved: false};
+        palette = {...palette, unsaved: false, version: VER};
 
         const all = await this.getAll();
         const index = all.findIndex(p => p.id === palette.id);

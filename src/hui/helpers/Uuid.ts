@@ -5,24 +5,11 @@ export function uuid(): string{
 export class Uuid{
 
     static random(): Uuid{
-        return new Uuid(new Uint8ClampedArray([
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-            Math.random() * 255,
-        ]))
+        if(window.crypto){
+            return new Uuid(window.crypto.getRandomValues(new Uint8ClampedArray(16)));
+        }else{
+            return new Uuid(new Uint8ClampedArray(16).map(_ => Math.random()));
+        }
     }
 
     readonly stringValue: string;

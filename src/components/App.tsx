@@ -74,6 +74,7 @@ export interface AppState{
     showGrid: boolean;
     colorA: Color;
     adjustState?: AdjustProperties;
+    composingPalette?: Palette;
 }
 
 export class App extends React.Component<AppProps, AppState>{
@@ -653,9 +654,9 @@ export class App extends React.Component<AppProps, AppState>{
                             onColorSelected={c => tool.colorReplaceConfirm(c)}
                         />
                     </Expando>
-                    <PaletteExpando title={`Palette Library`}/>
+                    <PaletteExpando onPaletteChanged={composingPalette => this.setState({composingPalette})} title={`Palette Library`}/>
                     <Expando title={`Color Usage`}>
-                        <ColorUsageReport data={this.state.controller.editor.document.icon.data}/>
+                        <ColorUsageReport palette={this.state.composingPalette} data={this.state.controller.editor.document.icon.data}/>
                     </Expando>
 
                 </>

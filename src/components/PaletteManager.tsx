@@ -3,7 +3,7 @@ import {Color} from "../hui/helpers/Color";
 import {Button} from "../hui/items/Button";
 import {Clickable} from "../hui/items/Clickable";
 import {ColorPicker} from "../hui/items/ColorPicker";
-import {Palette, PaletteService} from "../model/PaletteService";
+import {Palette, PaletteColor, PaletteService} from "../model/PaletteService";
 import {App} from "./App";
 
 export interface PaletteProps{
@@ -14,6 +14,7 @@ export interface PaletteProps{
 interface PaletteState{
     addMode?: boolean;
     colorToAdd?: Color;
+    colorToAddName?: string;
     palettes?: Palette[];
 }
 
@@ -23,25 +24,9 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         {
             name: 'Black & White',
             native: true,
-            colors: [Color.black.tupleInt8, Color.white.tupleInt8],
+            colors: [{name: "Black", hex: Color.black.toString()}, {name: "White", hex: Color.white.toString()}],
         },
-        {
-            name: 'Grayscale 1',
-            native: true,
-            colors: [Color.black.tupleInt8, Color.fromHex('808080').tupleInt8, Color.white.tupleInt8],
-        },
-        {
-            name: 'Orange Range',
-            native: true,
-            colors: [
-                Color.black.tupleInt8,
-                Color.fromHex('808080').tupleInt8,
-                Color.fromHex('f00').tupleInt8,
-                Color.fromHex('f80').tupleInt8,
-                Color.fromHex('ff0').tupleInt8,
-                Color.white.tupleInt8,
-            ],
-        },
+
     ];
 
     constructor(props: PaletteProps) {
@@ -61,24 +46,28 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
             <div key={p.id} className="palette-preview" onClick={() => this.setPalette(p)}>
                 <div className="palette-label">{p.name}</div>
                 <div className="swatches">
-                    {p.colors.map(tuple => this.swatch(Color.fromTupleInt8(tuple)))}
+                    {p.colors.map(palColor => this.swatch(palColor))}
                 </div>
             </div>
         );
     }
 
-    private swatch(color: Color): React.ReactNode{
+    private swatch(palColor: PaletteColor): React.ReactNode{
+
+        const {name, hex} = palColor;
+        const color = Color.fromHex(hex);
+
         const style = {
             backgroundColor: color.hexRgb,
         };
-        return <div className="swatch" style={style}/>;
+        return <div className="swatch" title={name} style={style}/>;
     }
 
     private startAddMode(){
         this.setState({addMode: true});
     }
 
-    private addColor(color: Color){
+    private addColor(color: Color, name: string){
         const palette: Palette = this.props.palette!;
 
         if (palette.native){
@@ -89,9 +78,11 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
 
         palette.unsaved = true;
 
+        const hex = color.toString();
+
         this.setPalette({
             ...palette,
-            colors: [...palette.colors, color.tupleInt8]
+            colors: [...palette.colors,  {name, hex}]
         });
 
         this.dismissAddColor();
@@ -104,8 +95,9 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         }
 
         const color = this.state.colorToAdd;
+        const name = this.state.colorToAddName || color.toString();
 
-        this.addColor(color);
+        this.addColor(color, name);
     }
 
     private dismissAddColor(){
@@ -125,8 +117,10 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         App.activeController.colorPicker(colorToAdd => {
 
             if(colorToAdd){
-                console.log(`Got Color ${colorToAdd.cssRgba}`);
-                this.setState({colorToAdd});
+
+                const colorToAddName = prompt(`Pick a name for the color`, String(colorToAdd)) || String(colorToAdd);
+
+                this.setState({colorToAdd, colorToAddName});
             }
 
         });
@@ -158,7 +152,7 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
                 <div className="ui-palette">
                     <div className="palette-label">{pal.name}</div>
                     <div className="swatches">
-                        {pal.colors.map(tuple => <Clickable classNames="pal-swatch">{this.swatch(Color.fromTupleInt8(tuple))}</Clickable>)}
+                        {pal.colors.map(tuple => <Clickable classNames="pal-swatch">{this.swatch(tuple)}</Clickable>)}
                         <Button icon={`plus`} iconSize={20} onClick={() => this.startAddMode()}/>
                     </div>
                 </div>

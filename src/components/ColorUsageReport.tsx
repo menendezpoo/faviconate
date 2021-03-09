@@ -1,11 +1,13 @@
 import * as React from "react";
 import {Expando} from "./Expando";
 import {Color} from "../hui/helpers/Color";
+import {Palette} from "../model/PaletteService";
 
 const MAX_SWATCHES = 50;
 
 export interface ColorUsageExpandoProps{
     data: Uint8ClampedArray;
+    palette?: Palette;
 }
 
 interface ColorUsageExpandoState{}
@@ -13,6 +15,7 @@ interface ColorUsageExpandoState{}
 type UsageEntry = UsageEntryColor | UsageEntryMessage;
 
 interface UsageEntryColor{
+    name: string;
     color: Color;
     count: number;
 }
@@ -33,6 +36,7 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
     private buildReport(){
 
         const data = this.props.data;
+        const palette: Palette = this.props.palette || {name: '', colors:[]};
         const map: {[color: string]: number} = {};
         const report: UsageEntry[] = [];
         const warnings: UsageEntryMessage[] = [];
@@ -58,12 +62,25 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
         for( let key in map){
             const color = Color.fromHex(key);
             const count = map[key];
-            report.push({color, count});
+            const palMatch = palette.colors.find(tuple => tuple.hex === color.toString());
+            const name = palMatch ? palMatch.name : color.toString();
+            report.push({color, count, name});
         }
+
+        report.sort((a, b) => {
+            if ('count' in a && 'count' in b){
+                return b.count - a.count;
+            }
+            return 0;
+        });
 
         warnings.forEach(w => report.push(w));
 
         this.report = report;
+
+    }
+
+    componentDidUpdate(prevProps: Readonly<ColorUsageExpandoProps>, prevState: Readonly<ColorUsageExpandoState>, snapshot?: any) {
 
     }
 
@@ -82,7 +99,7 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
                         return (
                             <div className="entry color">
                                 <div className="swatch" style={{backgroundColor: entry.color.cssRgba}}/>
-                                <div><span className="lighter">{entry.color.hexRgb}</span> {entry.count}</div>
+                                <div><span className="lighter">{entry.name}</span> {entry.count}</div>
                             </div>
                         );
                     }

@@ -73,7 +73,7 @@ export class AdjustTool implements IconEditorTool{
         }
 
         if (palette){
-            ImageAdjustService.dither(data, icon.width, icon.height, palette.colors.map(tuple => Color.fromTupleInt8(tuple)), kernel || 0, !!serpentine);
+            ImageAdjustService.dither(data, icon.width, icon.height, palette.colors.map(tuple => Color.fromHex(tuple.hex)), kernel || 0, !!serpentine);
         }
 
         this.controller.editor.setDocument(doc);
