@@ -33,6 +33,7 @@ import {ColorUsageReport} from "./ColorUsageReport";
 import {ColorReplacer} from "./ColorReplacer";
 import {ItemGroup} from "../hui/items/ItemGroup";
 import {CanvasEditor, ToolCommand} from "./CanvasEditor";
+import {BookPreviews, IconPreview} from "./BookPreviews";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -57,11 +58,6 @@ export function cue(m: string){
 }
 
 export interface AppProps{}
-
-interface IconPreview{
-    id: number;
-    data: string;
-}
 
 export interface AppState{
     controller: IconCanvasController;
@@ -734,18 +730,7 @@ export class App extends React.Component<AppProps, AppState>{
         const controller = this.state.controller;
         const controllers = this.state.controllers;
         const currentId = controller.id;
-
-        const sizeOf = (itemId: number): Size => {
-            const ctl = controllers.find(c => c.id === itemId);
-
-            if (ctl){
-                return ctl.iconSize;
-            }
-            return makeSz(0,0);
-        };
-
-        const sortedPreviews = this.state.previews
-            .sort((a, b) => -compareSize(sizeOf(a.id), sizeOf(b.id)));
+        const sizes = [16, 32, 48, 64, 128, 256];
 
         return (
             <div className="editor-sidebar">
@@ -753,27 +738,18 @@ export class App extends React.Component<AppProps, AppState>{
                          items={(
                              <>
                                  <Button iconSize={50} icon={`plus`}>
-                                     <MenuItem text={`16 x 16`} onActivate={() => this.newIconEntry(16)}/>
-                                     <MenuItem text={`32 x 32`} onActivate={() => this.newIconEntry(32)}/>
-                                     <MenuItem text={`48 x 48`} onActivate={() => this.newIconEntry(48)}/>
-                                     <MenuItem text={`64 x 64`} onActivate={() => this.newIconEntry(64)}/>
-                                     <MenuItem text={`128 x 128`} onActivate={() => this.newIconEntry(128)}/>
-                                     <MenuItem text={`256 x 256`} onActivate={() => this.newIconEntry(256)}/>
+                                     {sizes.map(size => <MenuItem text={`${size}x${size}`} onActivate={() => this.newIconEntry(size)}/>)}
                                  </Button>
                                  <Button iconSize={50} icon={`minus`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
-                                 <Button iconSize={50} icon={`ellipsis`}/>
                              </>
                          )}
                 >
-                    {sortedPreviews
-                        .map((item) => (
-                            <PreviewPanel
-                                key={item.id}
-                                data={item.data}
-                                selected={item.id === currentId}
-                                size={sizeOf(item.id)}
-                                onActivate={() => this.goToIcon(item.id)}/>
-                        ))}
+                    <BookPreviews
+                        controllers={controllers}
+                        currentController={currentId}
+                        previews={this.state.previews}
+                        onIconSelected={id => this.goToIcon(id)}
+                    />
                 </Expando>
                 {this.toolComponent()}
                 <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
