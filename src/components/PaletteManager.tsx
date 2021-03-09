@@ -126,6 +126,21 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         });
     }
 
+    private startEyedropperAdd(){
+        App.activeController.colorPicker(colorToAdd => {
+
+            if(colorToAdd){
+
+                const colorToAddName = prompt(`Pick a name for the color`, String(colorToAdd)) || String(colorToAdd);
+
+                this.setState({colorToAdd, colorToAddName});
+
+                setTimeout(() => this.addSelectedColor());
+            }
+
+        });
+    }
+
     componentDidMount() {
         this.refreshPalette();
     }
@@ -154,6 +169,7 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
                     <div className="swatches">
                         {pal.colors.map(tuple => <Clickable classNames="pal-swatch">{this.swatch(tuple)}</Clickable>)}
                         <Button icon={`plus`} iconSize={20} onClick={() => this.startAddMode()}/>
+                        <Button icon={'eyedropper'} onClick={() => this.startEyedropperAdd()}/>
                     </div>
                 </div>
             );
