@@ -11,8 +11,7 @@ import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {AdjustTool} from "../model/tools/AdjustTool";
 import {IconEditorTool} from "../model/IconEditor";
 import {IconCanvasController} from "../model/IconCanvasController";
-
-export type ToolCommand = 'SELECTION' | 'PEN' | 'FLOOD' | 'ERASER' | 'PALETTE_COMPOSER' | 'DITHER';
+import {ToolCommand} from "./App";
 
 export interface CanvasEditorProps{
     controller: IconCanvasController;

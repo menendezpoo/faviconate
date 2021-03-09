@@ -1,41 +1,56 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {ToolbarView} from "../hui/layout/ToolbarView";
-import {Button} from "../hui/items/Button";
-import {Range} from "../hui/items/Range";
-import {Separator} from "../hui/items/Separator";
 import {DockView} from "../hui/layout/DockView";
-import {CanvasView} from "./CanvasView";
-import {DownloadFormat, IconCanvasController} from "../model/IconCanvasController";
+import {IconCanvasController} from "../model/IconCanvasController";
 import {EraserTool} from "../model/tools/EraserTool";
 import {PencilTool} from "../model/tools/PencilTool";
 import {Color} from "../hui/helpers/Color";
-import {ColorPicker} from "../hui/items/ColorPicker";
-import {PreviewPanel} from "./PreviewPanel";
 import {IconDocument, IconEditorTool} from "../model/IconEditor";
 import {SelectionDragMode, SelectionTool} from "../model/tools/SelectionTool";
 import {IconDirectory, IconService} from "../model/IconService";
-import {MenuItem} from "../hui/items/MenuItem";
-import {compareSize, makeSz, Size} from "../hui/helpers/Rectangle";
+import {makeSz, Size} from "../hui/helpers/Rectangle";
 import {InvalidImageError} from "../model/errors";
 import {FloodFillTool} from "../model/tools/FloodFillTool";
 import {darkModeOn} from "../hui/helpers/Utils";
-import {Expando} from "./Expando";
 import {iconSz} from "../model/Icon";
-import {Label} from "../hui/items/Label";
-import {AdjustProperties, AdjustTool} from "../model/tools/AdjustTool";
-import {Palette, PaletteService} from "../model/PaletteService";
-import * as ReactDOM from "react-dom";
+import {AdjustTool} from "../model/tools/AdjustTool";
 import {ReviewStudio} from "./ReviewStudio";
 import {DocumentService} from "../model/DocumentService";
 import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
-import {PaletteExpando} from "./PaletteExpando";
-import {ColorUsageReport} from "./ColorUsageReport";
-import {ColorReplacer} from "./ColorReplacer";
-import {ItemGroup} from "../hui/items/ItemGroup";
-import {CanvasEditor, ToolCommand} from "./CanvasEditor";
-import {BookPreviews, IconPreview} from "./BookPreviews";
+import {CanvasEditor} from "./CanvasEditor";
+import {IconPreview} from "./BookPreviews";
+import {EditorControls} from "./EditorControls";
+import {EditorMainToolbar} from "./EditorMainToolbar";
 
 const DEFAULT_ICON = makeSz(32, 32);
+
+export type ToolCommand = 'SELECTION' | 'PEN' | 'FLOOD' | 'ERASER' | 'PALETTE_COMPOSER' | 'DITHER' |
+    'UNDO' | 'REDO' | 'CUT' | 'COPY' | 'PASTE' | 'SWAP_BG' | 'SWAP_GRID' | 'REVIEW_STUDIO' |
+    'IMPORT_FILE' | 'SELECT_ALL';
+
+interface KeyMapping{
+    command: ToolCommand;
+    key: string;
+    flat?: boolean;
+    shift?: boolean;
+}
+
+const MAPPINGS: KeyMapping[] = [
+    {key: 'z', command: 'REDO', shift: true},
+    {key: 'z', command: 'UNDO'},
+    {key: 'v', command: 'PASTE'},
+    {key: 'c', command: 'COPY'},
+    {key: 'x', command: 'CUT'},
+    {key: 'a', command: 'SELECT_ALL'},
+
+    {key: 'd', command: 'PEN', flat: true},
+    {key: 'v', command: 'SELECTION', flat: true},
+    {key: 'f', command: 'FLOOD', flat: true},
+    {key: 'e', command: 'ERASER', flat: true},
+    {key: 'b', command: 'SWAP_BG', flat: true},
+    {key: 'g', command: 'SWAP_GRID', flat: true},
+];
 
 function changeFavicon(src: string) {
     const link = document.createElement('link'),
@@ -47,14 +62,6 @@ function changeFavicon(src: string) {
         document.head.removeChild(oldLink);
     }
     document.head.appendChild(link);
-}
-
-export function cue(m: string){
-    const e = document.getElementById('cue');
-
-    if (e){
-        e.innerHTML = m + '<br>' + e.innerHTML;
-    }
 }
 
 export interface AppProps{}
@@ -70,8 +77,6 @@ export interface AppState{
     showBackground: boolean;
     showGrid: boolean;
     colorA: Color;
-    adjustState?: AdjustProperties;
-    composingPalette?: Palette;
 }
 
 export class App extends React.Component<AppProps, AppState>{
@@ -84,14 +89,13 @@ export class App extends React.Component<AppProps, AppState>{
         this.state = this.newDocumentState(DEFAULT_ICON);
         const icon = this.state.controller.editor.document.icon;
         const id = this.state.controller.id;
+
         IconService.asBlobUrl(icon).then(data => this.setState({previews: [{id, data}]}));
 
         DocumentService.restoreIcons().then(icons => {
-
             if (icons && icons.length > 0){
                 this.setIcons({icons});
             }
-
         });
 
     }
@@ -182,9 +186,12 @@ export class App extends React.Component<AppProps, AppState>{
 
     }
 
-    private removeIconEntry(){
+    private removeIconEntry(id?: number){
 
-        const id = this.state.controller.id;
+        if(typeof id === 'undefined'){
+            id = this.state.controller.id;
+        }
+
         let controllers = this.state.controllers.filter((item) => item.id !== id);
         let previews = this.state.previews.filter((item, i) => item.id !== id);
         let controller: IconCanvasController;
@@ -199,7 +206,6 @@ export class App extends React.Component<AppProps, AppState>{
                     this.setState({
                         controllers, controller, selectedTool, previews: [{id: controller.id, data}]
                     });
-
                 });
 
         }else{
@@ -243,23 +249,21 @@ export class App extends React.Component<AppProps, AppState>{
 
     }
 
-    private copy(){
+    private commandCopy(){
         this.state.controller.copy()
             .then(() => console.log("Copied"))
             .catch(e => console.log(`Not copied: ${e}`));
     }
 
-    private cut(){
+    private commandCut(){
         this.state.controller.cut()
             .then(() => console.log("Did cut"))
             .catch(e => console.log(`Didn't cut: ${e}`));
     }
 
-    private paste(){
+    private commandPaste(){
         this.state.controller.paste()
             .then(r => {
-
-                console.log(`Pasted`);
 
                 if (r.warnings.length > 0){
                     console.log(` - Warnings: ${r.warnings.length}`);
@@ -274,7 +278,7 @@ export class App extends React.Component<AppProps, AppState>{
             .catch(e => console.log(`Not pasted: ${e}`));
     }
 
-    private importFileDialog(){
+    private commandImportFileDialog(){
         const input: HTMLInputElement = document.createElement('input');
         input.type = 'file';
         input.style.display = 'none';
@@ -290,6 +294,80 @@ export class App extends React.Component<AppProps, AppState>{
 
     }
 
+    private commandUseDither(){
+        this.useTool(new AdjustTool(this.state.controller));
+    }
+
+    private commandUseEraser(){
+        this.useTool(new EraserTool(this.state.controller));
+    }
+
+    private commandUseFlood(){
+        this.useTool(new FloodFillTool(this.state.controller));
+    }
+
+    private commandUsePaletteComposer(){
+        this.useTool(new PaletteComposerTool(this.state.controller));
+    }
+
+    private commandUsePen(){
+        this.useTool(new PencilTool(this.state.controller));
+    }
+
+    private commandUseSelection(){
+        this.useTool(new SelectionTool(this.state.controller));
+    }
+
+    private commandSwapBg(){
+        this.setState({showBackground: !this.state.showBackground});
+    }
+
+    private commandSwapGrid(){
+        this.setState({showGrid: !this.state.showGrid});
+    }
+
+    private commandSelectAll(){
+        if (!(this.state.selectedTool instanceof SelectionTool)){
+            this.commandUseSelection();
+        }
+        setTimeout(() => (this.state.selectedTool as SelectionTool).selectAll());
+    }
+
+    private commandReview(){
+
+        const dismiss = () => {
+            ReactDOM.unmountComponentAtNode(document.getElementById(`root-dialog`)!);
+        };
+
+        ReactDOM.render(
+            <ReviewStudio icon={this.state.controller.editor.document.icon} onCloseRequested={dismiss}/>,
+            document.getElementById(`root-dialog`)
+        );
+    }
+
+    private commandUndo(){
+        this.state.controller.editor.undo();
+        const undos = this.state.undos + 1;
+
+        if (this.state.controller.editor.undoPeek?.selectionRegion && !(this.state.selectedTool instanceof SelectionTool)){
+            this.setState({undos, selectedTool: new SelectionTool(this.state.controller)});
+        }else{
+            this.setState({undos});
+        }
+
+    }
+
+    private commandRedo(){
+        this.state.controller.editor.redo();
+        const redos = this.state.redos + 1;
+
+        if (this.state.controller.editor.redoPeek?.selectionRegion && !(this.state.selectedTool instanceof SelectionTool)){
+            this.setState({redos, selectedTool: new SelectionTool(this.state.controller)});
+        }else{
+            this.setState({redos});
+        }
+    }
+
     private importFile(file: File){
 
         if (file.name.toLowerCase().endsWith('.ico')){
@@ -300,30 +378,6 @@ export class App extends React.Component<AppProps, AppState>{
             this.state.controller.importFile(file)
                 .then(selectedTool => this.setState({selectedTool}));
         }
-    }
-
-    private useAdjustments(){
-        this.useTool(new AdjustTool(this.state.controller));
-    }
-
-    private useEraser(){
-        this.useTool(new EraserTool(this.state.controller));
-    }
-
-    private useFlood(){
-        this.useTool(new FloodFillTool(this.state.controller));
-    }
-
-    private usePaletteComposer(){
-        this.useTool(new PaletteComposerTool(this.state.controller));
-    }
-
-    private usePen(){
-        this.useTool(new PencilTool(this.state.controller));
-    }
-
-    private useSelection(){
-        this.useTool(new SelectionTool(this.state.controller));
     }
 
     private colorPick(color: Color){
@@ -338,33 +392,7 @@ export class App extends React.Component<AppProps, AppState>{
     }
 
     private useTool(tool: IconEditorTool){
-        // if (tool.useColor){
-        //     tool.useColor(this.state.colorA);
-        // }
         this.setState({selectedTool: tool});
-    }
-
-    private undo(){
-        this.state.controller.editor.undo();
-        const undos = this.state.undos + 1;
-
-        if (this.state.controller.editor.undoPeek?.selectionRegion && !(this.state.selectedTool instanceof SelectionTool)){
-            this.setState({undos, selectedTool: new SelectionTool(this.state.controller)});
-        }else{
-            this.setState({undos});
-        }
-
-    }
-
-    private redo(){
-        this.state.controller.editor.redo();
-        const redos = this.state.redos + 1;
-
-        if (this.state.controller.editor.redoPeek?.selectionRegion && !(this.state.selectedTool instanceof SelectionTool)){
-            this.setState({redos, selectedTool: new SelectionTool(this.state.controller)});
-        }else{
-            this.setState({redos});
-        }
     }
 
     private createController(doc: IconDocument): IconCanvasController{
@@ -425,9 +453,53 @@ export class App extends React.Component<AppProps, AppState>{
         this.setState({controller, selectedTool});
     }
 
-    private download(format: DownloadFormat){
-        this.state.controller.downloadAs(format, this.state.controllers.map(c => c.editor.document.icon))
-            .then(() => console.log(`Download triggered`));
+    private getMainToolbarItems(){
+
+        return <EditorMainToolbar
+            controller={this.state.controller}
+            showBackground={this.state.showBackground}
+            showGrid={this.state.showGrid}
+            onNewBook={size => this.newDocument(size)}
+            onCommand={cmd => this.canvasCommand(cmd)}
+        />;
+    }
+
+    private getSideBar(){
+
+        const {selectedTool, controller, controllers, previews} = this.state;
+
+        return (
+            <EditorControls
+                tool={selectedTool}
+                controller={controller}
+                controllers={controllers}
+                previews={previews}
+                onColorPicked={c => this.colorPick(c)}
+                onNewIcon={s => this.newIconEntry(s)}
+                onRemoveIcon={id => this.removeIconEntry(id)}
+                onGoToIcon={id => this.goToIcon(id)}
+            />);
+    }
+
+    private canvasCommand(c: ToolCommand){
+        switch (c){
+            case "DITHER":              this.commandUseDither(); return;
+            case "ERASER":              this.commandUseEraser(); return;
+            case "FLOOD":               this.commandUseFlood(); return;
+            case "PALETTE_COMPOSER":    this.commandUsePaletteComposer(); return;
+            case "PEN":                 this.commandUsePen(); return;
+            case "SELECTION":           this.commandUseSelection(); return;
+            case "COPY":                this.commandCopy(); return;
+            case "CUT":                 this.commandCut(); return;
+            case "IMPORT_FILE":         this.commandImportFileDialog(); return;
+            case "PASTE":               this.commandPaste(); return;
+            case "REDO":                this.commandRedo(); return;
+            case "REVIEW_STUDIO":       this.commandReview(); return;
+            case "SWAP_BG":             this.commandSwapBg(); return;
+            case "SWAP_GRID":           this.commandSwapGrid(); return;
+            case "UNDO":                this.commandUndo(); return;
+            case "SELECT_ALL":          this.commandSelectAll(); return;
+        }
     }
 
     componentDidMount() {
@@ -441,333 +513,23 @@ export class App extends React.Component<AppProps, AppState>{
 
             const ctrlMeta = e.ctrlKey || e.metaKey;
 
-            if (e.key == 'z' && ctrlMeta && e.shiftKey){
-                this.redo();
-                e.preventDefault();
-
-            }else if(e.key == 'z' && ctrlMeta){
-                this.undo();
-                e.preventDefault();
-
-            }else if(e.key === 'v' && !ctrlMeta){
-                this.useSelection();
-                e.preventDefault();
-
-            }else if((e.key === 'p' || e.key == 'd') && !ctrlMeta){
-                this.usePen();
-                e.preventDefault();
-
-            }else if((e.key === 'f') && !ctrlMeta){
-                this.useFlood();
-                e.preventDefault();
-
-            }else if(e.key === 'e' && !ctrlMeta){
-                this.useEraser();
-                e.preventDefault();
-
-            }else if(e.key === 'b' && !ctrlMeta){
-                this.setState({showBackground: !this.state.showBackground});
-                e.preventDefault();
-
-            }else if(e.key === 'g' && !ctrlMeta){
-                this.setState({showGrid: !this.state.showGrid});
-                e.preventDefault();
-
-            }else if(e.key === 'c' && ctrlMeta){
-                this.copy();
-                e.preventDefault();
-
-            }else if(e.key === 'v' && ctrlMeta){
-                this.paste();
-                e.preventDefault();
-
-            }else if(e.key === 'x' && ctrlMeta){
-                this.cut();
-                e.preventDefault();
-
-            }else if(e.key === 'a' && ctrlMeta){
-                if (!(this.state.selectedTool instanceof SelectionTool)){
-                    this.useSelection();
-                }
-                setTimeout(() => (this.state.selectedTool as SelectionTool).selectAll());
-                e.preventDefault();
-            }
+            MAPPINGS
+                .filter(map => map.key === e.key)
+                .forEach(map => {
+                    if(
+                        (map.flat && !e.shiftKey && !ctrlMeta) ||
+                        (!map.flat && !!map.shift && e.shiftKey) ||
+                        (!map.flat && ctrlMeta)
+                    ){
+                        this.canvasCommand(map.command);
+                        e.preventDefault();
+                    }
+                });
         });
-    }
-
-    commandApplyAdjustments(){
-        if (this.state.selectedTool instanceof AdjustTool){
-            (this.state.selectedTool as AdjustTool).apply();
-        }
-    }
-
-    commandContrast(contrast: number){
-        if (this.state.selectedTool instanceof AdjustTool){
-            this.setState({adjustState: {...this.state.adjustState, contrast}});
-        }
-    }
-
-    commandBrightness(brightness: number){
-        if (this.state.selectedTool instanceof AdjustTool){
-            this.setState({adjustState: {...this.state.adjustState, brightness}});
-        }
-    }
-
-    commandDitheringKernel(kernel: number){
-        if (this.state.selectedTool instanceof AdjustTool){
-            this.setState({adjustState: {...this.state.adjustState, kernel}});
-        }
-    }
-
-    commandDitheringSerpentine(serpentine: boolean){
-        if (this.state.selectedTool instanceof AdjustTool){
-            this.setState({adjustState: {...this.state.adjustState, serpentine}});
-        }
-    }
-
-    commandResetPalette(){
-        if (this.state.selectedTool instanceof AdjustTool){
-            this.setState({adjustState: {...this.state.adjustState, palette: undefined}});
-        }
-    }
-
-    commandReview(){
-
-        const dismiss = () => {
-            ReactDOM.unmountComponentAtNode(document.getElementById(`root-dialog`)!);
-        };
-
-        ReactDOM.render(
-            <ReviewStudio icon={this.state.controller.editor.document.icon} onCloseRequested={dismiss}/>,
-            document.getElementById(`root-dialog`)
-        );
-    }
-
-    commandSavePalette(){
-        if (this.state.adjustState?.palette){
-
-            const palette = this.state.adjustState.palette;
-
-            if (!palette){
-                throw new Error();
-            }
-
-            if (palette.unnamed){
-                palette.name = prompt('Name for the palette', palette.name) || 'Unnamed palette';
-            }
-
-            PaletteService.upsert(palette)
-                .then(p => this.commandSetPalette(p))
-                .catch(e => console.log(`Not saved: ${e}`));
-
-        }
-    }
-
-    commandSelectAll(){
-        if (this.state.selectedTool instanceof SelectionTool){
-            (this.state.selectedTool as SelectionTool).selectAll();
-        }
-    }
-
-    commandSelectionMove(selectionMove: SelectionDragMode){
-        if (this.state.selectedTool instanceof SelectionTool){
-            (this.state.selectedTool as SelectionTool).dragMode= selectionMove;
-            this.setState({selectionMove});
-        }
-    }
-
-    commandSetPalette(palette: Palette){
-        if (this.state.selectedTool instanceof AdjustTool){
-            this.setState({adjustState: {...this.state.adjustState, palette}});
-        }
-    }
-
-    commandClearSelection(){
-        if (this.state.selectedTool instanceof SelectionTool){
-            (this.state.selectedTool as SelectionTool).clearSelection();
-        }
-    }
-
-    commandDeleteSelection(){
-        if (this.state.selectedTool instanceof SelectionTool){
-            (this.state.selectedTool as SelectionTool).deleteSelection();
-        }
-    }
-
-    commandCrop(){
-        if (this.state.selectedTool instanceof SelectionTool){
-            (this.state.selectedTool as SelectionTool).cropToSelection();
-        }
     }
 
     componentDidUpdate(prevProps: Readonly<AppProps>, prevState: Readonly<AppState>, snapshot?: any) {
         App.activeController = this.state.controller;
-    }
-
-    toolComponent(): React.ReactNode{
-        const tool = this.state.selectedTool;
-        const {selectionMove} = this.state;
-
-        if (!tool){
-            return <></>;
-        }
-
-        const colorable = tool?.useColor;
-        const isEraser = tool instanceof EraserTool;
-        const doc = this.state.controller.editor.document;
-
-        if (tool instanceof SelectionTool){
-
-            const size = doc.selectionRegion ? `${doc.selectionRegion.width} x ${doc.selectionRegion.height}` : `Nothing Selected`;
-
-            return (
-                <Expando title={`Selection`} items={<Label text={size}/>}>
-                    <ItemGroup selectedIndex={selectionMove === 'area' ? 1 : 0}>
-                        <Button text={`Move Sprite`} onClick={() => this.commandSelectionMove('sprite')}/>
-                        <Button text={`Move Selection`} onClick={() => this.commandSelectionMove('area')}/>
-                    </ItemGroup>
-                    <Button text={`Select All`} iconSize={20} icon={`full-frame`} onClick={() => this.commandSelectAll()}/>
-                    <Button text={`Clear Selection`} iconSize={20} icon={`corners`} onClick={() => this.commandClearSelection()}/>
-                    <Button text={`Delete Selection`}  iconSize={20} icon={`grid-crossed`} onClick={() => this.commandDeleteSelection()}/>
-                    <Button text={`Crop`} iconSize={20} icon={`crop`} onClick={() => this.commandCrop()}/>
-                </Expando>
-            );
-        }else if ( colorable && !isEraser ) {
-            return (
-                <Expando title={`Color`}>
-                    <ColorPicker colorPicked={color => this.colorPick(color)}/>
-                </Expando>
-            );
-        }else if ( tool instanceof PaletteComposerTool){
-
-            return (
-                <>
-                    <Expando title={`Color Replace`}>
-                        <ColorReplacer
-                            onStart={() => tool.colorReplaceStart()}
-                            onCancel={() => tool.colorReplaceCancel()}
-                            onOldColorPicked={c => tool.colorReplaceSelectOld(c)}
-                            onColorPreview={c => tool.colorReplaceSelectNew(c)}
-                            onColorSelected={c => tool.colorReplaceConfirm(c)}
-                        />
-                    </Expando>
-                    <PaletteExpando onPaletteChanged={composingPalette => this.setState({composingPalette})} title={`Palette Library`}/>
-                    <Expando title={`Color Usage`}>
-                        <ColorUsageReport palette={this.state.composingPalette} data={this.state.controller.editor.document.icon.data}/>
-                    </Expando>
-
-                </>
-            );
-
-        }else if ( tool instanceof AdjustTool ){
-
-            const props = this.state.adjustState || {};
-
-            tool.updateAdjustments(props);
-
-            return (
-                <>
-                    <Expando title={`Adjust`}>
-                        <div className="adjusters">
-                            <Range min={-200} max={200} value={props.brightness || 0} onChange={value => this.commandBrightness(value)} />
-                            <Range min={-128} max={128} value={props.contrast || 0} onChange={value => this.commandContrast(value)} />
-                        </div>
-                    </Expando>
-                    <PaletteExpando
-                        title={props.palette ? `Palette` : `Apply Palette`}
-                        onPaletteChanged={p => this.commandSetPalette(p)}
-                        onPaletteReset={() => this.commandResetPalette()}
-                    />
-                    <Expando title={`Dithering`}>
-                        <Range min={0} max={8} round={true} value={props.kernel || 0} onChange={value => this.commandDitheringKernel(value)} />
-                        <Button selected={!!props.serpentine} text={`Serpentine: ` + (props.serpentine ? 'yes' : 'no')} onClick={() => this.commandDitheringSerpentine(!props.serpentine)} />
-                    </Expando>
-                    <Button classNames={`cta`} text={`Apply`} onClick={() => this.commandApplyAdjustments()}/>
-                </>
-            );
-        }
-    }
-
-    private getMainToolbarItems(){
-        const controller = this.state.controller;
-        return (
-            <>
-            <Button text={`faviconate`}>
-                <MenuItem text={`New 16x16 Icon`} onActivate={() => this.newDocument(16)}/>
-                <MenuItem text={`New 32x32 Icon`} onActivate={() => this.newDocument(32)}/>
-                <MenuItem text={`New 64x64 Icon`} onActivate={() => this.newDocument(64)}/>
-                <MenuItem text={`New 128x128 Icon`} onActivate={() => this.newDocument(128)}/>
-                <MenuItem text={`New 256x256 Icon`} onActivate={() => this.newDocument(256)}/>
-                <Separator/>
-                <MenuItem text={`Import File`} onActivate={() => this.importFileDialog()}/>
-            </Button>
-            <Separator/>
-            <Button icon={`undo`} iconSize={50} onClick={() => this.undo()} disabled={controller.editor.undoCount == 0}/>
-            <Button icon={`redo`} iconSize={50} onClick={() => this.redo()} disabled={controller.editor.redoCount == 0}/>
-            <Separator/>
-            <Button icon={`cut`} iconSize={50} onClick={() => this.cut()}/>
-            <Button icon={`copy`} iconSize={50} onClick={() => this.copy()}/>
-            <Button icon={`paste`} iconSize={50} onClick={() => this.paste()}/>
-            <Separator/>
-            <Button
-                icon={`checker`} iconSize={50}
-                onClick={() => this.setState({showBackground: !this.state.showBackground})}
-                selected={this.state.showBackground}
-            />
-            <Button
-                icon={`grid`} iconSize={50}
-                onClick={() => this.setState({showGrid: !this.state.showGrid})}
-                selected={this.state.showGrid}
-            />
-            <Separator/>
-            <Button icon={`eye`} iconSize={50} onClick={() => this.commandReview()} />
-
-        </>);
-    }
-
-    private getSideBar(){
-
-        const controller = this.state.controller;
-        const controllers = this.state.controllers;
-        const currentId = controller.id;
-        const sizes = [16, 32, 48, 64, 128, 256];
-
-        return (
-            <div className="editor-sidebar">
-                <Expando title={`Preview`}
-                         items={(
-                             <>
-                                 <Button iconSize={50} icon={`plus`}>
-                                     {sizes.map(size => <MenuItem text={`${size}x${size}`} onActivate={() => this.newIconEntry(size)}/>)}
-                                 </Button>
-                                 <Button iconSize={50} icon={`minus`} disabled={this.state.controllers.length === 0} onClick={() => this.removeIconEntry()}/>
-                             </>
-                         )}
-                >
-                    <BookPreviews
-                        controllers={controllers}
-                        currentController={currentId}
-                        previews={this.state.previews}
-                        onIconSelected={id => this.goToIcon(id)}
-                    />
-                </Expando>
-                {this.toolComponent()}
-                <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
-                <Button text={`ICO`} onClick={() => this.download('ico')} icon={`floppy`} iconSize={50}/>
-                <div id="cue" className="cue">0.1.3</div>
-            </div>
-        );
-    }
-
-    private canvasCommand(c: ToolCommand){
-        switch (c){
-            case "DITHER": this.useAdjustments(); return;
-            case "ERASER": this.useEraser(); return;
-            case "FLOOD": this.useFlood(); return;
-            case "PALETTE_COMPOSER": this.usePaletteComposer(); return;
-            case "PEN": this.usePen(); return;
-            case "SELECTION": this.useSelection(); return;
-        }
     }
 
     render() {
