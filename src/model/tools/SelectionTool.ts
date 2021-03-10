@@ -318,7 +318,6 @@ export class SelectionTool implements IconEditorTool{
 
     keyDown(e: KeyEvent): KeyEventResult | void {
 
-        console.log('sel keydown')
         if (e.key == 'Escape'){
             this.clearSelection();
 

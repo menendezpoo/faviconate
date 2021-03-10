@@ -92,10 +92,11 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
 
     private addIcon(size: Size){
         const iconController = this.props.bookController.addIcon(size);
+        const tool = new SelectionTool(iconController);
 
         this.initController(iconController);
 
-        this.setState({iconController});
+        this.setState({tool, iconController});
     }
 
     private removeIcon(id: string){
@@ -106,7 +107,7 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
             this.initController(ctl);
             this.getCommands().commandGoToIcon(ctl.id);
         }else{
-            this.getCommands().commandGoToIcon(this.state.iconControllers[0].id);
+            this.getCommands().commandGoToIcon(this.props.bookController.iconControllers[0].id);
         }
 
     }
