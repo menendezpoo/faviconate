@@ -36,11 +36,11 @@ export class EditorMainToolbar extends React.Component<EditorMainToolbarProps, E
         return (
             <>
                 <Button text={`faviconate`}>
-                    <MenuItem text={`New 16x16 Icon`} onActivate={newBook(16)}/>
-                    <MenuItem text={`New 32x32 Icon`} onActivate={newBook(32)}/>
-                    <MenuItem text={`New 64x64 Icon`} onActivate={newBook(64)}/>
-                    <MenuItem text={`New 128x128 Icon`} onActivate={() => newBook(128)}/>
-                    <MenuItem text={`New 256x256 Icon`} onActivate={() => newBook(256)}/>
+                    <MenuItem text={`New Project: 16x16`} onActivate={newBook(16)}/>
+                    <MenuItem text={`New Project: 32x32`} onActivate={newBook(32)}/>
+                    <MenuItem text={`New Project: 64x64`} onActivate={newBook(64)}/>
+                    <MenuItem text={`New Project: 128x128`} onActivate={() => newBook(128)}/>
+                    <MenuItem text={`New Project: 256x256`} onActivate={() => newBook(256)}/>
                     <Separator/>
                     <MenuItem text={`Import File`} onActivate={() => cmd.commandImportFileDialog()}/>
                 </Button>

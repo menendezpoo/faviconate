@@ -4,7 +4,7 @@ import {IconEditor} from "./IconEditor";
 import {ToolbarView} from "../hui/layout/ToolbarView";
 import {EditorMainToolbar} from "./EditorMainToolbar";
 import {EditorControls} from "./EditorControls";
-import {BookController} from "../model/BookController";
+import {BookController, changeFavicon} from "../model/BookController";
 import {IconEditorTool} from "../model/IconEditor";
 import {IconCanvasController} from "../model/IconCanvasController";
 import {App} from "./App";
@@ -12,6 +12,7 @@ import {Size} from "../hui/helpers/Rectangle";
 import {SelectionTool} from "../model/tools/SelectionTool";
 import {IconPreview} from "./BookPreviews";
 import {BookCommands, MAPPINGS} from "./BookCommands";
+import {IconService} from "../model/IconService";
 
 export interface BookEditorProps{
     bookController: BookController;
@@ -54,6 +55,9 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
         const tool = new SelectionTool(iconController);
 
         iconControllers.forEach(ctl => this.initController(ctl));
+
+        IconService.asBlobUrl(iconController.editor.document.icon)
+            .then(src => changeFavicon(src));
 
         return {
             iconController,

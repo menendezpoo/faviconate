@@ -8,7 +8,7 @@ import {DocumentService} from "./DocumentService";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
-function changeFavicon(src: string) {
+export function changeFavicon(src: string) {
     const id = 'dyna-favicon';
 
     const oldLink = document.getElementById(id);
@@ -47,6 +47,8 @@ export class BookController{
 
         controller.editor.documentSubmitted = () => {
             docChanged();
+            IconService.asBlobUrl(controller.editor.document.icon)
+                .then(src => changeFavicon(src));
             this.persist();
         };
 
