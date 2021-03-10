@@ -44,9 +44,11 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
     private initBookController(bookController: BookController): BookEditorState{
 
         bookController.onUpdated = () => {
-            const iconControllers = this.props.bookController.iconControllers;
-            const iconPreviews = this.props.bookController.iconPreviews;
-            this.setState({iconControllers, iconPreviews});
+            if (bookController === this.props.bookController){
+                const iconControllers = bookController.iconControllers;
+                const iconPreviews = bookController.iconPreviews;
+                this.setState({iconControllers, iconPreviews});
+            }
         };
 
         const iconController = bookController.iconControllers[0];
@@ -181,6 +183,10 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
         const {bookController} = this.props;
         const {tool, iconController, iconControllers, iconPreviews} = this.state;
         const commands = this.getCommands();
+
+        iconController.tool = tool;
+        iconController.showBackground = this.state.showBackground;
+        iconController.showGrid = this.state.showGrid;
 
         const mainToolbarItems = <EditorMainToolbar
             iconController={iconController}
