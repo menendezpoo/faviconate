@@ -22,7 +22,7 @@
     > .items{
       display: flex;
 
-      .ui-label{
+      > .ui-label{
         margin-right: $space;
         opacity: 0.3;
       }

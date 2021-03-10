@@ -50,6 +50,20 @@ export class ClipboardService {
 
     }
 
+    static async systemCopyText(text: string): Promise<void>{
+
+        if (navigator?.clipboard){
+            try{
+                await navigator.clipboard.writeText(text);
+            }catch(e){
+                return Promise.reject(`Error writing data to clipboard`);
+            }
+
+        }else{
+            return Promise.reject(`No compatibility for clipboard copying`);
+        }
+    }
+
     static async systemPasteBlob(): Promise<Blob> {
         const data: any | undefined = await (navigator.clipboard as any).read();
         let warnings: string[] = [];

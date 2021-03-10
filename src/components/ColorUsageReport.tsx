@@ -2,6 +2,10 @@ import * as React from "react";
 import {Expando} from "./Expando";
 import {Color} from "../hui/helpers/Color";
 import {Palette} from "../model/PaletteService";
+import {Button} from "../hui/items/Button";
+import {ClipboardService} from "../model/ClipboardService";
+import {log} from "util";
+import {Separator} from "../hui/items/Separator";
 
 const MAX_SWATCHES = 100;
 
@@ -80,6 +84,23 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
 
     }
 
+    private getTextReport(): string{
+        return this.report.map(entry => {
+            if ('message' in entry){
+                return entry.message;
+            }else{
+                const {color, count, name} = entry;
+                return `${color}, ${name}, ${count}`
+            }
+        }).join('\n');
+    }
+
+    private copyReportToClipboard(){
+        const text = this.getTextReport();
+        console.log(JSON.stringify(this.report));
+        ClipboardService.systemCopyText(text).then(() => console.log(`Copied to clipboard.`));
+    }
+
     componentDidUpdate(prevProps: Readonly<ColorUsageExpandoProps>, prevState: Readonly<ColorUsageExpandoState>, snapshot?: any) {
 
     }
@@ -104,6 +125,11 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
                         );
                     }
                     })}
+                <Separator/>
+                <Button
+                    icon={`copy`}
+                    iconSize={50}
+                    onClick={() => this.copyReportToClipboard()}/>
             </div>
         );
     }

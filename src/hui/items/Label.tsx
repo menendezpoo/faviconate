@@ -18,10 +18,10 @@ export const Label = (props: LabelProps) => {
             <Icon name={props.icon} size={props.iconSize}/>
         </div>
     }else if(!props.icon && !props.description) {
-        return <div className="classTag">{props.text}</div>;
+        return <div className={classTag}>{props.text}</div>;
 
     }else if(!props.icon && props.description) {
-        return <div className="classTag">
+        return <div className={classTag}>
             <div className="text">{props.text}</div>
             <div className="desc">{props.description}</div>
         </div>;
