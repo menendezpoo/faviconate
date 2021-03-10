@@ -1,6 +1,5 @@
 import * as React from "react";
 import {CanvasView} from "./CanvasView";
-import {ToolbarView} from "../hui/layout/ToolbarView";
 import {Button} from "../hui/items/Button";
 import {SelectionTool} from "../model/tools/SelectionTool";
 import {Separator} from "../hui/items/Separator";
@@ -11,59 +10,55 @@ import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {AdjustTool} from "../model/tools/AdjustTool";
 import {IconEditorTool} from "../model/IconEditor";
 import {IconCanvasController} from "../model/IconCanvasController";
-import {ToolCommand} from "./App";
+import {BookCommands} from "./BookCommands";
+import {ToolbarView} from "../hui/layout/ToolbarView";
 
 export interface CanvasEditorProps{
     controller: IconCanvasController;
     tool: IconEditorTool | null;
-    onCommand?: (command: ToolCommand) => void;
+    commands: BookCommands;
 }
 
 interface CanvasEditorState{}
 
-export class CanvasEditor extends React.Component<CanvasEditorProps, CanvasEditorState>{
-
-    private command(c: ToolCommand){
-        if (this.props.onCommand){
-            this.props.onCommand(c);
-        }
-    }
+export class IconEditor extends React.Component<CanvasEditorProps, CanvasEditorState>{
 
     private getItems(){
 
         const tool = this.props.tool;
+        const cmd = this.props.commands;
 
         return (
             <>
                 <Button
                     icon={`select`} iconSize={50}
-                    onClick={() => this.command('SELECTION')}
+                    onClick={() => cmd.commandUseSelection()}
                     selected={tool instanceof SelectionTool}
                 />
                 <Separator/>
                 <Button
                     icon={`pencil`} iconSize={50}
-                    onClick={() => this.command('PEN')}
+                    onClick={() => cmd.commandUsePen()}
                     selected={tool instanceof PencilTool && !(tool instanceof EraserTool)}
                 />
                 <Button
                     icon={`bucket`} iconSize={50}
-                    onClick={() => this.command('FLOOD')}
+                    onClick={() => cmd.commandUseFlood()}
                     selected={tool instanceof FloodFillTool}
                 />
                 <Button
                     icon={`eraser`} iconSize={50}
-                    onClick={() => this.command('ERASER')}
+                    onClick={() => cmd.commandUseEraser()}
                     selected={tool instanceof EraserTool}/>
                 <Separator/>
                 <Button
                     icon={`palette`} iconSize={50}
-                    onClick={() => this.command('PALETTE_COMPOSER')}
+                    onClick={() => cmd.commandUsePaletteComposer()}
                     selected={tool instanceof PaletteComposerTool}
                 />
                 <Button
                     icon={`gradient`} iconSize={50}
-                    onClick={() => this.command('DITHER')}
+                    onClick={() => cmd.commandUseDither()}
                     selected={tool instanceof AdjustTool}
                 />
 

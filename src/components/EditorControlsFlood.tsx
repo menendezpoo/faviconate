@@ -6,7 +6,6 @@ import {Expando} from "./Expando";
 
 export interface EditorControlsFloodProps{
     tool: FloodFillTool;
-    onColorPicked: (c: Color) => void;
 }
 
 interface EditorControlsFloodState{}
@@ -17,10 +16,14 @@ export class EditorControlsFlood extends React.Component<EditorControlsFloodProp
         super(props);
     }
 
+    private colorPicked(c: Color){
+        this.props.tool.color = c;
+    }
+
     render() {
         return (
             <Expando title={`Fill Color`}>
-                <ColorPicker colorPicked={color => this.props.onColorPicked(color)}/>
+                <ColorPicker colorPicked={color => this.colorPicked(color)}/>
             </Expando>
         );
     };

@@ -12,6 +12,7 @@ export class Editor<T>{
     private _currentTransaction: EditorTransaction<T> | null = null;
     private _document: T;
     private _hasChanges: boolean = false;
+    private _pristine: boolean = true;
 
     private readonly undoStack: EditorTransaction<T>[] = [];
     private readonly redoStack: EditorTransaction<T>[] = [];
@@ -109,6 +110,8 @@ export class Editor<T>{
         // We have changes
         this._hasChanges = true;
 
+        this._pristine = false;
+
         if (this.documentSubmitted){
             this.documentSubmitted();
         }
@@ -149,6 +152,10 @@ export class Editor<T>{
 
     get hasChanges(): boolean{
         return this._hasChanges;
+    }
+
+    get pristine(): boolean{
+        return this._pristine;
     }
 
     get redoCount(): number{

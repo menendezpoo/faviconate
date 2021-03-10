@@ -15,6 +15,7 @@ import {Icon} from "./Icon";
 import {ClipboardEmptyError, ClipboardService} from "./ClipboardService";
 import {NoSelectionError} from "./errors";
 import {Color} from "../hui/helpers/Color";
+import {uuid} from "../hui/helpers/Uuid";
 
 const MIME_PNG = "image/png";
 
@@ -28,16 +29,12 @@ export type DownloadFormat = 'png' | 'ico';
 
 export type ColorPickCallback = (color: Color | null, colorHover?: Color) => void;
 
-function id(): number{
-    return Math.round(Math.random() * Number.MAX_SAFE_INTEGER - 10000) + 10000;
-}
-
 export class IconCanvasController implements CanvasViewController{
 
     showBackground = false;
     showGrid = false;
 
-    readonly id = id();
+    readonly id = uuid();
     readonly editor: IconEditor;
     private _tool: IconEditorTool | null = new PencilTool(this);
     private previewBounds: Rectangle = Rectangle.empty;
@@ -126,7 +123,6 @@ export class IconCanvasController implements CanvasViewController{
                 warnings = [...e];
             }
         }
-
 
         return {success, tool, warnings};
     }

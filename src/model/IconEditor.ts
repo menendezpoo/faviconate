@@ -5,8 +5,6 @@ import {Rectangle} from "../hui/helpers/Rectangle";
 import {IconService} from "./IconService";
 import {Color} from "../hui/helpers/Color";
 
-
-
 declare interface ClipboardItem{
     ClipboardItem: (data: any) => ClipboardItem;
 }

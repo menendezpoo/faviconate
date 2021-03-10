@@ -17,17 +17,18 @@ import {PaletteComposerTool} from "../model/tools/PaletteComposerTool";
 import {EditorControlsPalette} from "./EditorControlsPalette";
 import {AdjustTool} from "../model/tools/AdjustTool";
 import {EditorControlsDither} from "./EditorControlsDither";
-import {Color} from "../hui/helpers/Color";
+import {BookController} from "../model/BookController";
+import {makeSz, Size} from "../hui/helpers/Rectangle";
 
 export interface EditorControlsProps{
     tool: IconEditorTool | null;
-    controller: IconCanvasController;
-    controllers: IconCanvasController[];
-    onColorPicked: (color: Color) => void;
-    previews: IconPreview[];
-    onNewIcon: (size: number) => void;
-    onRemoveIcon: (id: number) => void;
-    onGoToIcon: (id: number) => void;
+    bookController: BookController;
+    iconController: IconCanvasController;
+    iconControllers: IconCanvasController[];
+    iconPreviews: IconPreview[];
+    onAddIcon: (size: Size) => void;
+    onRemoveIcon: (id: string) => void;
+    onGoToIcon: (id: string) => void;
 }
 
 interface EditorControlsState{}
@@ -35,7 +36,10 @@ interface EditorControlsState{}
 export class EditorControls extends React.Component<EditorControlsProps, EditorControlsState>{
 
     private download(format: DownloadFormat){
-        this.props.controller.downloadAs(format, this.props.controllers.map(c => c.editor.document.icon))
+
+        const {iconController, bookController} = this.props;
+
+        iconController.downloadAs(format, bookController.iconControllers.map(c => c.editor.document.icon))
             .then(() => console.log(`Download triggered`));
     }
 
@@ -53,10 +57,10 @@ export class EditorControls extends React.Component<EditorControlsProps, EditorC
             return <EditorControlsEraser/>;
 
         }else if(tool instanceof PencilTool) {
-            return <EditorControlsPencil tool={tool} onColorPicked={c => this.props.onColorPicked(c)}/>
+            return <EditorControlsPencil tool={tool}/>
 
         }else if(tool instanceof FloodFillTool){
-            return <EditorControlsFlood tool={tool} onColorPicked={c => this.props.onColorPicked(c)}/>
+            return <EditorControlsFlood tool={tool}/>
 
         }else if ( tool instanceof PaletteComposerTool){
             return <EditorControlsPalette tool={tool}/>;
@@ -67,9 +71,8 @@ export class EditorControls extends React.Component<EditorControlsProps, EditorC
     }
 
     render() {
-        const controller = this.props.controller;
-        const controllers = this.props.controllers;
-        const currentId = controller.id;
+        const {iconController, bookController, iconControllers, iconPreviews} = this.props;
+        const currentId = iconController.id;
         const sizes = [16, 32, 48, 64, 128, 256];
 
         return (
@@ -81,14 +84,14 @@ export class EditorControls extends React.Component<EditorControlsProps, EditorC
                             {sizes.map(size =>
                                 <MenuItem
                                     text={`${size}x${size}`}
-                                    onActivate={() => this.props.onNewIcon(size)}
+                                    onActivate={() => this.props.onAddIcon(makeSz(size, size))}
                                 />)}
                         </Button>}
                 >
                     <BookPreviews
-                        controllers={controllers}
+                        controllers={iconControllers}
                         currentController={currentId}
-                        previews={this.props.previews}
+                        previews={iconPreviews}
                         onIconSelected={id => this.props.onGoToIcon(id)}
                         onIconDelete={id => this.props.onRemoveIcon(id)}
                     />

@@ -6,7 +6,6 @@ import {Expando} from "./Expando";
 
 export interface EditorControlsPencilProps{
     tool: PencilTool;
-    onColorPicked: (color: Color) => void;
 }
 
 interface EditorControlsPencilState{}
@@ -17,10 +16,14 @@ export class EditorControlsPencil extends React.Component<EditorControlsPencilPr
         super(props);
     }
 
+    private colorPicked(c: Color){
+        this.props.tool.color = c;
+    }
+
     render() {
         return (
             <Expando title={`Pencil Color`}>
-                <ColorPicker colorPicked={color => this.props.onColorPicked(color)}/>
+                <ColorPicker colorPicked={color => this.colorPicked(color)}/>
             </Expando>
         );
     };

@@ -4,16 +4,16 @@ import {PreviewPanel} from "./PreviewPanel";
 import {IconCanvasController} from "../model/IconCanvasController";
 
 export interface IconPreview{
-    id: number;
+    id: string;
     data: string;
 }
 
 export interface BookPreviewsProps{
-    currentController: number;
+    currentController: string;
     controllers: IconCanvasController[];
     previews: IconPreview[];
-    onIconSelected?: (id: number) => void;
-    onIconDelete?: (id: number) => void;
+    onIconSelected?: (id: string) => void;
+    onIconDelete?: (id: string) => void;
 }
 
 interface BookPreviewsState{}
@@ -21,13 +21,13 @@ interface BookPreviewsState{}
 export class BookPreviews extends React.Component<BookPreviewsProps, BookPreviewsState>{
 
 
-    private handleSelected(id: number){
+    private handleSelected(id: string){
         if (this.props.onIconSelected){
             this.props.onIconSelected(id);
         }
     }
 
-    private onIconDelete(id: number){
+    private onIconDelete(id: string){
         if (this.props.onIconDelete){
             this.props.onIconDelete(id);
         }
@@ -37,7 +37,7 @@ export class BookPreviews extends React.Component<BookPreviewsProps, BookPreview
 
         const {controllers, previews, currentController} = this.props;
 
-        const sizeOf = (itemId: number): Size => {
+        const sizeOf = (itemId: string): Size => {
             const ctl = controllers.find(c => c.id === itemId);
 
             if (ctl){

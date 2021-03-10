@@ -3,14 +3,15 @@ import {Button} from "../hui/items/Button";
 import {MenuItem} from "../hui/items/MenuItem";
 import {Separator} from "../hui/items/Separator";
 import {IconCanvasController} from "../model/IconCanvasController";
-import {ToolCommand} from "./App";
+import {makeSz, Size} from "../hui/helpers/Rectangle";
+import {BookCommands} from "./BookCommands";
 
 export interface EditorMainToolbarProps{
-    controller: IconCanvasController;
+    iconController: IconCanvasController;
     showBackground: boolean;
     showGrid: boolean;
-    onNewBook: (size: number) => void;
-    onCommand: (cmd: ToolCommand) => void;
+    commands: BookCommands;
+    onNewBook: (size: Size) => void;
 }
 
 interface EditorMainToolbarState{}
@@ -22,16 +23,13 @@ export class EditorMainToolbar extends React.Component<EditorMainToolbarProps, E
     }
 
     render() {
-        const controller = this.props.controller;
+        const controller = this.props.iconController;
 
         const newBook = (size: number) => {
-           return () => this.props.onNewBook(size);
+           return () => this.props.onNewBook(makeSz(size, size));
         };
 
-        const cmd = (cmd: ToolCommand) => {
-            return () => this.props.onCommand(cmd);
-        };
-
+        const cmd = this.props.commands;
         const undos = controller.editor.undoCount === 0;
         const redos = controller.editor.redoCount === 0;
 
@@ -44,28 +42,28 @@ export class EditorMainToolbar extends React.Component<EditorMainToolbarProps, E
                     <MenuItem text={`New 128x128 Icon`} onActivate={() => newBook(128)}/>
                     <MenuItem text={`New 256x256 Icon`} onActivate={() => newBook(256)}/>
                     <Separator/>
-                    <MenuItem text={`Import File`} onActivate={cmd('IMPORT_FILE')}/>
+                    <MenuItem text={`Import File`} onActivate={() => cmd.commandImportFileDialog()}/>
                 </Button>
                 <Separator/>
-                <Button icon={`undo`} iconSize={50} onClick={cmd('UNDO')} disabled={undos}/>
-                <Button icon={`redo`} iconSize={50} onClick={cmd('REDO')} disabled={redos}/>
+                <Button icon={`undo`} iconSize={50} onClick={() => cmd.commandUndo()} disabled={undos}/>
+                <Button icon={`redo`} iconSize={50} onClick={() => cmd.commandRedo()} disabled={redos}/>
                 <Separator/>
-                <Button icon={`cut`} iconSize={50} onClick={cmd('CUT')}/>
-                <Button icon={`copy`} iconSize={50} onClick={cmd('COPY')}/>
-                <Button icon={`paste`} iconSize={50} onClick={cmd('PASTE')}/>
+                <Button icon={`cut`} iconSize={50} onClick={() => cmd.commandCut()}/>
+                <Button icon={`copy`} iconSize={50} onClick={() => cmd.commandCopy()}/>
+                <Button icon={`paste`} iconSize={50} onClick={() => cmd.commandPaste()}/>
                 <Separator/>
                 <Button
                     icon={`checker`} iconSize={50}
-                    onClick={cmd('SWAP_BG')}
+                    onClick={() => cmd.commandSwapBg()}
                     selected={this.props.showBackground}
                 />
                 <Button
                     icon={`grid`} iconSize={50}
-                    onClick={cmd('SWAP_GRID')}
+                    onClick={() => cmd.commandSwapGrid()}
                     selected={this.props.showGrid}
                 />
                 <Separator/>
-                <Button icon={`eye`} iconSize={50} onClick={cmd('REVIEW_STUDIO')} />
+                <Button icon={`eye`} iconSize={50} onClick={() => cmd.commandReview()} />
 
             </>);
     };
