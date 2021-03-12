@@ -105,6 +105,19 @@ $cta-fg: #fff;
   }
 }
 
+.ui-button.start-button{
+  background-color: #FF3B3B;
+  color: white;
+  border-radius: 40px !important;
+  padding: 0 30px !important;
+  box-shadow: 0 3px 3px 2px rgba(0, 0, 0, 50%);
+
+  &:hover{
+    background-color: #FF5757 !important;
+    color: white !important;
+  }
+}
+
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   $color-strong: #ffffff19;
@@ -113,7 +126,7 @@ $cta-fg: #fff;
   $button-face-hover-fg: #828282;
   $button-face-selected-bg: $color-strong;
   $button-face-selected-fg: #828282;
-  $window-bg: #232328;
+  $window-bg: #25252B;
   $window-fg: #828282;
   $window-border: $color-light;
   $separator: $color-strong;

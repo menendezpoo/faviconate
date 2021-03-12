@@ -60,7 +60,7 @@ body {
     }
   }
   .side-left > .toolbar.main-tools {
-     > .items.near{
+     > .items.near, >.items.center, >.items.far{
         margin: 0 10px;
        .ui-button{ margin-bottom: 5px; }
     }

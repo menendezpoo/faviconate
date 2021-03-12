@@ -155,13 +155,13 @@ export class IconDocumentRenderer {
         let x = this.bounds.left;
         let y = this.bounds.top;
 
-        for(let i = 0; i < icon.width; i++){
+        for(let i = 0; i <= icon.width; i++){
             ctx.moveTo(x, bounds.top);
             ctx.lineTo(x, bounds.bottom);
             x += pixelSize.width;
         }
 
-        for(let i = 0; i < icon.height; i++){
+        for(let i = 0; i <= icon.height; i++){
             ctx.moveTo(bounds.left, y);
             ctx.lineTo(bounds.right, y);
             y += pixelSize.height;
@@ -239,9 +239,10 @@ export class IconDocumentRenderer {
             this.bounds.width / this.document.icon.width,
             this.bounds.height / this.document.icon.height);
 
-        this.context.clearRect(...this.plateBounds.inflate(SAFE_CLEAR, SAFE_CLEAR).tuple);
+        //this.context.clearRect(...this.plateBounds.inflate(SAFE_CLEAR, SAFE_CLEAR).tuple);
+        //this.context.clearRect(0, 0, this.)
 
-        this.drawPlate();
+        //this.drawPlate();
 
         if (this.drawBackground){
             this.renderChecker();
@@ -253,7 +254,7 @@ export class IconDocumentRenderer {
             this.renderGrid(pixelSize);
         }
 
-        this.renderFrame();
+        //this.renderFrame();
 
         if (this.document.selectionRegion){
             this.renderSelection(pixelSize);

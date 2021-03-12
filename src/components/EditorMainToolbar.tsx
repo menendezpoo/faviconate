@@ -35,7 +35,7 @@ export class EditorMainToolbar extends React.Component<EditorMainToolbarProps, E
 
         return (
             <>
-                <Button text={`faviconate`}>
+                <Button classNames="start-button" text={`faviconate`} face="always">
                     <MenuItem text={`New Project: 16x16`} onActivate={newBook(16)}/>
                     <MenuItem text={`New Project: 32x32`} onActivate={newBook(32)}/>
                     <MenuItem text={`New Project: 64x64`} onActivate={newBook(64)}/>

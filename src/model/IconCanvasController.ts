@@ -275,6 +275,8 @@ export class IconCanvasController implements CanvasViewController{
         const cvBounds = new Rectangle(0, 0, size.width, size.height);
         const previewArea = cvBounds.deflate(10, 10);
 
+        context.clearRect(0, 0, size.width, size.height);
+
         if (this.editor.document){
 
             const icon = this.editor.document.icon;
@@ -284,7 +286,8 @@ export class IconCanvasController implements CanvasViewController{
                 0, 0,
                 icon.width * pixelLength,
                 icon.height *  pixelLength)
-                .centerAt(makePt(cvBounds.center.x, (icon.height * pixelLength)/2));
+                .centerAt(cvBounds.center);
+                //.centerAt(makePt(cvBounds.center.x, (icon.height * pixelLength)/2));
 
             const renderer = new IconDocumentRenderer(
                 this.editor.document,

@@ -61,7 +61,6 @@ export class IconEditor extends React.Component<CanvasEditorProps, CanvasEditorS
                     onClick={() => cmd.commandUseDither()}
                     selected={tool instanceof AdjustTool}
                 />
-
             </>
         );
     }
@@ -76,7 +75,7 @@ export class IconEditor extends React.Component<CanvasEditorProps, CanvasEditorS
                 length={70}
                 classNames={`canvas-main`}
                 side={`left`}
-                items={items}
+                itemsCenter={items}
             >
                 <CanvasView controller={this.props.controller} />
             </ToolbarView>
