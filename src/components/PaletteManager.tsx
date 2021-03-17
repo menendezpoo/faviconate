@@ -5,6 +5,8 @@ import {Clickable} from "../hui/items/Clickable";
 import {ColorPicker} from "../hui/items/ColorPicker";
 import {Palette, PaletteColor, PaletteService} from "../model/PaletteService";
 import {App} from "./App";
+import {TextBox} from "../hui/items/TextBox";
+import {ClipboardService} from "../model/ClipboardService";
 
 export interface PaletteProps{
     palette?: Palette;
@@ -113,6 +115,10 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         });
     }
 
+    private copyCode(pal: Palette){
+        ClipboardService.systemCopyText(JSON.stringify(pal)).then(() => alert('Copied'));
+    }
+
     private startEyedropper(){
         App.activeController.colorPicker(colorToAdd => {
 
@@ -170,6 +176,8 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
                         {pal.colors.map(tuple => <Clickable classNames="pal-swatch">{this.swatch(tuple)}</Clickable>)}
                         <Button icon={`plus`} iconSize={20} onClick={() => this.startAddMode()}/>
                         <Button icon={'eyedropper'} onClick={() => this.startEyedropperAdd()}/>
+                        <Button icon={'copy'} onClick={() => this.copyCode(pal)}/>
+
                     </div>
                 </div>
             );
