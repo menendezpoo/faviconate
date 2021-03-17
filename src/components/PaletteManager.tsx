@@ -5,8 +5,8 @@ import {Clickable} from "../hui/items/Clickable";
 import {ColorPicker} from "../hui/items/ColorPicker";
 import {Palette, PaletteColor, PaletteService} from "../model/PaletteService";
 import {App} from "./App";
-import {TextBox} from "../hui/items/TextBox";
 import {ClipboardService} from "../model/ClipboardService";
+import {Separator} from "../hui/items/Separator";
 
 export interface PaletteProps{
     palette?: Palette;
@@ -18,6 +18,8 @@ interface PaletteState{
     colorToAdd?: Color;
     colorToAddName?: string;
     palettes?: Palette[];
+    paletteCode?: string;
+    codeMode?: boolean;
 }
 
 export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
@@ -119,6 +121,26 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
         ClipboardService.systemCopyText(JSON.stringify(pal)).then(() => alert('Copied'));
     }
 
+    private startCodeMode(pal: Palette){
+        this.setState({codeMode: true, paletteCode: JSON.stringify(pal)});
+    }
+
+    private endCodeMode(save = false){
+
+        if (save){
+            try{
+                const p: Palette = JSON.parse(this.state.paletteCode || '');
+                p.unsaved = true;
+                this.setPalette(p);
+            }catch(e){
+                alert(`Can't format palette`);
+                return;
+            }
+        }
+
+        this.setState({codeMode: false});
+    }
+
     private startEyedropper(){
         App.activeController.colorPicker(colorToAdd => {
 
@@ -157,6 +179,7 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
 
     render() {
         const pal = this.props.palette;
+        const {codeMode} = this.state;
 
         if(this.state.addMode){
             return (
@@ -169,16 +192,36 @@ export class PaletteManager extends React.Component<PaletteProps, PaletteState>{
             );
 
         }else if(pal) {
-            return (
-                <div className="ui-palette">
-                    <div className="palette-label">{pal.name}</div>
+
+            let paletteContent = <></>;
+
+            if (codeMode === true){
+
+                paletteContent = (
+                    <div>
+                        <textarea onChange={e => this.setState({paletteCode: e.target.value})}>{JSON.stringify(pal, null, 2)}</textarea>
+                        <Separator/>
+                        <Button text={`Cancel`} onClick={() => this.endCodeMode()}/>
+                        <Button text={`OK`} onClick={() => this.endCodeMode(true)}/>
+                    </div>
+                );
+
+            }else{
+                paletteContent = (
                     <div className="swatches">
                         {pal.colors.map(tuple => <Clickable classNames="pal-swatch">{this.swatch(tuple)}</Clickable>)}
                         <Button icon={`plus`} iconSize={20} onClick={() => this.startAddMode()}/>
                         <Button icon={'eyedropper'} onClick={() => this.startEyedropperAdd()}/>
-                        <Button icon={'copy'} onClick={() => this.copyCode(pal)}/>
-
+                        {/*<Button icon={'copy'} onClick={() => this.copyCode(pal)}/>*/}
+                        <Button icon={'code-file'} onClick={() => this.startCodeMode(pal)}/>
                     </div>
+                );
+            }
+
+            return (
+                <div className="ui-palette">
+                    <div className="palette-label">{pal.name}</div>
+                    {paletteContent}
                 </div>
             );
         }else{

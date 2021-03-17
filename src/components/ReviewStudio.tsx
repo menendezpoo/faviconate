@@ -28,7 +28,6 @@ interface ReviewStudioState{
     sampleSize: number;
     startCorner: StartCorner;
     mode: 'setup' | 'review';
-
 }
 
 export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudioState>{

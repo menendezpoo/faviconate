@@ -1,20 +1,22 @@
 import * as React from "react";
-import {Expando} from "./Expando";
 import {Color} from "../hui/helpers/Color";
 import {Palette} from "../model/PaletteService";
 import {Button} from "../hui/items/Button";
 import {ClipboardService} from "../model/ClipboardService";
-import {log} from "util";
 import {Separator} from "../hui/items/Separator";
+import show = Mocha.reporters.Base.cursor.show;
 
 const MAX_SWATCHES = 100;
+const DEFAULT_VISIBLE_ITEMS = 10;
 
 export interface ColorUsageExpandoProps{
     data: Uint8ClampedArray;
     palette?: Palette;
 }
 
-interface ColorUsageExpandoState{}
+interface ColorUsageExpandoState{
+    showAll?: boolean;
+}
 
 type UsageEntry = UsageEntryColor | UsageEntryMessage;
 
@@ -34,6 +36,7 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
 
     constructor(props: ColorUsageExpandoProps) {
         super(props);
+        this.state = {};
         this.buildReport();
     }
 
@@ -101,16 +104,24 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
         ClipboardService.systemCopyText(text).then(() => console.log(`Copied to clipboard.`));
     }
 
-    componentDidUpdate(prevProps: Readonly<ColorUsageExpandoProps>, prevState: Readonly<ColorUsageExpandoState>, snapshot?: any) {
+    private swapShowAll(){
+
+        const {showAll} = this.state;
+
+        this.setState({showAll: !showAll});
 
     }
 
     render() {
         this.buildReport();
 
+        const {showAll} = this.state;
+        const fullCount = this.report.length;
+        const report = showAll ? this.report : this.report.slice(0, DEFAULT_VISIBLE_ITEMS);
+
         return (
             <div className="color-usage-report">
-                {this.report.map(entry => {
+                {report.map(entry => {
 
                     if ('message' in entry){
                         return (
@@ -125,6 +136,19 @@ export class ColorUsageReport extends React.Component<ColorUsageExpandoProps, Co
                         );
                     }
                     })}
+
+                {(() => {
+                    if (fullCount > DEFAULT_VISIBLE_ITEMS){
+                        return (
+                            <>
+                                <Separator/>
+                                <Button
+                                    text={showAll ? `Show Less` : `Show all (${this.report.length})`}
+                                    onClick={() => this.swapShowAll()}/>
+                            </>
+                        );
+                    }
+                })() }
                 <Separator/>
                 <Button
                     icon={`copy`}

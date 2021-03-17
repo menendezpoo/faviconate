@@ -169,14 +169,17 @@ $cta-fg: #fff;
     background-color: $separator;
   }
 
+  input, textarea{
+    background: $text-box-bg;
+    color: $window-fg;
+  }
+
   .ui-color-picker{
     font-size: 14px;
 
     input{
       border: none;
       border-radius: 5px;
-      background: $text-box-bg;
-      color: $window-fg;
     }
   }
 
