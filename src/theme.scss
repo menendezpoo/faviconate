@@ -9,6 +9,11 @@ $cta-bg: #0052A8;
 $cta-bg-hot: #2780de;
 $cta-fg: #fff;
 
+#version{
+  text-align: right;
+  opacity: 0.2;
+}
+
 .ui-clickable.is-open{
   background-color: $button-face-hover-bg;
 }

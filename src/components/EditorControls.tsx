@@ -19,6 +19,7 @@ import {AdjustTool} from "../model/tools/AdjustTool";
 import {EditorControlsDither} from "./EditorControlsDither";
 import {BookController} from "../model/BookController";
 import {makeSz, Size} from "../hui/helpers/Rectangle";
+import {Version} from "../Version";
 
 export interface EditorControlsProps{
     tool: IconEditorTool | null;
@@ -99,7 +100,7 @@ export class EditorControls extends React.Component<EditorControlsProps, EditorC
                 {this.toolComponent()}
                 <Button text={`PNG`} onClick={() => this.download('png')} icon={`floppy`} iconSize={50}/>
                 <Button text={`ICO`} onClick={() => this.download('ico')} icon={`floppy`} iconSize={50}/>
-                <div id="cue" className="cue">0.1.3</div>
+                <Version/>
             </div>
         );
     }
