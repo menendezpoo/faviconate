@@ -3,6 +3,7 @@ import {makePt, makeSz, Rect, Rectangle, scaleToContain, Size} from "../hui/help
 import {MarchingAnts} from "./MarchingAnts";
 import {IconService} from "../model/IconService";
 import {Color} from "../hui/helpers/Color";
+import {Palette} from "../model/PaletteService";
 
 export function marchingAntsMarker(cx: CanvasRenderingContext2D, contentBounds: Rectangle, focusRegion: Rectangle){
     // N
@@ -32,11 +33,28 @@ export class ReviewRenderer{
 
     constructor(
         readonly reviewer: IconReviewer,
+        readonly palette?: Palette,
     ) {}
+
+    private colorName(color: Color){
+        if (this.palette){
+            for(const palColor of this.palette.colors){
+                if (palColor.hex === color.hexRgb){
+                    if (palColor.name){
+                        return palColor.name;
+                    }else{
+                        break;
+                    }
+                }
+            }
+        }
+
+        return color.isTransparent ? 'Nothing' :  color.hexRgb.toUpperCase();
+    }
 
     private drawCode(cx: CanvasRenderingContext2D, color: Color, region: Rectangle){
 
-        const txt = color.isTransparent ? 'Nothing' :  color.hexRgb.toUpperCase();
+        const txt = this.colorName(color);
         const measure = cx.measureText(txt);
         const txtSize = makeSz(measure.width, measure.actualBoundingBoxDescent);
         const txtBounds = Rectangle.fromSize(txtSize).centerAt(region.center)

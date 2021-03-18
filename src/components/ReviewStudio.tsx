@@ -14,6 +14,8 @@ import {GraphicsMemoryError} from "../hui/helpers/errors";
 import {ColorUsageReport} from "./ColorUsageReport";
 import {ReviewRenderer} from "../rendering/ReviewRenderer";
 import {Expando} from "./Expando";
+import {Palette, PaletteService} from "../model/PaletteService";
+import {Separator} from "../hui/items/Separator";
 
 const MAX_PREVIEW = 200;
 const DEF_SIZE = 3;
@@ -28,6 +30,8 @@ interface ReviewStudioState{
     sampleSize: number;
     startCorner: StartCorner;
     mode: 'setup' | 'review';
+    palette?: Palette;
+    palettes: Palette[];
 }
 
 export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudioState>{
@@ -46,6 +50,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
             sampleSize: DEF_SIZE,
             startCorner: DEF_CORNER,
             mode: 'setup',
+            palettes: [],
         };
 
         this.previewSize = scaleToContain(makeSz(MAX_PREVIEW, MAX_PREVIEW), makeSz(props.icon.width, props.icon.height));
@@ -79,7 +84,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
     }
 
     private updateCanvasesGraphics(){
-        const renderer = new ReviewRenderer(this.reviewer);
+        const renderer = new ReviewRenderer(this.reviewer, this.state.palette);
         this.drawPreviewCanvas(renderer);
         this.drawReviewCanvas(renderer);
     }
@@ -121,7 +126,26 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
         this.forceUpdate();
     }
 
+    private loadPalettes(){
+        PaletteService.getAll().then(palettes => this.setState({palettes}));
+    }
+
+    private selectPalette(palette: Palette){
+        this.setState({palette});
+        setTimeout(() => this.updateCanvasesGraphics());
+    }
+
+    private resetPalette(){
+        this.setState({palette: undefined});
+
+        setTimeout(() => this.updateCanvasesGraphics());
+
+    }
+
     componentDidMount() {
+
+        this.loadPalettes();
+
         this.updateCanvasesGraphics();
 
         window.addEventListener('keydown', e => {
@@ -161,7 +185,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
 
     render() {
 
-        const {mode} = this.state;
+        const {mode, palette, palettes} = this.state;
 
         const topItems = (
             <>
@@ -203,7 +227,27 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
                     </div>
                 </Expando>
                 <Expando title={`Colors`}>
-                    <ColorUsageReport data={this.reviewer.sampleSprite}/>
+                    {(()=>{
+                        if (palette){
+                            return (
+                                <Button
+                                    icon={`dismiss`}
+                                    text={palette.name}
+                                    iconSize={20}
+                                    onClick={() => this.resetPalette()}/>
+                            );
+                        }else{
+                            return (
+                                <div className="palettes">
+                                    {palettes.map(p => (
+                                        <Button text={p.name} onClick={()=>this.selectPalette(p)}/>
+                                    ))}
+                                </div>
+                            );
+                        }
+                    })()}
+                    <Separator/>
+                    <ColorUsageReport data={this.reviewer.sampleSprite} palette={palette}/>
                 </Expando>
 
             </div>

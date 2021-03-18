@@ -4,7 +4,6 @@ import {Palette} from "../model/PaletteService";
 import {Button} from "../hui/items/Button";
 import {ClipboardService} from "../model/ClipboardService";
 import {Separator} from "../hui/items/Separator";
-import show = Mocha.reporters.Base.cursor.show;
 
 const MAX_SWATCHES = 100;
 const DEFAULT_VISIBLE_ITEMS = 10;
