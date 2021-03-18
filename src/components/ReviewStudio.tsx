@@ -18,6 +18,8 @@ import {Palette, PaletteService} from "../model/PaletteService";
 import {Separator} from "../hui/items/Separator";
 
 const MAX_PREVIEW = 200;
+const MIN_SIZE = 1;
+const MAX_SIZE = 20;
 const DEF_SIZE = 3;
 const DEF_CORNER = 'nw';
 
@@ -258,7 +260,7 @@ export class ReviewStudio extends React.Component<ReviewStudioProps, ReviewStudi
                 <div className={`row sample-size`}>
                     <div className="caption">Sample Size</div>
                     <Range
-                        value={this.state.sampleSize} min={1} max={10}
+                        value={this.state.sampleSize} min={MIN_SIZE} max={MAX_SIZE}
                         round={true}
                         onChange={v => this.setSampleSize(v)}
                     />
