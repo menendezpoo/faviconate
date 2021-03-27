@@ -2,10 +2,11 @@
 
   &.with-icon{
     display: flex;
-    align-items: center;
+    //align-items: center;
 
     .ui-icon{
       margin-right: 0.5em;
+      margin-top: 0.2em;
     }
   }
 

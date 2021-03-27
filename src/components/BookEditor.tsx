@@ -17,6 +17,7 @@ import {IconService} from "../model/IconService";
 export interface BookEditorProps{
     bookController: BookController;
     onNewBook?: (size: Size) => void;
+    onBackstageMode?: (commands: BookCommands) => void;
 }
 
 export interface BookEditorState{
@@ -158,6 +159,12 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
             });
     }
 
+    private onBackstageMode(){
+        if (this.props.onBackstageMode){
+            this.props.onBackstageMode(this.getCommands());
+        }
+    }
+
     componentDidMount() {
         document.addEventListener('keydown', this.keyboardHandler);
     }
@@ -195,6 +202,7 @@ export class BookEditor extends React.Component<BookEditorProps, BookEditorState
             showGrid={this.state.showGrid}
             commands={commands}
             onNewBook={size => this.newBook(size)}
+            onBackstageMode={() => this.onBackstageMode()}
         />;
 
         const sideBar = <EditorControls

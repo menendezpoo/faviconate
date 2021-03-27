@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {Button} from "../hui/items/Button";
-import {MenuItem} from "../hui/items/MenuItem";
 import {Separator} from "../hui/items/Separator";
 import {IconCanvasController} from "../model/IconCanvasController";
 import {makeSz, Size} from "../hui/helpers/Rectangle";
 import {BookCommands} from "./BookCommands";
+import {Callable} from "../hui/helpers/hui";
 
 export interface EditorMainToolbarProps{
     iconController: IconCanvasController;
@@ -12,6 +12,7 @@ export interface EditorMainToolbarProps{
     showGrid: boolean;
     commands: BookCommands;
     onNewBook: (size: Size) => void;
+    onBackstageMode?: Callable;
 }
 
 interface EditorMainToolbarState{}
@@ -20,6 +21,12 @@ export class EditorMainToolbar extends React.Component<EditorMainToolbarProps, E
 
     constructor(props: EditorMainToolbarProps){
         super(props);
+    }
+
+    private onBackstageMode(){
+        if (this.props.onBackstageMode){
+            this.props.onBackstageMode();
+        }
     }
 
     render() {
@@ -35,14 +42,18 @@ export class EditorMainToolbar extends React.Component<EditorMainToolbarProps, E
 
         return (
             <>
-                <Button classNames="start-button" text={`faviconate`} face="always">
-                    <MenuItem text={`New Project: 16x16`} onActivate={newBook(16)}/>
-                    <MenuItem text={`New Project: 32x32`} onActivate={newBook(32)}/>
-                    <MenuItem text={`New Project: 64x64`} onActivate={newBook(64)}/>
-                    <MenuItem text={`New Project: 128x128`} onActivate={() => newBook(128)}/>
-                    <MenuItem text={`New Project: 256x256`} onActivate={() => newBook(256)}/>
-                    <Separator/>
-                    <MenuItem text={`Import File`} onActivate={() => cmd.commandImportFileDialog()}/>
+                <Button
+                    classNames="start-button"
+                    text={`faviconate`}
+                    face="always"
+                    onClick={() => this.onBackstageMode()}>
+                    {/*<MenuItem text={`New Project: 16x16`} onActivate={newBook(16)}/>*/}
+                    {/*<MenuItem text={`New Project: 32x32`} onActivate={newBook(32)}/>*/}
+                    {/*<MenuItem text={`New Project: 64x64`} onActivate={newBook(64)}/>*/}
+                    {/*<MenuItem text={`New Project: 128x128`} onActivate={() => newBook(128)}/>*/}
+                    {/*<MenuItem text={`New Project: 256x256`} onActivate={() => newBook(256)}/>*/}
+                    {/*<Separator/>*/}
+                    {/*<MenuItem text={`Import File`} onActivate={() => cmd.commandImportFileDialog()}/>*/}
                 </Button>
                 <Separator/>
                 <Button icon={`undo`} iconSize={50} onClick={() => cmd.commandUndo()} disabled={undos}/>

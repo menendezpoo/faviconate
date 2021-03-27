@@ -6,6 +6,8 @@ import {Label} from "../hui/items/Label";
 import {BookEditor} from "./BookEditor";
 import {BookService} from "../model/BookService";
 import {DocumentService} from "../model/DocumentService";
+import {BackstageView} from "./BackstageView";
+import {BookCommands} from "./BookCommands";
 
 const DEFAULT_ICON = makeSz(32, 32);
 
@@ -13,6 +15,8 @@ export interface AppProps{}
 
 export interface AppState{
     bookController?: BookController;
+    backstageMode?: boolean;
+    commands?: BookCommands;
 }
 
 export class App extends React.Component<AppProps, AppState>{
@@ -25,8 +29,16 @@ export class App extends React.Component<AppProps, AppState>{
         this.state = {};
     }
 
-    private handleNewBook(sz: Size){
-        const book = BookService.newBook(sz);
+    private goBackstageMode(commands: BookCommands){
+        this.setState({backstageMode: true, commands});
+    }
+
+    private goBookMode(){
+        this.setState({backstageMode: false});
+    }
+
+    private handleNewBook(sz?: Size){
+        const book = BookService.newBook(sz || DEFAULT_ICON);
         const bookController: BookController = new BookController(book);
         this.setState({bookController});
     }
@@ -49,12 +61,21 @@ export class App extends React.Component<AppProps, AppState>{
 
     render() {
 
+        let {backstageMode, bookController, commands} = this.state;
+
         let content = <Label text={'Loading...'}/>;
 
-        if (this.state.bookController){
+        if (backstageMode && commands){
+            content = <BackstageView
+                        commands={commands}
+                        onNewBook={() => this.handleNewBook()}
+                        onExit={() => this.goBookMode()}
+                      />;
+        }else if (bookController){
             content = <BookEditor
-                        bookController={this.state.bookController}
+                        bookController={bookController}
                         onNewBook={sz => this.handleNewBook(sz)}
+                        onBackstageMode={commands => this.goBackstageMode(commands)}
                       />;
         }
 

@@ -1,4 +1,6 @@
+.ui-icon.icon-book { background-image: url("icons/book.svg"); }
 .ui-icon.icon-bucket { background-image: url("icons/bucket.svg"); }
+.ui-icon.icon-circle-back-large-white { background-image: url("icons/circle-back-large-white.svg"); }
 .ui-icon.icon-circle-check { background-image: url("icons/circle-check.svg"); }
 .ui-icon.icon-circle-arrow-up { background-image: url("icons/circle-arrow-up.svg"); }
 .ui-icon.icon-circle-arrow-down { background-image: url("icons/circle-arrow-down.svg"); }
@@ -31,3 +33,4 @@
 .ui-icon.icon-crop { background-image: url("icons/crop.svg"); }
 .ui-icon.icon-full-frame { background-image: url("icons/full-frame.svg"); }
 .ui-icon.icon-grid-crossed { background-image: url("icons/grid-crossed.svg"); }
+.ui-icon.icon-image { background-image: url("icons/image.svg"); }

@@ -1,6 +1,11 @@
 $color-strong: #0000000a;
 $color-light: #000000c8;
 $color-lighter: #000000e2;
+$color-accent: #FF3B3B;
+$color-accent-hover: #FF5757;
+$color-accent-light: rgba(255, 255, 255, 0.2);
+$color-accent-lighter: rgba(255, 255, 255, 0.1);
+$color-accent-fg: white;
 $button-face-hover-bg: $color-strong;
 $button-face-selected-bg: $color-strong;
 $window-bg: #fff;
@@ -8,6 +13,7 @@ $window-fg: #555;
 $cta-bg: #0052A8;
 $cta-bg-hot: #2780de;
 $cta-fg: #fff;
+$window-fg-contrast: black;
 
 #version{
   text-align: right;
@@ -111,17 +117,18 @@ $cta-fg: #fff;
 }
 
 .ui-button.start-button{
-  background-color: #FF3B3B;
-  color: white;
+  background-color: $color-accent;
+  color: $color-accent-fg;
   border-radius: 40px !important;
   padding: 0 30px !important;
   box-shadow: 0 3px 3px 2px rgba(0, 0, 0, 50%);
 
   &:hover{
-    background-color: #FF5757 !important;
-    color: white !important;
+    background-color: $color-accent-hover !important;
+    color: $color-accent-fg !important;
   }
 }
+
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
@@ -136,6 +143,7 @@ $cta-fg: #fff;
   $window-border: $color-light;
   $separator: $color-strong;
   $text-box-bg: $color-light;
+  $window-fg-contrast: white;
 
   body{
     background: $window-bg;
@@ -247,6 +255,33 @@ $cta-fg: #fff;
 
     &.selected{
       background-color: $cta-bg;
+    }
+  }
+
+  .backstage-view{
+    background-color: $window-bg;
+    color: $window-fg;
+
+    > .head{
+      background-color: $color-accent;
+      color: $color-accent-fg;
+
+      > .far {
+        a.about{
+          background: $color-accent-lighter;
+          color: $color-accent-fg;
+
+          &:hover,&:focus{
+            background: $color-accent-light;
+          }
+        }
+      }
+    }
+
+    > .body{
+      > .commands{
+        color: $window-fg-contrast;
+      }
     }
   }
 
